@@ -6,31 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ケアプラン施設マッチングシステム - 厚生労働省標準様式のサービス等利用計画書を基に、福祉施設の空き状況と連動した施設候補検索と同意取得をワンストップで実現するWebアプリケーション。
 
-## Development Commands
-
-### Bun Runtime & Package Manager
-```bash
-# Development server
-bun dev
-
-# Build for production
-bun run build
-
-# Start production server
-bun start
-
-# Database operations
-bun run db:push      # Push schema changes
-bun run db:generate  # Generate Prisma client
-bun run db:studio    # Open Prisma Studio
-
-# Testing & Quality
-bun test
-bun test:watch
-bun run lint
-bun run typecheck
-```
-
+s
 ## Architecture
 
 ### Tech Stack
