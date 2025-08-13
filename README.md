@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ケアプラン施設マッチングシステム
 
-## Getting Started
+厚生労働省標準様式のサービス等利用計画書を基に、福祉施設の空き状況と連動した施設候補検索と同意取得をワンストップで実現するWebアプリケーション。
 
-First, run the development server:
+## 技術スタック
+
+- **Runtime**: Bun
+- **Framework**: Next.js 15 (App Router)
+- **UI**: React 19 + Tailwind CSS v4
+- **Database**: Supabase (PostgreSQL + Row Level Security)
+- **Authentication**: Supabase Auth (Magic Link)
+- **Linter/Formatter**: Biome
+
+## セットアップ
+
+### 1. 環境変数の設定
+
+`.env.local.example`を`.env.local`にコピーして、Supabaseの認証情報を設定してください：
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
+cp .env.local.example .env.local
+```
+
+### 2. 依存関係のインストール
+
+```bash
+bun install
+```
+
+### 3. Supabaseのセットアップ
+
+```bash
+# Supabase CLIのインストール（まだの場合）
+brew install supabase/tap/supabase
+
+# ローカルでSupabaseを起動
+supabase start
+
+# マイグレーションの実行
+supabase db push
+```
+
+### 4. 開発サーバーの起動
+
+```bash
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+[http://localhost:3000](http://localhost:3000)でアプリケーションにアクセスできます。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## プロジェクト構造
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+care/
+├── app/              # Next.js App Router
+├── domain/           # ドメインモデル層
+├── uc/               # ユースケース層
+├── infra/            # インフラストラクチャ層
+├── components/       # UIコンポーネント
+├── lib/              # ユーティリティ
+├── supabase/         # Supabase設定
+│   ├── migrations/   # DBマイグレーション
+│   └── seed.sql      # シードデータ
+└── tests/            # テストファイル
+```
 
-## Learn More
+## ユーザータイプ
 
-To learn more about Next.js, take a look at the following resources:
+1. **支援者（Supporter）**
+   - 相談支援専門員、ケアマネージャー
+   - サービス等利用計画書の作成と施設検索
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **施設スタッフ（FacilityStaff）**
+   - 福祉施設の職員
+   - 空き状況の更新と照会への対応
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **利用者（User）**
+   - 福祉サービスを利用する本人または家族
+   - 計画書の確認と同意手続き
 
-## Deploy on Vercel
+## 開発コマンド
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+# 開発サーバー
+bun dev
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# ビルド
+bun build
+
+# リント
+bun lint
+
+# フォーマット
+bun format
+
+# テスト
+bun test
+```
