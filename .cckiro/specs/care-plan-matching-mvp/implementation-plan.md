@@ -1,5 +1,12 @@
 # 実装計画 - ケアプラン施設マッチングシステムMVP
 
+最終更新: 2025-01-13
+
+## 進捗サマリー
+- **現在のフェーズ**: フェーズ2（データベース構築）準備中
+- **完了フェーズ**: フェーズ1 ✅
+- **進捗率**: 12.5% (1/8フェーズ完了)
+
 ## 1. 実装概要
 
 ### 1.1 実装方針
@@ -17,43 +24,42 @@
 
 ## 2. 実装フェーズ
 
-### フェーズ1: プロジェクト基盤構築（Day 1-2）
+### フェーズ1: プロジェクト基盤構築（Day 1-2）✅ 完了 2025-01-13
 
 #### 1.1 プロジェクト初期化
 ```bash
 # 作業内容
-- Next.js 15プロジェクトの作成
-
-- Bunの設定
-- TypeScript設定の最適化
-- Biome設定（Linter/Formatter）
-- Git設定（.gitignore, pre-commit hooks）
+- Next.js 15プロジェクトの作成 ✅
+- Bunの設定 ✅
+- TypeScript設定の最適化 ✅
+- Biome設定（Linter/Formatter）✅
+- Git設定（.gitignore）✅
 ```
 
-#### 1.2 基本ディレクトリ構造の作成
+#### 1.2 基本ディレクトリ構造の作成 ✅
 ```
 care/
-├── app/          # Next.js App Router
-├── domain/       # ドメインモデル層
-├── uc/           # ユースケース層
-├── infra/        # インフラ層
-├── components/   # UIコンポーネント
-├── lib/          # ユーティリティ
-├── supabase/     # Supabase設定
-│   ├── migrations/  # DBマイグレーション
-│   ├── functions/   # Edge Functions
-│   └── seed.sql     # シードデータ
-└── tests/        # テストファイル
+├── app/          # Next.js App Router ✅
+├── domain/       # ドメインモデル層 ✅
+├── uc/           # ユースケース層 ✅
+├── infra/        # インフラ層 ✅
+├── components/   # UIコンポーネント ✅
+├── lib/          # ユーティリティ ✅
+├── supabase/     # Supabase設定 ✅
+│   ├── migrations/  # DBマイグレーション ✅
+│   └── config.toml  # ローカル設定 ✅
+└── tests/        # テストファイル ✅
 ```
 
-#### 1.3 開発環境セットアップ
-- Supabaseプロジェクトの作成
-- 環境変数の設定（.env.local）
-  - NEXT_PUBLIC_SUPABASE_URL
-  - NEXT_PUBLIC_SUPABASE_ANON_KEY
-  - SUPABASE_SERVICE_ROLE_KEY
-- Supabase CLIのセットアップ
-- Tailwind CSS v4の設定
+#### 1.3 開発環境セットアップ ✅
+- 環境変数テンプレート（.env.local.example）✅
+  - NEXT_PUBLIC_SUPABASE_URL ✅
+  - NEXT_PUBLIC_SUPABASE_ANON_KEY ✅
+  - SUPABASE_SERVICE_ROLE_KEY ✅
+  - NEXT_PUBLIC_APP_URL ✅
+- Supabase基本設定（lib/supabase/）✅
+- Tailwind CSS v4の設定 ✅
+- 認証基本実装（Magic Linkログイン画面）✅
 
 ### フェーズ2: データベース構築（Day 3-5）
 
@@ -248,13 +254,13 @@ components/ui/
 ## 3. 各フェーズの成果物とテスト
 
 ### フェーズ1の成果物
-- [ ] package.json（依存関係定義、@supabase/supabase-js含む）
-- [ ] tsconfig.json（TypeScript設定）
-- [ ] next.config.js（Next.js設定）
-- [ ] biome.json（Biome設定）
-- [ ] .env.local.example（Supabase環境変数テンプレート）
-- [ ] supabase/config.toml（Supabaseローカル設定）
-- [ ] README.md（プロジェクト説明）
+- [x] package.json（依存関係定義、@supabase/supabase-js含む）✅ 2025-01-13
+- [x] tsconfig.json（TypeScript設定）✅ 2025-01-13
+- [x] next.config.ts（Next.js設定）✅ 2025-01-13
+- [x] biome.json（Biome設定）✅ 2025-01-13
+- [x] .env.local.example（Supabase環境変数テンプレート）✅ 2025-01-13
+- [x] supabase/config.toml（Supabaseローカル設定）✅ 2025-01-13
+- [x] README.md（プロジェクト説明）✅ 2025-01-13
 
 ### フェーズ2の成果物
 - [ ] supabase/migrations/（SQLマイグレーションファイル）
@@ -362,7 +368,7 @@ components/ui/
 ## 7. 次のステップ
 
 実装開始前の確認事項：
-1. [ ] 開発環境の準備完了
+1. [x] 開発環境の準備完了 ✅ 2025-01-13
 2. [ ] Supabaseプロジェクトの作成
 3. [ ] チーム全員の役割分担明確化
 4. [ ] Supabase環境（開発・ステージング・本番）の準備
