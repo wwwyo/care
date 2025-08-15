@@ -1,0 +1,500 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// =====================================================
+// 基本テーブル
+// =====================================================
+
+// tenants: マルチテナント用の組織テーブル
+model Tenant {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String   @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  supporters Supporter[]
+  plans      Plan[]
+
+  @@map("tenants")
+}
+
+// supporters: 支援者（相談支援専門員）
+model Supporter {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId   String   @map("tenant_id") @db.Uuid
+  authUserId String?  @map("auth_user_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant              Tenant            @relation(fields: [tenantId], references: [id])
+  profile             SupporterProfile?
+  plans               Plan[]
+  planVersionsCreated PlanVersion[]     @relation("PlanVersionCreatedBy")
+
+  @@index([tenantId])
+  @@index([authUserId])
+  @@map("supporters")
+}
+
+// users: サービス利用者
+model User {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  authUserId String?  @map("auth_user_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  profile   UserProfile?
+  addresses UserAddress[]
+  plans     Plan[]
+
+  @@index([authUserId])
+  @@map("users")
+}
+
+// facilities: 施設
+model Facility {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  profile    FacilityProfile?
+  location   FacilityLocation?
+  contacts   FacilityContact[]
+  services   FacilityService[]
+  conditions FacilityCondition[]
+  staff      FacilityStaffFacility[]
+  roles      FacilityStaffRole[]
+  slots      Slot[]
+  inquiries  Inquiry[]
+
+  @@map("facilities")
+}
+
+// facility_staff: 施設職員
+model FacilityStaff {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  authUserId String?  @map("auth_user_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  facilities   FacilityStaffFacility[]
+  roles        FacilityStaffRole[]
+  slotsUpdated Slot[]
+
+  @@index([authUserId])
+  @@map("facility_staff")
+}
+
+// facility_staff_facilities: 施設職員と施設の関連
+model FacilityStaffFacility {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  facilityStaffId String   @map("facility_staff_id") @db.Uuid
+  facilityId      String   @map("facility_id") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  facilityStaff FacilityStaff @relation(fields: [facilityStaffId], references: [id], onDelete: Cascade)
+  facility      Facility      @relation(fields: [facilityId], references: [id])
+
+  @@unique([facilityStaffId, facilityId])
+  @@index([facilityStaffId])
+  @@index([facilityId])
+  @@map("facility_staff_facilities")
+}
+
+// facility_staff_roles: 施設職員の役割
+model FacilityStaffRole {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  facilityStaffId String   @map("facility_staff_id") @db.Uuid
+  facilityId      String   @map("facility_id") @db.Uuid
+  role            String   @db.VarChar(20)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  facilityStaff FacilityStaff @relation(fields: [facilityStaffId], references: [id], onDelete: Cascade)
+  facility      Facility      @relation(fields: [facilityId], references: [id])
+
+  @@unique([facilityStaffId, facilityId, role])
+  @@index([facilityStaffId])
+  @@index([facilityId])
+  @@map("facility_staff_roles")
+}
+
+// =====================================================
+// プロファイル関連テーブル
+// =====================================================
+
+// supporter_profiles: 支援者プロファイル
+model SupporterProfile {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supporterId String    @unique @map("supporter_id") @db.Uuid
+  name        String    @db.VarChar(255)
+  nameKana    String?   @map("name_kana") @db.VarChar(255)
+  gender      String?   @db.VarChar(10)
+  birthDate   DateTime? @map("birth_date") @db.Date
+  phone       String?   @db.VarChar(20)
+  tenantId    String    @map("tenant_id") @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  supporter Supporter @relation(fields: [supporterId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("supporter_profiles")
+}
+
+// user_profiles: 利用者プロファイル
+model UserProfile {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @unique @map("user_id") @db.Uuid
+  name      String    @db.VarChar(255)
+  nameKana  String?   @map("name_kana") @db.VarChar(255)
+  gender    String?   @db.VarChar(10)
+  birthDate DateTime? @map("birth_date") @db.Date
+  phone     String?   @db.VarChar(20)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+// user_addresses: 利用者住所
+model UserAddress {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  postalCode String?  @map("postal_code") @db.VarChar(10)
+  prefecture String?  @db.VarChar(10)
+  city       String?  @db.VarChar(100)
+  street     String?  @db.VarChar(255)
+  building   String?  @db.VarChar(255)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_addresses")
+}
+
+// facility_profiles: 施設プロファイル
+model FacilityProfile {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  facilityId  String   @unique @map("facility_id") @db.Uuid
+  name        String   @db.VarChar(255)
+  nameKana    String?  @map("name_kana") @db.VarChar(255)
+  description String?  @db.Text
+  capacity    Int?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@map("facility_profiles")
+}
+
+// facility_locations: 施設所在地
+model FacilityLocation {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  facilityId String   @unique @map("facility_id") @db.Uuid
+  postalCode String?  @map("postal_code") @db.VarChar(10)
+  prefecture String?  @db.VarChar(10)
+  city       String?  @db.VarChar(100)
+  street     String?  @db.VarChar(255)
+  building   String?  @db.VarChar(255)
+  latitude   Decimal? @db.Decimal(10, 8)
+  longitude  Decimal? @db.Decimal(11, 8)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@index([latitude, longitude])
+  @@map("facility_locations")
+}
+
+// facility_contacts: 施設連絡先
+model FacilityContact {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  facilityId  String   @map("facility_id") @db.Uuid
+  contactType String   @map("contact_type") @db.VarChar(20)
+  name        String?  @db.VarChar(255)
+  phone       String?  @db.VarChar(20)
+  email       String?  @db.VarChar(255)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@index([facilityId])
+  @@map("facility_contacts")
+}
+
+// facility_services: 施設提供サービス
+model FacilityService {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  facilityId  String   @map("facility_id") @db.Uuid
+  serviceType String   @map("service_type") @db.VarChar(50)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@index([facilityId])
+  @@index([serviceType])
+  @@map("facility_services")
+}
+
+// facility_conditions: 施設条件・設備
+model FacilityCondition {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  facilityId     String   @map("facility_id") @db.Uuid
+  conditionType  String   @map("condition_type") @db.VarChar(50)
+  conditionValue String?  @map("condition_value") @db.VarChar(255)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@index([facilityId])
+  @@index([conditionType])
+  @@map("facility_conditions")
+}
+
+// =====================================================
+// ビジネスロジックテーブル
+// =====================================================
+
+// plans: ケアプラン
+model Plan {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId         String   @map("tenant_id") @db.Uuid
+  supporterId      String   @map("supporter_id") @db.Uuid
+  userId           String?  @map("user_id") @db.Uuid
+  currentVersionId String?  @map("current_version_id") @db.Uuid
+  status           String   @default("draft") @db.VarChar(20)
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant    Tenant        @relation(fields: [tenantId], references: [id])
+  supporter Supporter     @relation(fields: [supporterId], references: [id])
+  user      User?         @relation(fields: [userId], references: [id])
+  versions  PlanVersion[]
+  consents  Consent[]
+  inquiries Inquiry[]
+
+  @@index([tenantId])
+  @@index([supporterId])
+  @@index([userId])
+  @@index([currentVersionId])
+  @@map("plans")
+}
+
+// plan_versions: ケアプランバージョン
+model PlanVersion {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  planId          String    @map("plan_id") @db.Uuid
+  versionNumber   Int       @map("version_number")
+  serviceType     String    @map("service_type") @db.VarChar(50)
+  frequency       String?   @db.VarChar(100)
+  area            String?   @db.VarChar(255)
+  startDate       DateTime? @map("start_date") @db.Date
+  endDate         DateTime? @map("end_date") @db.Date
+  notes           String?   @db.Text
+  validFrom       DateTime  @default(now()) @map("valid_from") @db.Timestamptz
+  validUntil      DateTime? @map("valid_until") @db.Timestamptz
+  createdBy       String    @map("created_by") @db.Uuid
+  reasonForUpdate String?   @map("reason_for_update") @db.Text
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  plan                      Plan                           @relation(fields: [planId], references: [id], onDelete: Cascade)
+  creator                   Supporter                      @relation("PlanVersionCreatedBy", fields: [createdBy], references: [id])
+  accessibilityRequirements PlanAccessibilityRequirement[]
+  customFields              PlanCustomField[]
+
+  @@unique([planId, versionNumber])
+  @@index([planId])
+  @@index([validFrom])
+  @@index([validUntil])
+  @@map("plan_versions")
+}
+
+// plan_accessibility_requirements: アクセシビリティ要件
+model PlanAccessibilityRequirement {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  planVersionId   String   @map("plan_version_id") @db.Uuid
+  requirementType String   @map("requirement_type") @db.VarChar(50)
+  details         String?  @db.Text
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  planVersion PlanVersion @relation(fields: [planVersionId], references: [id], onDelete: Cascade)
+
+  @@index([planVersionId])
+  @@index([requirementType])
+  @@map("plan_accessibility_requirements")
+}
+
+// plan_custom_fields: カスタムフィールド
+model PlanCustomField {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  planVersionId String   @map("plan_version_id") @db.Uuid
+  fieldName     String   @map("field_name") @db.VarChar(100)
+  fieldValue    String?  @map("field_value") @db.Text
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  planVersion PlanVersion @relation(fields: [planVersionId], references: [id], onDelete: Cascade)
+
+  @@index([planVersionId])
+  @@map("plan_custom_fields")
+}
+
+// slots: 空き状況
+model Slot {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  facilityId String   @map("facility_id") @db.Uuid
+  status     String   @db.VarChar(20)
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz
+  updatedBy  String   @map("updated_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  facility Facility      @relation(fields: [facilityId], references: [id])
+  updater  FacilityStaff @relation(fields: [updatedBy], references: [id])
+  details  SlotDetail[]
+
+  @@index([facilityId])
+  @@index([status])
+  @@index([expiresAt])
+  @@map("slots")
+}
+
+// slot_details: 空き状況詳細
+model SlotDetail {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slotId      String   @map("slot_id") @db.Uuid
+  detailType  String   @map("detail_type") @db.VarChar(50)
+  detailValue String?  @map("detail_value") @db.Text
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  slot Slot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+
+  @@index([slotId])
+  @@map("slot_details")
+}
+
+// =====================================================
+// 関連テーブル
+// =====================================================
+
+// consents: 同意リクエスト
+model Consent {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  planId      String   @map("plan_id") @db.Uuid
+  requestType String   @map("request_type") @db.VarChar(20)
+  token       String   @unique @db.VarChar(255)
+  expiresAt   DateTime @map("expires_at") @db.Timestamptz
+  status      String   @default("pending") @db.VarChar(20)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  plan   Plan           @relation(fields: [planId], references: [id])
+  grants ConsentGrant[]
+
+  @@index([planId])
+  @@index([token])
+  @@index([status])
+  @@map("consents")
+}
+
+// consent_grants: 同意記録
+model ConsentGrant {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  consentId String   @map("consent_id") @db.Uuid
+  grantedAt DateTime @default(now()) @map("granted_at") @db.Timestamptz
+  grantedBy String?  @map("granted_by") @db.VarChar(255)
+  method    String   @map("method") @db.VarChar(50)
+  ipAddress String?  @map("ip_address") @db.VarChar(45)
+  userAgent String?  @map("user_agent") @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  consent Consent @relation(fields: [consentId], references: [id], onDelete: Cascade)
+
+  @@index([consentId])
+  @@map("consent_grants")
+}
+
+// inquiries: 照会
+model Inquiry {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  planId     String   @map("plan_id") @db.Uuid
+  facilityId String   @map("facility_id") @db.Uuid
+  status     String   @default("open") @db.VarChar(20)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  plan     Plan             @relation(fields: [planId], references: [id])
+  facility Facility         @relation(fields: [facilityId], references: [id])
+  messages InquiryMessage[]
+  replies  InquiryReply[]
+
+  @@index([planId])
+  @@index([facilityId])
+  @@index([status])
+  @@map("inquiries")
+}
+
+// inquiry_messages: 照会メッセージ
+model InquiryMessage {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  inquiryId  String   @map("inquiry_id") @db.Uuid
+  message    String   @db.Text
+  senderType String   @map("sender_type") @db.VarChar(20)
+  senderId   String   @map("sender_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  inquiry Inquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+
+  @@index([inquiryId])
+  @@index([senderId])
+  @@map("inquiry_messages")
+}
+
+// inquiry_replies: 照会返信
+model InquiryReply {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  inquiryId String   @map("inquiry_id") @db.Uuid
+  replyType String   @map("reply_type") @db.VarChar(20)
+  replyData Json     @map("reply_data") @db.Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  inquiry Inquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+
+  @@index([inquiryId])
+  @@map("inquiry_replies")
+}
+
+// audits: 監査ログ（append-only）
+model Audit {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tableName String   @map("table_name") @db.VarChar(50)
+  recordId  String   @map("record_id") @db.Uuid
+  action    String   @db.VarChar(20)
+  actorId   String   @map("actor_id") @db.Uuid
+  actorType String   @map("actor_type") @db.VarChar(20)
+  changes   Json?    @db.Json
+  metadata  Json?    @db.Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([tableName, recordId])
+  @@index([actorId])
+  @@index([createdAt])
+  @@map("audits")
+}

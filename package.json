@@ -8,24 +8,30 @@
     "start": "next start",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "format": "biome format --write .",
     "test": "bun test",
-    "db:reset": "supabase db reset",
-    "db:migrate": "supabase migration up"
+    "db:migrate": "bunx dotenv-cli -e .env.local prisma migrate dev",
+    "db:reset": "bunx dotenv-cli -e .env.local prisma migrate reset",
+    "db:generate": "prisma generate",
+    "db:push": "bunx dotenv-cli -e .env.local prisma db push",
+    "db:seed": "bun run prisma/seed.ts",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@prisma/client": "6.14.0",
+    "next": "15.4.6",
     "react": "19.1.1",
-    "react-dom": "19.1.1",
-    "next": "15.4.6"
+    "react-dom": "19.1.1"
   },
   "devDependencies": {
     "@biomejs/biome": "2.1.4",
     "@supabase/ssr": "0.6.1",
     "@supabase/supabase-js": "2.55.0",
     "@tailwindcss/postcss": "4.1.11",
+    "@types/bun": "1.2.20",
     "@types/node": "24.2.1",
     "@types/react": "19.1.10",
     "@types/react-dom": "19.1.7",
+    "prisma": "6.14.0",
     "tailwindcss": "4.1.11",
     "typescript": "5.9.2"
   }

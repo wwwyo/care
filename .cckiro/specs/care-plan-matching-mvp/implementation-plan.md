@@ -3,9 +3,9 @@
 最終更新: 2025-01-13
 
 ## 進捗サマリー
-- **現在のフェーズ**: フェーズ2（データベース構築）準備中
-- **完了フェーズ**: フェーズ1 ✅
-- **進捗率**: 12.5% (1/8フェーズ完了)
+- **現在のフェーズ**: フェーズ3（認証基盤実装）準備中
+- **完了フェーズ**: フェーズ1 ✅, フェーズ2 ✅
+- **進捗率**: 25% (2/8フェーズ完了)
 
 ## 1. 実装概要
 
@@ -20,7 +20,8 @@
 - **Framework**: Next.js 15 (App Router)
 - **UI**: React 19 + Tailwind CSS v4 + shadcn/ui
 - **Database**: Supabase (PostgreSQL + Row Level Security)
-- **Authentication**: Supabase Auth (Magic Link)
+- **Authentication**: Better Auth (Magic Link)
+- **ORM**: Prisma
 
 ## 2. 実装フェーズ
 
@@ -83,24 +84,36 @@ care/
 
 ### フェーズ3: 認証基盤実装（Day 6-8）
 
-#### 3.1 Supabase Auth設定
+#### 3.1 Better Auth設定
 実装内容：
+- Better Authの基本セットアップ
 - Magic Link認証の設定
 - メールテンプレートのカスタマイズ
-- 認証フローのカスタマイズ
-- セッション管理設定
+- セッション管理設定（データベースセッション）
 
-#### 3.2 ユーザータイプ別認証
-- Supporter認証フロー（auth.users + supporters連携）
-- FacilityStaff認証フロー（auth.users + facility_staff連携）
-- User認証フロー（auth.users + users連携）
-- カスタムクレームの設定
+#### 3.2 ユーザータイプ別認証インフラ
+- **User向け認証**
+  - 別ドメイン: user.care-app.jp
+  - 専用の認証フロー（シンプルなMagic Link）
+  - users テーブルとの連携
+  
+- **Supporter向け認証**
+  - 別ドメイン: supporter.care-app.jp
+  - 組織（tenant）選択を含む認証フロー
+  - supporters テーブルとの連携
+  - テナントコンテキストの設定
+  
+- **施設管理者向け認証**
+  - 別ドメイン: facility.care-app.jp
+  - 施設選択を含む認証フロー
+  - facility_staff テーブルとの連携
+  - 施設コンテキストの設定
 
 #### 3.3 認証ヘルパー実装
-- Supabase Auth Helpersの設定
+- Better Auth用のカスタムヘルパー
 - Server Components用認証
-- Route Handlers用認証
-- Middleware設定
+- Server Actions用認証
+- Middleware設定（ドメイン別ルーティング）
 
 ### フェーズ4: ドメイン層実装（Day 9-12）
 
@@ -131,10 +144,10 @@ care/
 #### 5.1 認証関連ユースケース
 ```
 uc/auth/
-├── send-magic-link.ts      # Supabase Auth API使用
-├── verify-magic-link.ts    # Supabase Auth API使用
-├── get-current-user.ts     # Supabase Auth Helper使用
-└── logout.ts               # Supabase Auth API使用
+├── send-magic-link.ts      # Better Auth API使用
+├── verify-magic-link.ts    # Better Auth API使用
+├── get-current-user.ts     # Better Auth Helper使用
+└── logout.ts               # Better Auth API使用
 ```
 
 #### 5.2 計画書管理ユースケース
@@ -254,19 +267,20 @@ components/ui/
 ## 3. 各フェーズの成果物とテスト
 
 ### フェーズ1の成果物
-- [x] package.json（依存関係定義、@supabase/supabase-js含む）✅ 2025-01-13
+- [x] package.json（依存関係定義、@supabase/supabase-js、prisma含む）✅ 2025-01-13
 - [x] tsconfig.json（TypeScript設定）✅ 2025-01-13
 - [x] next.config.ts（Next.js設定）✅ 2025-01-13
 - [x] biome.json（Biome設定）✅ 2025-01-13
 - [x] .env.local.example（Supabase環境変数テンプレート）✅ 2025-01-13
 - [x] supabase/config.toml（Supabaseローカル設定）✅ 2025-01-13
 - [x] README.md（プロジェクト説明）✅ 2025-01-13
+- [x] prisma/schema.prisma（データベーススキーマ定義）✅ 2025-01-13
 
 ### フェーズ2の成果物
-- [ ] supabase/migrations/（SQLマイグレーションファイル）
-- [ ] supabase/seed.sql（シードデータ）
-- [ ] RLSポリシーのテスト
-- [ ] データベース設計書の実装反映確認
+- [x] supabase/migrations/（SQLマイグレーションファイル）✅ 2025-01-14
+- [x] prisma/seed.ts（シードデータ）✅ 2025-01-14
+- [x] RLSポリシーのテスト ✅ 2025-01-14
+- [x] データベース設計書の実装反映確認 ✅ 2025-01-14
 
 ### フェーズ3の成果物
 - [ ] 認証フロー統合テスト
@@ -340,10 +354,10 @@ components/ui/
 
 実装開始前の確認事項：
 1. [x] 開発環境の準備完了 ✅ 2025-01-13
-2. [ ] Supabaseプロジェクトの作成
+2. [x] Supabaseプロジェクトの作成 ✅ 2025-01-13
 3. [ ] チーム全員の役割分担明確化
 4. [ ] Supabase環境（開発・ステージング・本番）の準備
-5. [ ] メール送信設定（Supabase Auth）
+5. [ ] メール送信設定（Better Auth）
 
 実装開始後の進捗管理：
 - 日次スタンドアップミーティング
