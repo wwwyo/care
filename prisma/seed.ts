@@ -53,6 +53,7 @@ async function main() {
       tenantId: tenant1.id,
       profile: {
         create: {
+          tenantId: tenant1.id,
           name: '山田太郎',
           nameKana: 'ヤマダタロウ',
           gender: '男性',
@@ -68,6 +69,7 @@ async function main() {
       tenantId: tenant2.id,
       profile: {
         create: {
+          tenantId: tenant2.id,
           name: '佐藤花子',
           nameKana: 'サトウハナコ',
           gender: '女性',

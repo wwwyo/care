@@ -174,6 +174,12 @@ The system is based on 厚生労働省標準様式 (Ministry of Health, Labour a
   - 関数型の原則に従う
   - ファイル,directory名はkebab-caseで命名する
 
+### Form Components
+- **shadcn/uiは使用するが、フォームに関してはNext.js 15の純粋な`Form`コンポーネントを使用する**
+  - `import Form from 'next/form'` を使用
+  - shadcn/uiのFormコンポーネントは使用しない
+  - Server Actionsとの統合を最適化するため
+
 ### CQRSパターンの実装ルール
 
 #### Query (読み取り専用)
