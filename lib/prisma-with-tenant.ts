@@ -1,5 +1,5 @@
-import { PrismaClient } from "@/lib/generated/prisma";
-import { prisma } from "@/lib/prisma";
+import type { Prisma, PrismaClient } from '@/lib/generated/prisma'
+import { prisma } from '@/lib/prisma'
 
 /**
  * テナントIDを設定してPrismaクライアントを使用するヘルパー
@@ -7,17 +7,17 @@ import { prisma } from "@/lib/prisma";
  */
 export async function prismaWithTenant<T>(
   tenantId: string,
-  fn: (prisma: PrismaClient) => Promise<T>
+  fn: (prisma: PrismaClient) => Promise<T>,
 ): Promise<T> {
   // PostgreSQLのセッション変数にテナントIDを設定
-  await prisma.$executeRaw`SET LOCAL app.current_tenant_id = ${tenantId}`;
-  
+  await prisma.$executeRaw`SET LOCAL app.current_tenant_id = ${tenantId}`
+
   try {
     // 実際のクエリを実行
-    return await fn(prisma);
+    return await fn(prisma)
   } finally {
     // セッション変数をリセット（オプション）
-    await prisma.$executeRaw`RESET app.current_tenant_id`;
+    await prisma.$executeRaw`RESET app.current_tenant_id`
   }
 }
 
@@ -26,13 +26,13 @@ export async function prismaWithTenant<T>(
  */
 export async function prismaTransactionWithTenant<T>(
   tenantId: string,
-  fn: (tx: PrismaClient) => Promise<T>
+  fn: (tx: Prisma.TransactionClient) => Promise<T>,
 ): Promise<T> {
   return prisma.$transaction(async (tx) => {
     // トランザクション内でテナントIDを設定
-    await tx.$executeRaw`SET LOCAL app.current_tenant_id = ${tenantId}`;
-    return fn(tx);
-  });
+    await tx.$executeRaw`SET LOCAL app.current_tenant_id = ${tenantId}`
+    return fn(tx)
+  })
 }
 
 // 使用例：

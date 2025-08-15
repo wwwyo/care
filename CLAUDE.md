@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ケアプラン施設マッチングシステム - 厚生労働省標準様式のサービス等利用計画書を基に、福祉施設の空き状況と連動した施設候補検索と同意取得をワンストップで実現するWebアプリケーション。
+ミタスケア - 厚生労働省標準様式のサービス等利用計画書を基に、福祉施設の空き状況と連動した施設候補検索と同意取得をワンストップで実現するWebアプリケーション。
 
 s
 ## Architecture
@@ -166,3 +166,15 @@ The system is based on 厚生労働省標準様式 (Ministry of Health, Labour a
 - その後、テストをパスさせる実装を進める
 - 実装中はテストを変更せず、コードを修正し続ける
 - すべてのテストが通過するまで繰り返す
+
+## Code Guidelines
+
+- **Export Guidelines**:
+  - re-export専門のファイルを作らない
+  - 関数型の原則に従う
+  - ファイル,directory名はkebab-caseで命名する
+
+## Development Guidelines
+
+- 環境変数はenv.tsでチェックしたのちに使うこと
+```
