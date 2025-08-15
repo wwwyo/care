@@ -5,7 +5,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'ケアプラン施設マッチングシステム',
+  title: 'ミタスケア',
   description: '厚生労働省標準様式のサービス等利用計画書を基に、福祉施設とのマッチングを支援',
 }
 

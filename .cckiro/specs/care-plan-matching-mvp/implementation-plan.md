@@ -3,9 +3,10 @@
 最終更新: 2025-01-13
 
 ## 進捗サマリー
-- **現在のフェーズ**: フェーズ3（認証基盤実装）準備中
+- **現在のフェーズ**: フェーズ3（認証基盤実装）進行中
 - **完了フェーズ**: フェーズ1 ✅, フェーズ2 ✅
-- **進捗率**: 25% (2/8フェーズ完了)
+- **進捗率**: 30% (2.5/8フェーズ完了)
+- **最終更新**: 2025-01-15
 
 ## 1. 実装概要
 
@@ -20,7 +21,7 @@
 - **Framework**: Next.js 15 (App Router)
 - **UI**: React 19 + Tailwind CSS v4 + shadcn/ui
 - **Database**: Supabase (PostgreSQL + Row Level Security)
-- **Authentication**: Better Auth (Magic Link)
+- **Authentication**: Better Auth (Email/Password + Realm-based multi-user type) ← 変更
 - **ORM**: Prisma
 
 ## 2. 実装フェーズ
@@ -82,38 +83,43 @@ care/
 - 開発用シードデータの作成
 - Edge Functionsでの初期化処理
 
-### フェーズ3: 認証基盤実装（Day 6-8）
+### フェーズ3: 認証基盤実装（Day 6-8）🚧 進行中 2025-01-15
 
-#### 3.1 Better Auth設定
+#### 3.1 Better Auth設定 ✅ 完了
 実装内容：
-- Better Authの基本セットアップ
-- Magic Link認証の設定
-- メールテンプレートのカスタマイズ
-- セッション管理設定（データベースセッション）
+- Better Authの基本セットアップ ✅
+- ~~Magic Link認証の設定~~ → Email/Password認証に変更 ✅
+- Realmフィールドによるユーザータイプ識別 ✅
+- セッション管理設定（データベースセッション）✅
+- Prismaアダプターの設定 ✅
 
-#### 3.2 ユーザータイプ別認証インフラ
-- **User向け認証**
-  - 別ドメイン: user.care-app.jp
-  - 専用の認証フロー（シンプルなMagic Link）
-  - users テーブルとの連携
-  
-- **Supporter向け認証**
-  - 別ドメイン: supporter.care-app.jp
-  - 組織（tenant）選択を含む認証フロー
-  - supporters テーブルとの連携
-  - テナントコンテキストの設定
-  
-- **施設管理者向け認証**
-  - 別ドメイン: facility.care-app.jp
-  - 施設選択を含む認証フロー
-  - facility_staff テーブルとの連携
-  - 施設コンテキストの設定
+#### 3.2 ユーザータイプ別認証インフラ ✅ 完了
+- **Client向け認証** ✅
+  - パス: `/login` (route group: `(client)`)
+  - Email/Password認証フロー ✅
+  - サインアップ時にrealm='client'を設定 ✅
+  - clients テーブルとの連携（authUserIdで紐付け）✅
 
-#### 3.3 認証ヘルパー実装
-- Better Auth用のカスタムヘルパー
-- Server Components用認証
-- Server Actions用認証
-- Middleware設定（ドメイン別ルーティング）
+- **Supporter向け認証** ✅
+  - パス: `/supporter/login`
+  - Email/Password認証フロー ✅
+  - サインアップ時にrealm='supporter'を設定 ✅
+  - supporters テーブルとの連携（authUserIdで紐付け）✅
+  - テナントコンテキストの設定（次フェーズ）
+
+- **施設管理者向け認証** ✅
+  - パス: `/facility/login`
+  - Email/Password認証フロー ✅
+  - サインアップ時にrealm='facility'を設定 ✅
+  - facility_staff テーブルとの連携（authUserIdで紐付け）✅
+  - 施設コンテキストの設定（次フェーズ）
+
+#### 3.3 認証ヘルパー実装 🚧 進行中
+- Better Auth用のカスタムヘルパー ✅
+- Server Components用認証 🚧
+- Server Actions用認証 🚧
+- ~~Middleware設定（ドメイン別ルーティング）~~ → パスベースルーティングに変更 ✅
+- Supabase Middlewareの削除 ✅
 
 ### フェーズ4: ドメイン層実装（Day 9-12）
 
@@ -283,9 +289,10 @@ components/ui/
 - [x] データベース設計書の実装反映確認 ✅ 2025-01-14
 
 ### フェーズ3の成果物
-- [ ] 認証フロー統合テスト
-- [ ] セキュリティテスト（トークン有効期限等）
-- [ ] 各ユーザータイプのログインE2Eテスト
+- [x] Better Auth基本設定 ✅ 2025-01-15
+- [x] Email/Password認証実装 ✅ 2025-01-15
+- [x] Realmベースのマルチユーザータイプ対応 ✅ 2025-01-15
+- [x] 各ユーザータイプ用ログインページ ✅ 2025-01-15
 
 ### フェーズ4の成果物
 - [ ] ドメインモデルの単体テスト（100%カバレッジ）

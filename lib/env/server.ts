@@ -1,0 +1,66 @@
+import { z } from 'zod'
+
+// サーバー側で使用する環境変数のスキーマ
+const serverEnvSchema = z.object({
+  // Database
+  DATABASE_URL: z.url(),
+  DIRECT_URL: z.url(),
+
+  // Supabase
+  NEXT_PUBLIC_SUPABASE_URL: z.url(),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string(),
+
+  // Application
+  NEXT_PUBLIC_APP_URL: z.url(),
+
+  // Email
+  RESEND_API_KEY: z.string(),
+  EMAIL_FROM: z.email(),
+
+  // Better Auth
+  BETTER_AUTH_SECRET: z.string().min(32),
+
+  // Node environment
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+})
+
+type ServerEnv = z.infer<typeof serverEnvSchema>
+
+// サーバー側環境変数のパース
+function parseServerEnv(): ServerEnv {
+  // サーバー側でのみ実行
+  if (typeof window !== 'undefined') {
+    throw new Error('env-server.tsはサーバー側でのみ使用してください')
+  }
+
+  try {
+    return serverEnvSchema.parse({
+      DATABASE_URL: process.env.DATABASE_URL,
+      DIRECT_URL: process.env.DIRECT_URL,
+      NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+      NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+      RESEND_API_KEY: process.env.RESEND_API_KEY,
+      EMAIL_FROM: process.env.EMAIL_FROM,
+      BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+      NODE_ENV: process.env.NODE_ENV,
+    })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      console.error('❌ サーバー環境変数の検証エラー:')
+      console.error(JSON.stringify(z.treeifyError(error), null, 2))
+      throw new Error('必要な環境変数が設定されていません')
+    }
+    throw error
+  }
+}
+
+// サーバー側環境変数をエクスポート
+export const serverEnv = parseServerEnv()
+
+// Helper functions
+export const isDevelopment = serverEnv.NODE_ENV === 'development'
+export const isProduction = serverEnv.NODE_ENV === 'production'
+export const isTest = serverEnv.NODE_ENV === 'test'
