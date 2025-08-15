@@ -25,11 +25,6 @@ export const auth = betterAuth({
   plugins: [nextCookies()],
   user: {
     modelName: 'User',
-    fields: {
-      email: 'email',
-      name: 'name',
-      emailVerified: 'emailVerified',
-    },
     additionalFields: {
       realm: {
         type: 'string',

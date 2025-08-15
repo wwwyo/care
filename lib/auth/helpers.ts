@@ -2,6 +2,7 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import type { Session } from './auth'
 import { auth } from './auth'
+import { type UserRealm, userRealmSchema } from './schemas'
 
 export async function getSession(): Promise<Session | null> {
   return auth.api.getSession({
@@ -19,17 +20,43 @@ export async function requireAuth(redirectTo = '/login'): Promise<Session> {
   return session
 }
 
-export async function requireRole(role: string, redirectTo = '/unauthorized') {
+export async function requireRealm(
+  realm: UserRealm,
+  redirectTo = '/unauthorized',
+): Promise<Session> {
   const session = await requireAuth()
 
-  if (session.user.role !== role) {
+  const userRealm = session.user.realm
+
+  // realmをzodでバリデーション
+  const parsed = userRealmSchema.safeParse(userRealm)
+  if (!parsed.success || parsed.data !== realm) {
     redirect(redirectTo)
   }
 
   return session
 }
 
-export async function getTenantId(): Promise<string | null> {
+export async function getUserRealm(): Promise<UserRealm | null> {
   const session = await getSession()
-  return session?.user.tenantId || null
+  if (!session) return null
+
+  const userRealm = session?.user.realm
+
+  // realmをzodでバリデーション
+  const parsed = userRealmSchema.safeParse(userRealm)
+  return parsed.success ? parsed.data : null
+}
+
+export function getRedirectPathByRealm(realm: UserRealm | null): string {
+  switch (realm) {
+    case 'client':
+      return '/dashboard'
+    case 'supporter':
+      return '/supporter/dashboard'
+    case 'facility':
+      return '/facility/dashboard'
+    default:
+      return '/login'
+  }
 }

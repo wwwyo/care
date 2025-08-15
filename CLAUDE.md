@@ -170,7 +170,7 @@ The system is based on 厚生労働省標準様式 (Ministry of Health, Labour a
 ## Code Guidelines
 
 - **Export Guidelines**:
-  - re-export専門のファイルを作らない
+  - don't use index.ts for re-export
   - 関数型の原則に従う
   - ファイル,directory名はkebab-caseで命名する
 
@@ -350,3 +350,4 @@ export async function createPlanAction(input: CreatePlanInput) {
 ## Development Guidelines
 
 - 環境変数はenv.tsでチェックしたのちに使うこと
+- 後方互換性は不要
