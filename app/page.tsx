@@ -7,7 +7,7 @@ export default function Home() {
     <div className="flex min-h-screen flex-col items-center justify-center p-8">
       <main className="flex max-w-5xl flex-col items-center gap-12">
         <div className="text-center space-y-4">
-          <h1 className="text-5xl font-bold">ミタスケア</h1>
+          <h1 className="text-5xl font-bold">MitasCare</h1>
           <p className="text-xl text-muted-foreground max-w-2xl">
             厚生労働省標準様式のサービス等利用計画書を基に、
             福祉施設の空き状況と連動した施設候補検索と同意取得をワンストップで実現
