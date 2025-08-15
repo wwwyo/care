@@ -23,6 +23,9 @@ export const auth = betterAuth({
     cookieName: AUTH_COOKIE_NAME,
   },
   trustedOrigins: [serverEnv.NEXT_PUBLIC_APP_URL],
+  telemetry: {
+    enabled: false,
+  },
   plugins: [
     magicLink({
       sendMagicLink: async ({ email, url }) => {
