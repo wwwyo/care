@@ -1,6 +1,7 @@
-import { magicLinkClient } from 'better-auth/client/plugins'
+import { inferAdditionalFields } from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { clientEnv } from '@/lib/env/client'
+import type { auth } from './auth'
 import { AUTH_COOKIE_NAME } from './constants'
 
 export const authClient = createAuthClient({
@@ -8,5 +9,5 @@ export const authClient = createAuthClient({
   session: {
     cookieName: AUTH_COOKIE_NAME,
   },
-  plugins: [magicLinkClient()],
+  plugins: [inferAdditionalFields<typeof auth>()],
 })

@@ -37,7 +37,7 @@ export default function Home() {
             <h2 className="text-xl font-semibold mb-2">利用者の方</h2>
             <p className="text-gray-600 mb-4">ご自身の計画書の確認と同意手続き</p>
             <Link
-              href="/user/login"
+              href="/login"
               className="inline-block rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
             >
               利用者ログイン

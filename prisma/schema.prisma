@@ -17,6 +17,7 @@ datasource db {
 // =====================================================
 
 // tenants: マルチテナント用の組織テーブル
+
 model Tenant {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String   @db.VarChar(255)
@@ -30,6 +31,7 @@ model Tenant {
 }
 
 // supporters: 支援者（相談支援専門員）
+
 model Supporter {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   tenantId   String   @map("tenant_id") @db.Uuid
@@ -47,22 +49,24 @@ model Supporter {
   @@map("supporters")
 }
 
-// users: サービス利用者
-model User {
+// clients: サービス利用者
+
+model Client {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   authUserId String?  @map("auth_user_id") @db.Uuid
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  profile   UserProfile?
-  addresses UserAddress[]
+  profile   ClientProfile?
+  addresses ClientAddress[]
   plans     Plan[]
 
   @@index([authUserId])
-  @@map("users")
+  @@map("clients")
 }
 
 // facilities: 施設
+
 model Facility {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
@@ -82,6 +86,7 @@ model Facility {
 }
 
 // facility_staff: 施設職員
+
 model FacilityStaff {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   authUserId String?  @map("auth_user_id") @db.Uuid
@@ -97,6 +102,7 @@ model FacilityStaff {
 }
 
 // facility_staff_facilities: 施設職員と施設の関連
+
 model FacilityStaffFacility {
   id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   facilityStaffId String   @map("facility_staff_id") @db.Uuid
@@ -113,6 +119,7 @@ model FacilityStaffFacility {
 }
 
 // facility_staff_roles: 施設職員の役割
+
 model FacilityStaffRole {
   id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   facilityStaffId String   @map("facility_staff_id") @db.Uuid
@@ -135,6 +142,7 @@ model FacilityStaffRole {
 // =====================================================
 
 // supporter_profiles: 支援者プロファイル
+
 model SupporterProfile {
   id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   supporterId String    @unique @map("supporter_id") @db.Uuid
@@ -154,9 +162,10 @@ model SupporterProfile {
 }
 
 // user_profiles: 利用者プロファイル
-model UserProfile {
+
+model ClientProfile {
   id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    String    @unique @map("user_id") @db.Uuid
+  clientId  String    @unique @map("client_id") @db.Uuid
   name      String    @db.VarChar(255)
   nameKana  String?   @map("name_kana") @db.VarChar(255)
   gender    String?   @db.VarChar(10)
@@ -165,15 +174,16 @@ model UserProfile {
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
-  @@map("user_profiles")
+  @@map("client_profiles")
 }
 
-// user_addresses: 利用者住所
-model UserAddress {
+// client_addresses: 利用者住所
+
+model ClientAddress {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId     String   @map("user_id") @db.Uuid
+  clientId   String   @map("client_id") @db.Uuid
   postalCode String?  @map("postal_code") @db.VarChar(10)
   prefecture String?  @db.VarChar(10)
   city       String?  @db.VarChar(100)
@@ -182,13 +192,14 @@ model UserAddress {
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
-  @@map("user_addresses")
+  @@index([clientId])
+  @@map("client_addresses")
 }
 
 // facility_profiles: 施設プロファイル
+
 model FacilityProfile {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   facilityId  String   @unique @map("facility_id") @db.Uuid
@@ -205,6 +216,7 @@ model FacilityProfile {
 }
 
 // facility_locations: 施設所在地
+
 model FacilityLocation {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   facilityId String   @unique @map("facility_id") @db.Uuid
@@ -225,6 +237,7 @@ model FacilityLocation {
 }
 
 // facility_contacts: 施設連絡先
+
 model FacilityContact {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   facilityId  String   @map("facility_id") @db.Uuid
@@ -241,6 +254,7 @@ model FacilityContact {
 }
 
 // facility_services: 施設提供サービス
+
 model FacilityService {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   facilityId  String   @map("facility_id") @db.Uuid
@@ -255,6 +269,7 @@ model FacilityService {
 }
 
 // facility_conditions: 施設条件・設備
+
 model FacilityCondition {
   id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   facilityId     String   @map("facility_id") @db.Uuid
@@ -274,11 +289,12 @@ model FacilityCondition {
 // =====================================================
 
 // plans: ケアプラン
+
 model Plan {
   id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   tenantId         String   @map("tenant_id") @db.Uuid
   supporterId      String   @map("supporter_id") @db.Uuid
-  userId           String?  @map("user_id") @db.Uuid
+  clientId         String?  @map("client_id") @db.Uuid
   currentVersionId String?  @map("current_version_id") @db.Uuid
   status           String   @default("draft") @db.VarChar(20)
   createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
@@ -286,19 +302,20 @@ model Plan {
 
   tenant    Tenant        @relation(fields: [tenantId], references: [id])
   supporter Supporter     @relation(fields: [supporterId], references: [id])
-  user      User?         @relation(fields: [userId], references: [id])
+  client    Client?       @relation(fields: [clientId], references: [id])
   versions  PlanVersion[]
   consents  Consent[]
   inquiries Inquiry[]
 
   @@index([tenantId])
   @@index([supporterId])
-  @@index([userId])
+  @@index([clientId])
   @@index([currentVersionId])
   @@map("plans")
 }
 
 // plan_versions: ケアプランバージョン
+
 model PlanVersion {
   id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   planId          String    @map("plan_id") @db.Uuid
@@ -328,6 +345,7 @@ model PlanVersion {
 }
 
 // plan_accessibility_requirements: アクセシビリティ要件
+
 model PlanAccessibilityRequirement {
   id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   planVersionId   String   @map("plan_version_id") @db.Uuid
@@ -343,6 +361,7 @@ model PlanAccessibilityRequirement {
 }
 
 // plan_custom_fields: カスタムフィールド
+
 model PlanCustomField {
   id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   planVersionId String   @map("plan_version_id") @db.Uuid
@@ -357,6 +376,7 @@ model PlanCustomField {
 }
 
 // slots: 空き状況
+
 model Slot {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   facilityId String   @map("facility_id") @db.Uuid
@@ -377,6 +397,7 @@ model Slot {
 }
 
 // slot_details: 空き状況詳細
+
 model SlotDetail {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   slotId      String   @map("slot_id") @db.Uuid
@@ -395,6 +416,7 @@ model SlotDetail {
 // =====================================================
 
 // consents: 同意リクエスト
+
 model Consent {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   planId      String   @map("plan_id") @db.Uuid
@@ -415,6 +437,7 @@ model Consent {
 }
 
 // consent_grants: 同意記録
+
 model ConsentGrant {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   consentId String   @map("consent_id") @db.Uuid
@@ -432,6 +455,7 @@ model ConsentGrant {
 }
 
 // inquiries: 照会
+
 model Inquiry {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   planId     String   @map("plan_id") @db.Uuid
@@ -452,6 +476,7 @@ model Inquiry {
 }
 
 // inquiry_messages: 照会メッセージ
+
 model InquiryMessage {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   inquiryId  String   @map("inquiry_id") @db.Uuid
@@ -468,6 +493,7 @@ model InquiryMessage {
 }
 
 // inquiry_replies: 照会返信
+
 model InquiryReply {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   inquiryId String   @map("inquiry_id") @db.Uuid
@@ -482,6 +508,7 @@ model InquiryReply {
 }
 
 // audits: 監査ログ（append-only）
+
 model Audit {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   tableName String   @map("table_name") @db.VarChar(50)
@@ -497,4 +524,66 @@ model Audit {
   @@index([actorId])
   @@index([createdAt])
   @@map("audits")
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime
+  updatedAt     DateTime
+  sessions      Session[]
+  accounts      Account[]
+
+  realm String
+
+  @@unique([email])
+  @@map("users")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("accounts")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verifications")
 }

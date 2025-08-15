@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { authClient } from '@/lib/auth/client'
 
-export default function SupporterLoginPage() {
+export default function ClientLoginPage() {
   const [isSignUp, setIsSignUp] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -24,8 +24,8 @@ export default function SupporterLoginPage() {
           email,
           password,
           name,
-          realm: 'supporter',
-          callbackURL: '/supporter/onboarding',
+          realm: 'client',
+          callbackURL: '/onboarding',
         },
         {
           onSuccess: () => {
@@ -43,7 +43,7 @@ export default function SupporterLoginPage() {
         {
           email,
           password,
-          callbackURL: '/supporter/dashboard',
+          callbackURL: '/dashboard',
         },
         {
           onSuccess: () => {
@@ -64,7 +64,7 @@ export default function SupporterLoginPage() {
         <div>
           <h1 className="text-center text-3xl font-bold text-gray-900">ミタスケア</h1>
           <h2 className="mt-6 text-center text-xl text-gray-600">
-            支援者様{isSignUp ? 'アカウント作成' : 'ログイン'}
+            利用者様{isSignUp ? 'アカウント作成' : 'ログイン'}
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -81,7 +81,7 @@ export default function SupporterLoginPage() {
                   required={isSignUp}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
                   placeholder="山田 太郎"
                 />
               </div>
@@ -99,8 +99,8 @@ export default function SupporterLoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="supporter@example.com"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                placeholder="client@example.com"
               />
             </div>
 
@@ -116,7 +116,7 @@ export default function SupporterLoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
                 placeholder="••••••••"
               />
             </div>
@@ -130,7 +130,7 @@ export default function SupporterLoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="mt-6 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="mt-6 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? '処理中...' : isSignUp ? 'アカウント作成' : 'ログイン'}
             </button>
@@ -139,7 +139,7 @@ export default function SupporterLoginPage() {
               <button
                 type="button"
                 onClick={() => setIsSignUp(!isSignUp)}
-                className="text-sm text-blue-600 hover:text-blue-500"
+                className="text-sm text-purple-600 hover:text-purple-500"
               >
                 {isSignUp
                   ? 'すでにアカウントをお持ちの方はこちら'
@@ -148,8 +148,11 @@ export default function SupporterLoginPage() {
             </div>
 
             <div className="mt-6 text-center space-y-2">
-              <Link href="/login" className="block text-sm text-gray-600 hover:text-gray-500">
-                利用者の方はこちら
+              <Link
+                href="/supporter/login"
+                className="block text-sm text-gray-600 hover:text-gray-500"
+              >
+                支援者の方はこちら
               </Link>
               <Link
                 href="/facility/login"

@@ -1,22 +1,18 @@
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { nextCookies } from 'better-auth/next-js'
-import { magicLink } from 'better-auth/plugins'
 import { serverEnv } from '@/lib/env/server'
 import { prisma } from '@/lib/prisma'
-import {
-  AUTH_COOKIE_NAME,
-  MAGIC_LINK_EXPIRY_MINUTES,
-  SESSION_EXPIRY_DAYS,
-  SESSION_UPDATE_AGE_DAYS,
-} from './constants'
-import { sendMagicLinkEmail } from './magic-link'
+import { AUTH_COOKIE_NAME, SESSION_EXPIRY_DAYS, SESSION_UPDATE_AGE_DAYS } from './constants'
 
 export const auth = betterAuth({
   appName: 'ミタスケア',
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
   }),
+  emailAndPassword: {
+    enabled: true,
+  },
   session: {
     expiresIn: SESSION_EXPIRY_DAYS * 24 * 60 * 60, // 7日間
     updateAge: SESSION_UPDATE_AGE_DAYS * 24 * 60 * 60, // 1日後に更新
@@ -26,15 +22,7 @@ export const auth = betterAuth({
   telemetry: {
     enabled: false,
   },
-  plugins: [
-    magicLink({
-      sendMagicLink: async ({ email, url }) => {
-        await sendMagicLinkEmail(email, url)
-      },
-      expiresIn: MAGIC_LINK_EXPIRY_MINUTES * 60, // 10分間有効
-    }),
-    nextCookies(),
-  ],
+  plugins: [nextCookies()],
   user: {
     modelName: 'User',
     fields: {
@@ -43,21 +31,17 @@ export const auth = betterAuth({
       emailVerified: 'emailVerified',
     },
     additionalFields: {
-      role: {
+      realm: {
         type: 'string',
-        required: false,
-        defaultValue: 'USER',
-      },
-      tenantId: {
-        type: 'string',
-        required: false,
+        required: true,
+        defaultValue: 'client',
       },
     },
   },
   account: {
     accountLinking: {
       enabled: true,
-      trustedProviders: ['magic-link'],
+      trustedProviders: ['credential'],
     },
   },
 })
