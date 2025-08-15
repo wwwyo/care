@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "biome check .",
+    "lint": "biome check . && prisma validate",
     "lint:fix": "biome check --write .",
     "test": "bun test",
     "db:migrate": "bunx dotenv-cli -e .env.local prisma migrate dev",

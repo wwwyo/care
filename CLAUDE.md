@@ -54,7 +54,6 @@ care/
 │   └── globals.css
 ├── domain/            # ドメイン層
 │   ├── models/
-│   ├── repositories/  # リポジトリインターフェース
 │   └── services/      # ドメインサービス
 ├── uc/                # ユースケース層
 │   ├── auth/
@@ -64,7 +63,8 @@ care/
 │   ├── consents/
 │   ├── inquiries/
 │   └── cases/
-├── infrastructure/    # インフラストラクチャ層
+├── infra/    # インフラストラクチャ層
+│   ├── query/         # 読み取り専用クエリ（CQRS）
 │   ├── repositories/  # リポジトリ実装
 │   └── services/      # 外部サービス
 ├── components/
@@ -156,7 +156,7 @@ The system is based on 厚生労働省標準様式 (Ministry of Health, Labour a
 - 送迎可否 (Transportation Availability)
 - バリアフリー対応 (Barrier-free Support)
 
-### テスト駆動開発（TDD）で実装するs
+### テスト駆動開発（TDD）で実装する
 
 - 原則としてテスト駆動開発（TDD）で進める
 - 期待される入出力に基づき、まずテストを作成する
@@ -174,7 +174,179 @@ The system is based on 厚生労働省標準様式 (Ministry of Health, Labour a
   - 関数型の原則に従う
   - ファイル,directory名はkebab-caseで命名する
 
+### CQRSパターンの実装ルール
+
+#### Query (読み取り専用)
+- **infrastructure/query/** にPrismaで扱いやすい単位で取得関数を実装
+- Server Componentsから直接呼び出し可能
+- 複雑なJOINやフィルタリングを含む読み取り専用のクエリを配置
+- 命名規則: `get*`, `list*` などの読み取りを示す動詞で開始
+
+```typescript
+// infrastructure/query/facility-query.ts
+export async function getFacilitiesWithSlots(tenantId: string) {
+  return prisma.facility.findMany({
+    where: { tenantId },
+    include: { slots: true, services: true }
+  });
+}
+```
+
+#### Repository (書き込み・集約単位)
+- **infrastructure/repositories/** に集約単位の操作関数を実装
+- 各関数は独立してexport（インターフェース定義なし）
+- 命名規則: `get{Entity}`, `save{Entity}`, `delete{Entity}`
+- 集約単位での出し入れを担当
+- トランザクション境界を管理
+
+```typescript
+// infrastructure/repositories/facility-repository.ts
+import { Facility } from '@/domain/models/facility';
+import { prisma } from '@/lib/prisma';
+
+export async function getFacility(id: string): Promise<Facility | null> {
+  // 集約全体を取得
+  const data = await prisma.facility.findUnique({
+    where: { id },
+    include: { services: true, conditions: true }
+  });
+  return data ? toDomainModel(data) : null;
+}
+
+export async function saveFacility(facility: Facility): Promise<void> {
+  // 集約全体を保存（upsert）
+  await prisma.facility.upsert({
+    where: { id: facility.id },
+    create: toDbModel(facility),
+    update: toDbModel(facility)
+  });
+}
+
+export async function deleteFacility(id: string): Promise<void> {
+  // 集約全体を削除
+  await prisma.facility.delete({ where: { id } });
+}
+```
+
+#### 使い分けのガイドライン
+- **Query**: 画面表示用のデータ取得、検索、一覧表示
+- **Repository**: ビジネスロジックを伴う更新、集約の永続化、トランザクション管理
+
+### レイヤー間の呼び出しルール
+
+#### 呼び出しの流れ
+1. **Server Actions** → **UseCase (uc/)** → **Domain** ← **Repository**
+2. **Server Components** → **Query (infrastructure/query/)** （読み取り専用）
+
+#### 厳格なルール
+- **Domain層はUseCase層からのみ呼び出される**
+  - Server ActionsやServer Componentsから直接Domain層を呼び出さない
+  - ビジネスロジックはDomain層に集約し、UseCase経由でのみアクセス
+- **Server ActionsはUseCase層を呼び出す**
+  - ビジネスロジックの実行はすべてUseCase経由
+  - トランザクション境界の管理もUseCase層で行う
+- **Server Componentsは読み取り専用のQueryを直接呼び出し可能**
+  - 表示用データの取得は効率性を重視してQuery層を直接利用
+
+```typescript
+// app/(dashboard)/facility/slots/actions.ts
+import { updateSlotUseCase } from '@/uc/slots/update-slot';
+
+export async function updateSlotAction(slotId: string, status: string) {
+  // Server ActionはUseCaseを呼び出す
+  return await updateSlotUseCase({ slotId, status });
+}
+
+// uc/slots/update-slot.ts
+import { getSlot, saveSlot } from '@/infrastructure/repositories/slot-repository';
+import { updateSlotStatus } from '@/domain/models/slot';
+
+type SlotError =
+  | { type: 'NotFound'; message: string }
+  | { type: 'InvalidStatus'; message: string };
+
+export async function updateSlotUseCase(
+  { slotId, status }: { slotId: string; status: string }
+): Promise<void | SlotError> {
+  // UseCaseはDomain層を利用
+  const slot = await getSlot(slotId);
+  if (!slot) {
+    return { type: 'NotFound', message: 'Slot not found' };
+  }
+
+  const updatedSlot = updateSlotStatus(slot, status); // ドメインロジック（純粋関数）
+  if (isError(updatedSlot)) {
+    return updatedSlot; // バリデーションエラー等
+  }
+
+  await saveSlot(updatedSlot);
+  // 成功時はvoidを返す（または更新後のデータ）
+}
+
+// app/(dashboard)/facility/slots/page.tsx
+import { getFacilitySlots } from '@/infrastructure/query/slot-query';
+
+export default async function SlotsPage() {
+  // Server ComponentはQuery層を直接呼び出し
+  const slots = await getFacilitySlots();
+  return <SlotList slots={slots} />;
+}
+```
+
+### エラーハンドリング
+
+#### UseCase層以降は例外をthrowしない
+- **Union型によるエラー表現**を使用
+- 成功時の値またはエラーオブジェクトを返す
+- Domain層、UseCase層では例外を投げずにUnion型を返す
+
+```typescript
+// エラー型の定義
+type DomainError =
+  | { type: 'NotFound'; message: string }
+  | { type: 'ValidationError'; message: string }
+  | { type: 'ConflictError'; message: string };
+
+// UseCaseでの使用例
+export async function createPlanUseCase(
+  input: CreatePlanInput
+): Promise<Plan | DomainError> {
+  // バリデーション
+  const validation = validatePlanInput(input);
+  if (isError(validation)) {
+    return validation; // ValidationError
+  }
+
+  // ドメインロジック実行
+  const plan = createPlan(input);
+
+  // 永続化
+  const saved = await savePlan(plan);
+  if (isError(saved)) {
+    return saved; // 永続化エラー
+  }
+
+  return plan; // 成功時はPlanを返す
+}
+
+// エラー判定のヘルパー関数
+export function isError(value: unknown): value is DomainError {
+  return typeof value === 'object' && value !== null && 'type' in value;
+}
+
+// Server Actionでのハンドリング
+export async function createPlanAction(input: CreatePlanInput) {
+  const result = await createPlanUseCase(input);
+
+  if (isError(result)) {
+    // Server Actionレベルでのエラー処理
+    return { error: result.message };
+  }
+
+  return { data: result };
+}
+```
+
 ## Development Guidelines
 
 - 環境変数はenv.tsでチェックしたのちに使うこと
-```
