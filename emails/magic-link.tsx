@@ -16,7 +16,7 @@ interface MagicLinkEmailProps {
   email: string
 }
 
-export const MagicLinkEmail = ({ url, email }: MagicLinkEmailProps) => {
+export const MagicLinkEmail = ({ url }: MagicLinkEmailProps) => {
   return (
     <Html>
       <Head />

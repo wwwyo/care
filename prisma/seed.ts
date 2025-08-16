@@ -1,8 +1,7 @@
-import { randomBytes } from 'crypto'
 import { prisma } from '@/lib/prisma'
 
 function generateId(): string {
-  return randomBytes(16).toString('hex')
+  return crypto.randomUUID()
 }
 
 async function main() {
