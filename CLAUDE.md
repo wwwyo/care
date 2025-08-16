@@ -81,7 +81,7 @@ Domain層はUseCase経由でのみアクセス
 
 ### エラーハンドリング
 
-UseCase層以降は例外をthrowせず、Union型でエラー表現
+uc,domain,repository層は例外をthrowせず、Union型でエラー表現
 
 ```typescript
 type DomainError =
