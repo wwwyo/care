@@ -3,6 +3,8 @@ import { clientRepository } from '@/infra/repositories/client-repository'
 
 export type SaveClientInput = {
   userId: string
+  email: string
+  name: string
 }
 
 export type SaveClientError = {
@@ -15,6 +17,7 @@ export async function saveClientUseCase(input: SaveClientInput): Promise<void | 
     // Clientドメインモデルを作成
     const client = Client.create({
       userId: input.userId,
+      name: input.name,
     })
 
     // リポジトリで永続化

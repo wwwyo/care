@@ -55,7 +55,10 @@ export class Client {
   }
 
   // ファクトリメソッド
-  static create(params: { userId: string }): Client {
-    return new Client(crypto.randomUUID(), params.userId)
+  static create(params: { userId: string; name: string }): Client {
+    const client = new Client(crypto.randomUUID(), params.userId)
+    // プロフィールを初期設定
+    client.setProfile({ name: params.name })
+    return client
   }
 }

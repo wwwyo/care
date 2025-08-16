@@ -4,6 +4,8 @@ import { getOrCreateDefaultTenant } from '@/infra/repositories/tenant-repository
 
 export type SaveSupporterInput = {
   userId: string
+  email: string
+  name: string
 }
 
 export type SaveSupporterError = {
@@ -22,6 +24,7 @@ export async function saveSupporterUseCase(
     const supporter = Supporter.create({
       userId: input.userId,
       tenantId: tenant.id,
+      name: input.name,
     })
 
     // リポジトリで永続化

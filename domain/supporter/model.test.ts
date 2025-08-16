@@ -3,8 +3,9 @@ import { Supporter } from './model'
 
 // crypto.randomUUID のモック
 beforeEach(() => {
+  let callCount = 0
   global.crypto = {
-    randomUUID: mock(() => 'test-uuid'),
+    randomUUID: mock(() => `test-uuid-${++callCount}`),
   } as any
 })
 
@@ -46,7 +47,7 @@ describe('Supporter', () => {
       })
 
       expect(supporter.profile).toEqual({
-        id: 'test-uuid',
+        id: 'test-uuid-1',
         supporterId: 'supporter-1',
         tenantId: 'tenant-1',
         name: '山田太郎',
@@ -65,7 +66,7 @@ describe('Supporter', () => {
       })
 
       expect(supporter.profile).toEqual({
-        id: 'test-uuid',
+        id: 'test-uuid-1',
         supporterId: 'supporter-1',
         tenantId: 'tenant-1',
         name: '山田太郎',
@@ -108,12 +109,15 @@ describe('Supporter', () => {
       const supporter = Supporter.create({
         userId: 'user-1',
         tenantId: 'tenant-1',
+        name: 'テスト太郎',
       })
 
-      expect(supporter.id).toBe('test-uuid')
+      expect(supporter.id).toBe('test-uuid-1')
       expect(supporter.userId).toBe('user-1')
       expect(supporter.tenantId).toBe('tenant-1')
-      expect(supporter.profile).toBeUndefined()
+      expect(supporter.profile).toBeDefined()
+      expect(supporter.profile?.name).toBe('テスト太郎')
+      expect(supporter.profile?.id).toBe('test-uuid-2')
     })
   })
 })

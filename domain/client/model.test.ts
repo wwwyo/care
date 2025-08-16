@@ -171,11 +171,14 @@ describe('Client', () => {
     test('新しいClientインスタンスを作成する', () => {
       const client = Client.create({
         userId: 'user-1',
+        name: 'テスト花子',
       })
 
       expect(client.id).toBe('test-uuid-1')
       expect(client.userId).toBe('user-1')
-      expect(client.profile).toBeUndefined()
+      expect(client.profile).toBeDefined()
+      expect(client.profile?.name).toBe('テスト花子')
+      expect(client.profile?.id).toBe('test-uuid-2')
       expect(client.addresses).toEqual([])
     })
   })

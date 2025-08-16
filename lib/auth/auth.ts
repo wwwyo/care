@@ -65,19 +65,31 @@ export const auth = betterAuth({
 
           switch (realmResult.data) {
             case USER_REALMS.SUPPORTER:
-              result = await saveSupporterUseCase({ userId: user.id })
+              result = await saveSupporterUseCase({
+                userId: user.id,
+                email: user.email,
+                name: user.name,
+              })
               if (!result) {
                 console.log(`✅ Supporter テーブルへの同期が完了しました: ${user.email}`)
               }
               break
             case USER_REALMS.CLIENT:
-              result = await saveClientUseCase({ userId: user.id })
+              result = await saveClientUseCase({
+                userId: user.id,
+                email: user.email,
+                name: user.name,
+              })
               if (!result) {
                 console.log(`✅ Client テーブルへの同期が完了しました: ${user.email}`)
               }
               break
             case USER_REALMS.FACILITY_STAFF:
-              result = await saveFacilityStaffUseCase({ userId: user.id })
+              result = await saveFacilityStaffUseCase({
+                userId: user.id,
+                email: user.email,
+                name: user.name,
+              })
               if (!result) {
                 console.log(`✅ FacilityStaff テーブルへの同期が完了しました: ${user.email}`)
               }

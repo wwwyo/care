@@ -33,7 +33,10 @@ export class Supporter {
   }
 
   // ファクトリメソッド
-  static create(params: { userId: string; tenantId: string }): Supporter {
-    return new Supporter(crypto.randomUUID(), params.userId, params.tenantId)
+  static create(params: { userId: string; tenantId: string; name: string }): Supporter {
+    const supporter = new Supporter(crypto.randomUUID(), params.userId, params.tenantId)
+    // プロフィールを初期設定
+    supporter.setProfile({ name: params.name })
+    return supporter
   }
 }

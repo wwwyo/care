@@ -3,6 +3,8 @@ import { facilityStaffRepository } from '@/infra/repositories/facility-staff-rep
 
 export type SaveFacilityStaffInput = {
   userId: string
+  email: string
+  name: string
 }
 
 export type SaveFacilityStaffError = {

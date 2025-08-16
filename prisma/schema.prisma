@@ -80,7 +80,6 @@ model Facility {
   services   FacilityService[]
   conditions FacilityCondition[]
   staff      FacilityStaffFacility[]
-  roles      FacilityStaffRole[]
   slots      Slot[]
   inquiries  Inquiry[]
 
@@ -97,7 +96,6 @@ model FacilityStaff {
 
   user         User                    @relation(fields: [userId], references: [id])
   facilities   FacilityStaffFacility[]
-  roles        FacilityStaffRole[]
   slotsUpdated Slot[]
 
   @@index([userId])
@@ -119,25 +117,6 @@ model FacilityStaffFacility {
   @@index([facilityStaffId])
   @@index([facilityId])
   @@map("facility_staff_facilities")
-}
-
-// facility_staff_roles: 施設職員の役割
-
-model FacilityStaffRole {
-  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  facilityStaffId String   @map("facility_staff_id") @db.Uuid
-  facilityId      String   @map("facility_id") @db.Uuid
-  role            String   @db.VarChar(20)
-  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
-
-  facilityStaff FacilityStaff @relation(fields: [facilityStaffId], references: [id], onDelete: Cascade)
-  facility      Facility      @relation(fields: [facilityId], references: [id])
-
-  @@unique([facilityStaffId, facilityId, role])
-  @@index([facilityStaffId])
-  @@index([facilityId])
-  @@map("facility_staff_roles")
 }
 
 // =====================================================

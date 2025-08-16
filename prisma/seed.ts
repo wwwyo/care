@@ -27,7 +27,6 @@ async function main() {
     prisma.clientAddress.deleteMany(),
     prisma.clientProfile.deleteMany(),
     prisma.supporterProfile.deleteMany(),
-    prisma.facilityStaffRole.deleteMany(),
     prisma.facilityStaffFacility.deleteMany(),
     prisma.facilityStaff.deleteMany(),
     prisma.facility.deleteMany(),
@@ -306,12 +305,6 @@ async function main() {
           facilityId: facility1.id,
         },
       },
-      roles: {
-        create: {
-          facilityId: facility1.id,
-          role: 'admin',
-        },
-      },
     },
   })
 
@@ -338,12 +331,6 @@ async function main() {
       facilities: {
         create: {
           facilityId: facility2.id,
-        },
-      },
-      roles: {
-        create: {
-          facilityId: facility2.id,
-          role: 'admin',
         },
       },
     },
