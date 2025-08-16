@@ -50,11 +50,9 @@ export async function getUserRealm(): Promise<UserRealm | null> {
 
 export function getRedirectPathByRealm(realm: UserRealm | null): string {
   switch (realm) {
-    case 'client':
-      return '/dashboard'
     case 'supporter':
       return '/supporter/dashboard'
-    case 'facility':
+    case 'facility_staff':
       return '/facility/dashboard'
     default:
       return '/login'
