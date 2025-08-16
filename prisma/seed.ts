@@ -26,8 +26,8 @@ async function main() {
     prisma.facilityProfile.deleteMany(),
     prisma.clientAddress.deleteMany(),
     prisma.clientProfile.deleteMany(),
+    prisma.clientSupporter.deleteMany(),
     prisma.supporterProfile.deleteMany(),
-    prisma.facilityStaffRole.deleteMany(),
     prisma.facilityStaffFacility.deleteMany(),
     prisma.facilityStaff.deleteMany(),
     prisma.facility.deleteMany(),
@@ -60,30 +60,6 @@ async function main() {
       email: 'sato@example.com',
       emailVerified: true,
       realm: 'supporter',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  })
-
-  const userClient1 = await prisma.user.create({
-    data: {
-      id: generateId(),
-      name: '田中一郎',
-      email: 'tanaka@example.com',
-      emailVerified: true,
-      realm: 'client',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  })
-
-  const userClient2 = await prisma.user.create({
-    data: {
-      id: generateId(),
-      name: '鈴木二郎',
-      email: 'suzuki@example.com',
-      emailVerified: true,
-      realm: 'client',
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -164,7 +140,7 @@ async function main() {
   // クライアント作成
   const client1 = await prisma.client.create({
     data: {
-      userId: userClient1.id,
+      tenantId: tenant1.id,
       profile: {
         create: {
           name: '田中一郎',
@@ -188,7 +164,7 @@ async function main() {
 
   const client2 = await prisma.client.create({
     data: {
-      userId: userClient2.id,
+      tenantId: tenant2.id,
       profile: {
         create: {
           name: '鈴木二郎',
@@ -206,6 +182,29 @@ async function main() {
           street: '中区本町2-2-2',
         },
       },
+    },
+  })
+
+  // クライアントとサポーターの関連付け
+  await prisma.clientSupporter.create({
+    data: {
+      clientId: client1.id,
+      supporterId: supporter1.id,
+    },
+  })
+
+  await prisma.clientSupporter.create({
+    data: {
+      clientId: client2.id,
+      supporterId: supporter2.id,
+    },
+  })
+
+  // client1には複数のサポーターを割り当て
+  await prisma.clientSupporter.create({
+    data: {
+      clientId: client1.id,
+      supporterId: supporter2.id,
     },
   })
 
@@ -306,12 +305,6 @@ async function main() {
           facilityId: facility1.id,
         },
       },
-      roles: {
-        create: {
-          facilityId: facility1.id,
-          role: 'admin',
-        },
-      },
     },
   })
 
@@ -340,12 +333,6 @@ async function main() {
           facilityId: facility2.id,
         },
       },
-      roles: {
-        create: {
-          facilityId: facility2.id,
-          role: 'admin',
-        },
-      },
     },
   })
 
@@ -368,7 +355,6 @@ async function main() {
   const plan1 = await prisma.plan.create({
     data: {
       tenantId: tenant1.id,
-      supporterId: supporter1.id,
       clientId: client1.id,
       status: 'active',
     },
@@ -377,7 +363,6 @@ async function main() {
   const plan2 = await prisma.plan.create({
     data: {
       tenantId: tenant2.id,
-      supporterId: supporter2.id,
       clientId: client2.id,
       status: 'draft',
     },
