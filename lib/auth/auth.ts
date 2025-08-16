@@ -4,7 +4,6 @@ import { createAuthMiddleware } from 'better-auth/api'
 import { nextCookies } from 'better-auth/next-js'
 import { serverEnv } from '@/lib/env/server'
 import { prisma } from '@/lib/prisma'
-import { saveClientUseCase } from '@/uc/client/save'
 import { saveFacilityStaffUseCase } from '@/uc/facility-staff/save'
 import { saveSupporterUseCase } from '@/uc/supporter/save'
 import { SESSION_EXPIRY_DAYS, SESSION_UPDATE_AGE_DAYS } from './constants'
@@ -33,7 +32,7 @@ export const auth = betterAuth({
       realm: {
         type: 'string',
         required: true,
-        defaultValue: USER_REALMS.CLIENT,
+        defaultValue: USER_REALMS.SUPPORTER,
       },
     },
   },
@@ -72,16 +71,6 @@ export const auth = betterAuth({
               })
               if (!result) {
                 console.log(`✅ Supporter テーブルへの同期が完了しました: ${user.email}`)
-              }
-              break
-            case USER_REALMS.CLIENT:
-              result = await saveClientUseCase({
-                userId: user.id,
-                email: user.email,
-                name: user.name,
-              })
-              if (!result) {
-                console.log(`✅ Client テーブルへの同期が完了しました: ${user.email}`)
               }
               break
             case USER_REALMS.FACILITY_STAFF:

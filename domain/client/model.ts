@@ -18,12 +18,21 @@ export type ClientAddress = {
   building?: string
 }
 
+export type ClientSupporter = {
+  id: string
+  clientId: string
+  supporterId: string
+  createdAt: Date
+  updatedAt: Date
+}
+
 export class Client {
   constructor(
     public readonly id: string,
-    public readonly userId: string,
+    public readonly tenantId: string,
     public profile?: ClientProfile,
     public addresses: ClientAddress[] = [],
+    public supporters: ClientSupporter[] = [],
   ) {}
 
   // ドメインロジック: プロフィール設定
@@ -54,11 +63,31 @@ export class Client {
     return !!this.profile && !!this.profile.name && this.addresses.length > 0
   }
 
+  // ドメインロジック: サポーターを追加
+  addSupporter(supporterId: string): void {
+    // 既に追加されている場合は追加しない
+    if (this.supporters.some((s) => s.supporterId === supporterId)) {
+      return
+    }
+
+    this.supporters.push({
+      id: crypto.randomUUID(),
+      clientId: this.id,
+      supporterId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+  }
+
   // ファクトリメソッド
-  static create(params: { userId: string; name: string }): Client {
-    const client = new Client(crypto.randomUUID(), params.userId)
+  static create(params: { tenantId: string; name: string; supporterId?: string }): Client {
+    const client = new Client(crypto.randomUUID(), params.tenantId)
     // プロフィールを初期設定
     client.setProfile({ name: params.name })
+    // サポーターが指定されていれば追加
+    if (params.supporterId) {
+      client.addSupporter(params.supporterId)
+    }
     return client
   }
 }

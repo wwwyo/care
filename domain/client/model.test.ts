@@ -12,12 +12,13 @@ beforeEach(() => {
 describe('Client', () => {
   describe('constructor', () => {
     test('正しくインスタンスを作成する', () => {
-      const client = new Client('client-1', 'user-1')
+      const client = new Client('client-1', 'tenant-1')
 
       expect(client.id).toBe('client-1')
-      expect(client.userId).toBe('user-1')
+      expect(client.tenantId).toBe('tenant-1')
       expect(client.profile).toBeUndefined()
       expect(client.addresses).toEqual([])
+      expect(client.supporters).toEqual([])
     })
 
     test('プロフィールと住所ありでインスタンスを作成する', () => {
@@ -33,17 +34,27 @@ describe('Client', () => {
           city: '東京都',
         },
       ]
+      const supporters = [
+        {
+          id: 'cs-1',
+          clientId: 'client-1',
+          supporterId: 'supporter-1',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ]
 
-      const client = new Client('client-1', 'user-1', profile, addresses)
+      const client = new Client('client-1', 'tenant-1', profile, addresses, supporters)
 
       expect(client.profile).toEqual(profile)
       expect(client.addresses).toEqual(addresses)
+      expect(client.supporters).toEqual(supporters)
     })
   })
 
   describe('setProfile', () => {
     test('プロフィールを設定する', () => {
-      const client = new Client('client-1', 'user-1')
+      const client = new Client('client-1', 'tenant-1')
 
       client.setProfile({
         name: '山田太郎',
@@ -65,7 +76,7 @@ describe('Client', () => {
     })
 
     test('必須項目のみでプロフィールを設定する', () => {
-      const client = new Client('client-1', 'user-1')
+      const client = new Client('client-1', 'tenant-1')
 
       client.setProfile({
         name: '山田太郎',
@@ -81,7 +92,7 @@ describe('Client', () => {
 
   describe('addAddress', () => {
     test('住所を追加する', () => {
-      const client = new Client('client-1', 'user-1')
+      const client = new Client('client-1', 'tenant-1')
 
       client.addAddress({
         postalCode: '100-0001',
@@ -104,7 +115,7 @@ describe('Client', () => {
     })
 
     test('複数の住所を追加する', () => {
-      const client = new Client('client-1', 'user-1')
+      const client = new Client('client-1', 'tenant-1')
 
       client.addAddress({
         city: '東京都',
@@ -119,15 +130,48 @@ describe('Client', () => {
     })
   })
 
+  describe('addSupporter', () => {
+    test('サポーターを追加する', () => {
+      const client = new Client('client-1', 'tenant-1')
+
+      client.addSupporter('supporter-1')
+
+      expect(client.supporters).toHaveLength(1)
+      expect(client.supporters[0]?.supporterId).toBe('supporter-1')
+    })
+
+    test('同じサポーターを重複して追加しない', () => {
+      const client = new Client('client-1', 'tenant-1')
+
+      client.addSupporter('supporter-1')
+      client.addSupporter('supporter-1')
+
+      expect(client.supporters).toHaveLength(1)
+    })
+
+    test('複数のサポーターを追加する', () => {
+      const client = new Client('client-1', 'tenant-1')
+
+      client.addSupporter('supporter-1')
+      client.addSupporter('supporter-2')
+      client.addSupporter('supporter-3')
+
+      expect(client.supporters).toHaveLength(3)
+      expect(client.supporters[0]?.supporterId).toBe('supporter-1')
+      expect(client.supporters[1]?.supporterId).toBe('supporter-2')
+      expect(client.supporters[2]?.supporterId).toBe('supporter-3')
+    })
+  })
+
   describe('getPrimaryAddress', () => {
     test('住所がない場合はundefinedを返す', () => {
-      const client = new Client('client-1', 'user-1')
+      const client = new Client('client-1', 'tenant-1')
 
       expect(client.getPrimaryAddress()).toBeUndefined()
     })
 
     test('最初の住所を返す', () => {
-      const client = new Client('client-1', 'user-1')
+      const client = new Client('client-1', 'tenant-1')
 
       client.addAddress({ city: '東京都' })
       client.addAddress({ city: '大阪府' })
@@ -139,27 +183,27 @@ describe('Client', () => {
 
   describe('isProfileComplete', () => {
     test('プロフィールがない場合はfalseを返す', () => {
-      const client = new Client('client-1', 'user-1')
+      const client = new Client('client-1', 'tenant-1')
 
       expect(client.isProfileComplete()).toBe(false)
     })
 
     test('プロフィールはあるが名前がない場合はfalseを返す', () => {
-      const client = new Client('client-1', 'user-1')
+      const client = new Client('client-1', 'tenant-1')
       client.setProfile({ name: '' })
 
       expect(client.isProfileComplete()).toBe(false)
     })
 
     test('プロフィールと名前はあるが住所がない場合はfalseを返す', () => {
-      const client = new Client('client-1', 'user-1')
+      const client = new Client('client-1', 'tenant-1')
       client.setProfile({ name: '山田太郎' })
 
       expect(client.isProfileComplete()).toBe(false)
     })
 
     test('プロフィール、名前、住所がすべてある場合はtrueを返す', () => {
-      const client = new Client('client-1', 'user-1')
+      const client = new Client('client-1', 'tenant-1')
       client.setProfile({ name: '山田太郎' })
       client.addAddress({ city: '東京都' })
 
@@ -170,16 +214,30 @@ describe('Client', () => {
   describe('create (ファクトリメソッド)', () => {
     test('新しいClientインスタンスを作成する', () => {
       const client = Client.create({
-        userId: 'user-1',
+        tenantId: 'tenant-1',
         name: 'テスト花子',
       })
 
       expect(client.id).toBe('test-uuid-1')
-      expect(client.userId).toBe('user-1')
+      expect(client.tenantId).toBe('tenant-1')
       expect(client.profile).toBeDefined()
       expect(client.profile?.name).toBe('テスト花子')
       expect(client.profile?.id).toBe('test-uuid-2')
       expect(client.addresses).toEqual([])
+      expect(client.supporters).toEqual([])
+    })
+
+    test('サポーター付きでClientインスタンスを作成する', () => {
+      const client = Client.create({
+        tenantId: 'tenant-1',
+        name: 'テスト花子',
+        supporterId: 'supporter-1',
+      })
+
+      expect(client.id).toBe('test-uuid-1')
+      expect(client.tenantId).toBe('tenant-1')
+      expect(client.supporters).toHaveLength(1)
+      expect(client.supporters[0]?.supporterId).toBe('supporter-1')
     })
   })
 })

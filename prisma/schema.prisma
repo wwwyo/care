@@ -25,6 +25,7 @@ model Tenant {
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   supporters Supporter[]
+  clients    Client[]
   plans      Plan[]
 
   @@map("tenants")
@@ -39,11 +40,11 @@ model Supporter {
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  tenant              Tenant            @relation(fields: [tenantId], references: [id])
-  user                User              @relation(fields: [userId], references: [id])
+  tenant              Tenant              @relation(fields: [tenantId], references: [id])
+  user                User                @relation(fields: [userId], references: [id])
   profile             SupporterProfile?
-  plans               Plan[]
-  planVersionsCreated PlanVersion[]     @relation("PlanVersionCreatedBy")
+  clientSupporters    ClientSupporter[]
+  planVersionsCreated PlanVersion[]       @relation("PlanVersionCreatedBy")
 
   @@index([tenantId])
   @@index([userId])
@@ -54,17 +55,35 @@ model Supporter {
 
 model Client {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId     String   @map("user_id")
+  tenantId   String   @map("tenant_id") @db.Uuid
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  user      User             @relation(fields: [userId], references: [id])
-  profile   ClientProfile?
-  addresses ClientAddress[]
-  plans     Plan[]
+  tenant           Tenant           @relation(fields: [tenantId], references: [id])
+  profile          ClientProfile?
+  addresses        ClientAddress[]
+  clientSupporters ClientSupporter[]
+  plans            Plan[]
 
-  @@index([userId])
+  @@index([tenantId])
   @@map("clients")
+}
+
+// client_supporters: クライアントと支援者の中間テーブル
+model ClientSupporter {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId    String   @map("client_id") @db.Uuid
+  supporterId String   @map("supporter_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  client    Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  supporter Supporter @relation(fields: [supporterId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, supporterId])
+  @@index([clientId])
+  @@index([supporterId])
+  @@map("client_supporters")
 }
 
 // facilities: 施設
@@ -275,22 +294,19 @@ model FacilityCondition {
 model Plan {
   id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   tenantId         String   @map("tenant_id") @db.Uuid
-  supporterId      String   @map("supporter_id") @db.Uuid
-  clientId         String?  @map("client_id") @db.Uuid
+  clientId         String   @map("client_id") @db.Uuid
   currentVersionId String?  @map("current_version_id") @db.Uuid
   status           String   @default("draft") @db.VarChar(20)
   createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt        DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   tenant    Tenant        @relation(fields: [tenantId], references: [id])
-  supporter Supporter     @relation(fields: [supporterId], references: [id])
-  client    Client?       @relation(fields: [clientId], references: [id])
+  client    Client        @relation(fields: [clientId], references: [id])
   versions  PlanVersion[]
   consents  Consent[]
   inquiries Inquiry[]
 
   @@index([tenantId])
-  @@index([supporterId])
   @@index([clientId])
   @@index([currentVersionId])
   @@map("plans")
@@ -522,7 +538,6 @@ model User {
   realm String
 
   supporters     Supporter[]
-  clients        Client[]
   facilityStaff  FacilityStaff[]
 
   @@unique([email])

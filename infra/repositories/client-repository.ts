@@ -1,4 +1,9 @@
-import { Client, type ClientAddress, type ClientProfile } from '@/domain/client/model'
+import {
+  Client,
+  type ClientAddress,
+  type ClientProfile,
+  type ClientSupporter,
+} from '@/domain/client/model'
 import type { ClientRepository } from '@/domain/client/repository'
 import { prisma } from '@/lib/prisma'
 
@@ -9,7 +14,7 @@ export const clientRepository: ClientRepository = {
       await tx.client.create({
         data: {
           id: client.id,
-          userId: client.userId,
+          tenantId: client.tenantId,
         },
       })
 
@@ -42,6 +47,17 @@ export const clientRepository: ClientRepository = {
           })),
         })
       }
+
+      // サポーターがあれば保存
+      if (client.supporters.length > 0) {
+        await tx.clientSupporter.createMany({
+          data: client.supporters.map((supporter) => ({
+            id: supporter.id,
+            clientId: client.id,
+            supporterId: supporter.supporterId,
+          })),
+        })
+      }
     })
   },
 
@@ -51,6 +67,7 @@ export const clientRepository: ClientRepository = {
       include: {
         profile: true,
         addresses: true,
+        clientSupporters: true,
       },
     })
 
@@ -78,42 +95,65 @@ export const clientRepository: ClientRepository = {
       building: addr.building ?? undefined,
     }))
 
-    return new Client(data.id, data.userId, profile, addresses)
+    const supporters: ClientSupporter[] = data.clientSupporters.map((cs) => ({
+      id: cs.id,
+      clientId: cs.clientId,
+      supporterId: cs.supporterId,
+      createdAt: cs.createdAt,
+      updatedAt: cs.updatedAt,
+    }))
+
+    return new Client(data.id, data.tenantId, profile, addresses, supporters)
   },
 
-  async findByUserId(userId: string): Promise<Client | null> {
-    const data = await prisma.client.findFirst({
-      where: { userId },
+  async findBySupporterId(supporterId: string): Promise<Client[]> {
+    const clients = await prisma.client.findMany({
+      where: {
+        clientSupporters: {
+          some: {
+            supporterId,
+          },
+        },
+      },
       include: {
         profile: true,
         addresses: true,
+        clientSupporters: true,
       },
     })
 
-    if (!data) return null
+    return clients.map((data) => {
+      const profile: ClientProfile | undefined = data.profile
+        ? {
+            id: data.profile.id,
+            clientId: data.profile.clientId,
+            name: data.profile.name,
+            nameKana: data.profile.nameKana ?? undefined,
+            gender: data.profile.gender ?? undefined,
+            birthDate: data.profile.birthDate ?? undefined,
+            phone: data.profile.phone ?? undefined,
+          }
+        : undefined
 
-    const profile: ClientProfile | undefined = data.profile
-      ? {
-          id: data.profile.id,
-          clientId: data.profile.clientId,
-          name: data.profile.name,
-          nameKana: data.profile.nameKana ?? undefined,
-          gender: data.profile.gender ?? undefined,
-          birthDate: data.profile.birthDate ?? undefined,
-          phone: data.profile.phone ?? undefined,
-        }
-      : undefined
+      const addresses: ClientAddress[] = data.addresses.map((addr) => ({
+        id: addr.id,
+        clientId: addr.clientId,
+        postalCode: addr.postalCode ?? undefined,
+        prefecture: addr.prefecture ?? undefined,
+        city: addr.city ?? undefined,
+        street: addr.street ?? undefined,
+        building: addr.building ?? undefined,
+      }))
 
-    const addresses: ClientAddress[] = data.addresses.map((addr) => ({
-      id: addr.id,
-      clientId: addr.clientId,
-      postalCode: addr.postalCode ?? undefined,
-      prefecture: addr.prefecture ?? undefined,
-      city: addr.city ?? undefined,
-      street: addr.street ?? undefined,
-      building: addr.building ?? undefined,
-    }))
+      const supporters: ClientSupporter[] = data.clientSupporters.map((cs) => ({
+        id: cs.id,
+        clientId: cs.clientId,
+        supporterId: cs.supporterId,
+        createdAt: cs.createdAt,
+        updatedAt: cs.updatedAt,
+      }))
 
-    return new Client(data.id, data.userId, profile, addresses)
+      return new Client(data.id, data.tenantId, profile, addresses, supporters)
+    })
   },
 }
