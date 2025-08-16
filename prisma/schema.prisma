@@ -35,17 +35,18 @@ model Tenant {
 model Supporter {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   tenantId   String   @map("tenant_id") @db.Uuid
-  authUserId String?  @map("auth_user_id") @db.Uuid
+  userId     String   @map("user_id")
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   tenant              Tenant            @relation(fields: [tenantId], references: [id])
+  user                User              @relation(fields: [userId], references: [id])
   profile             SupporterProfile?
   plans               Plan[]
   planVersionsCreated PlanVersion[]     @relation("PlanVersionCreatedBy")
 
   @@index([tenantId])
-  @@index([authUserId])
+  @@index([userId])
   @@map("supporters")
 }
 
@@ -53,15 +54,16 @@ model Supporter {
 
 model Client {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  authUserId String?  @map("auth_user_id") @db.Uuid
+  userId     String   @map("user_id")
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
+  user      User             @relation(fields: [userId], references: [id])
   profile   ClientProfile?
   addresses ClientAddress[]
   plans     Plan[]
 
-  @@index([authUserId])
+  @@index([userId])
   @@map("clients")
 }
 
@@ -89,15 +91,16 @@ model Facility {
 
 model FacilityStaff {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  authUserId String?  @map("auth_user_id") @db.Uuid
+  userId     String   @map("user_id")
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
+  user         User                    @relation(fields: [userId], references: [id])
   facilities   FacilityStaffFacility[]
   roles        FacilityStaffRole[]
   slotsUpdated Slot[]
 
-  @@index([authUserId])
+  @@index([userId])
   @@map("facility_staff")
 }
 
@@ -538,6 +541,10 @@ model User {
   accounts      Account[]
 
   realm String
+
+  supporters     Supporter[]
+  clients        Client[]
+  facilityStaff  FacilityStaff[]
 
   @@unique([email])
   @@map("users")

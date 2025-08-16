@@ -2,9 +2,6 @@ import { z } from 'zod'
 
 // クライアント側で使用可能な環境変数のスキーマ
 const clientEnvSchema = z.object({
-  // Public環境変数のみ
-  NEXT_PUBLIC_SUPABASE_URL: z.url(),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
   NEXT_PUBLIC_APP_URL: z.url(),
 })
 
@@ -14,8 +11,6 @@ type ClientEnv = z.infer<typeof clientEnvSchema>
 function parseClientEnv(): ClientEnv {
   try {
     return clientEnvSchema.parse({
-      NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     })
   } catch (error) {

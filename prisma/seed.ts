@@ -1,6 +1,9 @@
-import { PrismaClient } from '@/lib/generated/prisma'
+import { randomBytes } from 'crypto'
+import { prisma } from '@/lib/prisma'
 
-const prisma = new PrismaClient()
+function generateId(): string {
+  return randomBytes(16).toString('hex')
+}
 
 async function main() {
   // 既存データをクリア
@@ -29,10 +32,87 @@ async function main() {
     prisma.facilityStaffFacility.deleteMany(),
     prisma.facilityStaff.deleteMany(),
     prisma.facility.deleteMany(),
-    prisma.user.deleteMany(),
+    prisma.client.deleteMany(),
     prisma.supporter.deleteMany(),
     prisma.tenant.deleteMany(),
+    prisma.verification.deleteMany(),
+    prisma.account.deleteMany(),
+    prisma.session.deleteMany(),
+    prisma.user.deleteMany(),
   ])
+
+  // Better Auth用のUserを作成
+  const userSupporter1 = await prisma.user.create({
+    data: {
+      id: generateId(),
+      name: '山田太郎',
+      email: 'yamada@example.com',
+      emailVerified: true,
+      realm: 'supporter',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  })
+
+  const userSupporter2 = await prisma.user.create({
+    data: {
+      id: generateId(),
+      name: '佐藤花子',
+      email: 'sato@example.com',
+      emailVerified: true,
+      realm: 'supporter',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  })
+
+  const userClient1 = await prisma.user.create({
+    data: {
+      id: generateId(),
+      name: '田中一郎',
+      email: 'tanaka@example.com',
+      emailVerified: true,
+      realm: 'client',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  })
+
+  const userClient2 = await prisma.user.create({
+    data: {
+      id: generateId(),
+      name: '鈴木二郎',
+      email: 'suzuki@example.com',
+      emailVerified: true,
+      realm: 'client',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  })
+
+  const userFacilityStaff1 = await prisma.user.create({
+    data: {
+      id: generateId(),
+      name: '施設担当者A',
+      email: 'staff1@example.com',
+      emailVerified: true,
+      realm: 'facility_staff',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  })
+
+  const userFacilityStaff2 = await prisma.user.create({
+    data: {
+      id: generateId(),
+      name: '施設担当者B',
+      email: 'staff2@example.com',
+      emailVerified: true,
+      realm: 'facility_staff',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  })
 
   // テナント作成
   const tenant1 = await prisma.tenant.create({
@@ -51,6 +131,7 @@ async function main() {
   const supporter1 = await prisma.supporter.create({
     data: {
       tenantId: tenant1.id,
+      userId: userSupporter1.id,
       profile: {
         create: {
           tenantId: tenant1.id,
@@ -67,6 +148,7 @@ async function main() {
   const supporter2 = await prisma.supporter.create({
     data: {
       tenantId: tenant2.id,
+      userId: userSupporter2.id,
       profile: {
         create: {
           tenantId: tenant2.id,
@@ -80,9 +162,10 @@ async function main() {
     },
   })
 
-  // ユーザー作成
-  const user1 = await prisma.user.create({
+  // クライアント作成
+  const client1 = await prisma.client.create({
     data: {
+      userId: userClient1.id,
       profile: {
         create: {
           name: '田中一郎',
@@ -104,8 +187,9 @@ async function main() {
     },
   })
 
-  const user2 = await prisma.user.create({
+  const client2 = await prisma.client.create({
     data: {
+      userId: userClient2.id,
       profile: {
         create: {
           name: '鈴木二郎',
@@ -217,6 +301,7 @@ async function main() {
   // 施設スタッフ作成
   const facilityStaff1 = await prisma.facilityStaff.create({
     data: {
+      userId: userFacilityStaff1.id,
       facilities: {
         create: {
           facilityId: facility1.id,
@@ -247,12 +332,30 @@ async function main() {
     },
   })
 
+  // 施設スタッフ2作成
+  const facilityStaff2 = await prisma.facilityStaff.create({
+    data: {
+      userId: userFacilityStaff2.id,
+      facilities: {
+        create: {
+          facilityId: facility2.id,
+        },
+      },
+      roles: {
+        create: {
+          facilityId: facility2.id,
+          role: 'admin',
+        },
+      },
+    },
+  })
+
   await prisma.slot.create({
     data: {
       facilityId: facility2.id,
       status: 'limited',
       expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14日後
-      updatedBy: facilityStaff1.id,
+      updatedBy: facilityStaff2.id,
       details: {
         create: {
           detailType: 'note',
@@ -267,8 +370,17 @@ async function main() {
     data: {
       tenantId: tenant1.id,
       supporterId: supporter1.id,
-      userId: user1.id,
+      clientId: client1.id,
       status: 'active',
+    },
+  })
+
+  const plan2 = await prisma.plan.create({
+    data: {
+      tenantId: tenant2.id,
+      supporterId: supporter2.id,
+      clientId: client2.id,
+      status: 'draft',
     },
   })
 
@@ -293,10 +405,33 @@ async function main() {
     },
   })
 
+  // プランバージョン作成（プラン2用）
+  const planVersion2 = await prisma.planVersion.create({
+    data: {
+      planId: plan2.id,
+      versionNumber: 1,
+      serviceType: '就労継続支援B型',
+      frequency: '週5日',
+      area: '神奈川県内',
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000), // 6ヶ月後
+      notes: 'お試し利用からスタート',
+      createdBy: supporter2.id,
+      accessibilityRequirements: {
+        create: [{ requirementType: 'no_stairs', details: '階段の昇降が困難' }],
+      },
+    },
+  })
+
   // 現在のバージョンを設定
   await prisma.plan.update({
     where: { id: plan1.id },
     data: { currentVersionId: planVersion1.id },
+  })
+
+  await prisma.plan.update({
+    where: { id: plan2.id },
+    data: { currentVersionId: planVersion2.id },
   })
 
   console.log('シードデータの作成が完了しました。')
