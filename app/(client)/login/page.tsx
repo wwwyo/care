@@ -18,10 +18,8 @@ import { Label } from '@/components/ui/label'
 import { authClient } from '@/lib/auth/client'
 
 export default function ClientLoginPage() {
-  const [isSignUp, setIsSignUp] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [name, setName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -30,45 +28,23 @@ export default function ClientLoginPage() {
     setIsLoading(true)
     setError(null)
 
-    if (isSignUp) {
-      // サインアップ時にrealmを指定
-      await authClient.signUp.email(
-        {
-          email,
-          password,
-          name,
-          realm: 'client',
-          callbackURL: '/onboarding',
+    // ログイン
+    await authClient.signIn.email(
+      {
+        email,
+        password,
+        callbackURL: '/dashboard',
+      },
+      {
+        onSuccess: () => {
+          setIsLoading(false)
         },
-        {
-          onSuccess: () => {
-            setIsLoading(false)
-          },
-          onError: (ctx) => {
-            setError(ctx.error.message || 'サインアップに失敗しました')
-            setIsLoading(false)
-          },
+        onError: (ctx) => {
+          setError(ctx.error.message || 'ログインに失敗しました')
+          setIsLoading(false)
         },
-      )
-    } else {
-      // ログイン
-      await authClient.signIn.email(
-        {
-          email,
-          password,
-          callbackURL: '/dashboard',
-        },
-        {
-          onSuccess: () => {
-            setIsLoading(false)
-          },
-          onError: (ctx) => {
-            setError(ctx.error.message || 'ログインに失敗しました')
-            setIsLoading(false)
-          },
-        },
-      )
-    }
+      },
+    )
   }
 
   return (
@@ -80,31 +56,12 @@ export default function ClientLoginPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>利用者様{isSignUp ? 'アカウント作成' : 'ログイン'}</CardTitle>
-            <CardDescription>
-              {isSignUp
-                ? '新規アカウントを作成してください'
-                : 'アカウント情報を入力してログインしてください'}
-            </CardDescription>
+            <CardTitle>利用者様ログイン</CardTitle>
+            <CardDescription>アカウント情報を入力してログインしてください</CardDescription>
           </CardHeader>
 
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
-              {isSignUp && (
-                <div className="space-y-2">
-                  <Label htmlFor="name">お名前</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    type="text"
-                    required={isSignUp}
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="山田 太郎"
-                  />
-                </div>
-              )}
-
               <div className="space-y-2">
                 <Label htmlFor="email">メールアドレス</Label>
                 <Input
@@ -125,7 +82,7 @@ export default function ClientLoginPage() {
                   id="password"
                   name="password"
                   type="password"
-                  autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                  autoComplete="current-password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -143,19 +100,14 @@ export default function ClientLoginPage() {
 
             <CardFooter className="flex flex-col space-y-4 pt-6">
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? '処理中...' : isSignUp ? 'アカウント作成' : 'ログイン'}
+                {isLoading ? '処理中...' : 'ログイン'}
               </Button>
 
-              <Button
-                type="button"
-                variant="link"
-                className="w-full"
-                onClick={() => setIsSignUp(!isSignUp)}
-              >
-                {isSignUp
-                  ? 'すでにアカウントをお持ちの方はこちら'
-                  : 'アカウントをお持ちでない方はこちら'}
-              </Button>
+              <Link href="/signup" className="w-full">
+                <Button type="button" variant="link" className="w-full">
+                  アカウントをお持ちでない方はこちら
+                </Button>
+              </Link>
 
               <div className="text-center space-y-2 pt-4 border-t w-full">
                 <Link

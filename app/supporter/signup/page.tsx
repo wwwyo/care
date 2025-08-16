@@ -16,10 +16,12 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { authClient } from '@/lib/auth/client'
+import { USER_REALMS } from '@/lib/auth/schemas'
 
-export default function SupporterLoginPage() {
+export default function SupporterSignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -28,19 +30,21 @@ export default function SupporterLoginPage() {
     setIsLoading(true)
     setError(null)
 
-    // ログイン
-    await authClient.signIn.email(
+    // サインアップ時にrealmを指定
+    await authClient.signUp.email(
       {
         email,
         password,
-        callbackURL: '/supporter/dashboard',
+        name,
+        realm: USER_REALMS.SUPPORTER,
+        callbackURL: '/supporter/onboarding',
       },
       {
         onSuccess: () => {
           setIsLoading(false)
         },
         onError: (ctx) => {
-          setError(ctx.error.message || 'ログインに失敗しました')
+          setError(ctx.error.message || 'サインアップに失敗しました')
           setIsLoading(false)
         },
       },
@@ -56,12 +60,25 @@ export default function SupporterLoginPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>支援者様ログイン</CardTitle>
-            <CardDescription>アカウント情報を入力してログインしてください</CardDescription>
+            <CardTitle>支援者様アカウント作成</CardTitle>
+            <CardDescription>新規アカウントを作成してください</CardDescription>
           </CardHeader>
 
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">お名前</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="山田 太郎"
+                />
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="email">メールアドレス</Label>
                 <Input
@@ -82,7 +99,7 @@ export default function SupporterLoginPage() {
                   id="password"
                   name="password"
                   type="password"
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -100,24 +117,24 @@ export default function SupporterLoginPage() {
 
             <CardFooter className="flex flex-col space-y-4 pt-6">
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? '処理中...' : 'ログイン'}
+                {isLoading ? '処理中...' : 'アカウント作成'}
               </Button>
 
-              <Link href="/supporter/signup" className="w-full">
+              <Link href="/supporter/login" className="w-full">
                 <Button type="button" variant="link" className="w-full">
-                  アカウントをお持ちでない方はこちら
+                  すでにアカウントをお持ちの方はこちら
                 </Button>
               </Link>
 
               <div className="text-center space-y-2 pt-4 border-t w-full">
                 <Link
-                  href="/login"
+                  href="/signup"
                   className="block text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
                   利用者の方はこちら
                 </Link>
                 <Link
-                  href="/facility/login"
+                  href="/facility/signup"
                   className="block text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
                   施設スタッフの方はこちら
