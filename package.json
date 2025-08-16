@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
+    "vercel-build": "bun db:deploy && bun run build",
     "start": "next start",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
@@ -13,6 +14,7 @@
     "db:reset": "bunx dotenv-cli -e .env.local prisma migrate reset",
     "db:generate": "prisma generate",
     "db:push": "bunx dotenv-cli -e .env.local prisma db push",
+    "db:deploy": "bun db:generate && prisma migrate deploy",
     "db:seed": "bun run prisma/seed.ts",
     "db:studio": "prisma studio",
     "email:dev": "email dev"
