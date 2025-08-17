@@ -9,7 +9,6 @@ import {
 
 export interface ClientData {
   id: string
-  userId: string
   tenantId: string
   name: string
   birthDate: Date
@@ -25,7 +24,6 @@ export interface ClientData {
 }
 
 export interface CreateClientParams {
-  userId: string
   tenantId: string
   name: string
   birthDate: Date
@@ -57,7 +55,6 @@ export type ClientError =
 export class Client {
   private constructor(
     private readonly id: string,
-    private readonly userId: string,
     private readonly tenantId: string,
     private readonly name: string,
     private readonly birthDate: Date,
@@ -95,7 +92,6 @@ export class Client {
     const now = new Date()
     return new Client(
       Client.generateId(),
-      params.userId,
       params.tenantId,
       params.name,
       params.birthDate,
@@ -129,7 +125,6 @@ export class Client {
 
     return new Client(
       data.id,
-      data.userId,
       data.tenantId,
       data.name,
       data.birthDate,
@@ -170,7 +165,6 @@ export class Client {
 
     return new Client(
       this.id,
-      this.userId,
       this.tenantId,
       params.name ?? this.name,
       this.birthDate,
@@ -189,7 +183,6 @@ export class Client {
   toData(): ClientData {
     return {
       id: this.id,
-      userId: this.userId,
       tenantId: this.tenantId,
       name: this.name,
       birthDate: this.birthDate,
@@ -206,7 +199,7 @@ export class Client {
   }
 
   private static generateId(): string {
-    return `client-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
+    return crypto.randomUUID()
   }
 }
 

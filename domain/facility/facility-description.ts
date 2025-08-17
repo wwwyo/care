@@ -25,7 +25,7 @@ export class FacilityDescription {
   // 説明文の要約を取得（最初の100文字）
   getSummary(maxLength: number = 100): string {
     if (this.value.length <= maxLength) return this.value
-    return this.value.substring(0, maxLength) + '...'
+    return `${this.value.substring(0, maxLength)}...`
   }
 
   equals(other: FacilityDescription | null): boolean {

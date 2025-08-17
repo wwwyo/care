@@ -42,7 +42,7 @@ const statusConfig: Record<SlotStatus, { emoji: string; label: string; className
 }
 
 export function SlotStatusDisplay({ status, comment, updatedAt }: SlotStatusDisplayProps) {
-  const normalizedStatus = normalizeStatus(status as string | null)
+  const normalizedStatus = normalizeStatus(status)
 
   if (!normalizedStatus || !(normalizedStatus in statusConfig)) {
     return (

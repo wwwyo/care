@@ -14,7 +14,7 @@ export type SaveFacilityStaffError = {
 
 export async function saveFacilityStaffUseCase(
   input: SaveFacilityStaffInput,
-): Promise<void | SaveFacilityStaffError> {
+): Promise<undefined | SaveFacilityStaffError> {
   try {
     // FacilityStaffドメインモデルを作成
     const facilityStaff = FacilityStaff.create({

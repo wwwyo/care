@@ -2,7 +2,7 @@ export interface AddressData {
   postalCode?: string
   prefecture: string
   city: string
-  street: string
+  street?: string
   building?: string
 }
 
@@ -18,7 +18,7 @@ export class Address {
     private readonly postalCode: string | undefined,
     private readonly prefecture: string,
     private readonly city: string,
-    private readonly street: string,
+    private readonly street: string | undefined,
     private readonly building: string | undefined,
   ) {}
 
@@ -29,9 +29,7 @@ export class Address {
     if (!data.city) {
       return { type: 'MissingCity', message: '市区町村は必須です' }
     }
-    if (!data.street) {
-      return { type: 'MissingStreet', message: '番地は必須です' }
-    }
+    // streetはオプショナルとして扱う
 
     if (data.postalCode) {
       const postalCodeValidation = Address.validatePostalCode(data.postalCode)
@@ -50,7 +48,8 @@ export class Address {
     }
 
     // 都道府県を抽出
-    const prefectureMatch = fullAddress.match(/^(.+?[都道府県])/)
+    // 京都府、東京都、北海道、〇〇県のパターンに対応
+    const prefectureMatch = fullAddress.match(/^(東京都|北海道|大阪府|京都府|.{2,3}県)/)
     if (!prefectureMatch || !prefectureMatch[1]) {
       return { type: 'InvalidAddressFormat', message: '都道府県が含まれていません' }
     }
@@ -67,20 +66,24 @@ export class Address {
     let city: string
     let street: string
 
-    if (cityMatch && cityMatch[1]) {
+    if (cityMatch?.[1]) {
       city = cityMatch[1]
-      street = remaining.substring(city.length).trim() || '1-1-1'
+      const remainingAfterCity = remaining.substring(city.length).trim()
+      street = remainingAfterCity || undefined
     } else {
       // 市区町村が見つからない場合は、残り全体を市区町村として扱う
       city = remaining
-      street = '1-1-1'
+      street = undefined
     }
 
     return new Address(undefined, prefecture, city, street, undefined)
   }
 
   toString(): string {
-    let address = `${this.prefecture}${this.city}${this.street}`
+    let address = `${this.prefecture}${this.city}`
+    if (this.street) {
+      address += this.street
+    }
     if (this.building) {
       address += ` ${this.building}`
     }

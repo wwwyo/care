@@ -61,7 +61,7 @@ export const auth = betterAuth({
           }
 
           // realmに応じて適切なユースケースを呼び出し
-          let result: { type: string; message: string } | void
+          let result: { type: string; message: string } | undefined
 
           switch (realmResult.data) {
             case USER_REALMS.SUPPORTER:

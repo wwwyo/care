@@ -98,6 +98,9 @@ care/
 - **Domain層のモデルのみclass定義を許可**（その他は関数型で実装）
   - ファクトリメソッドの命名は常に `create` とする（例: `Client.create()`）
   - `create` メソッドでは ID を `crypto.randomUUID()` で生成する
+  - **Immutability**: モデルは常にimmutableとして扱う
+    - 更新系メソッドは新しいインスタンスを返す（例: `client.updateName(name)` は新しいClientインスタンスを返す）
+    - 内部状態の直接変更は禁止（プロパティはreadonly）
 - **型アサーション（as）の使用禁止** - Zodスキーマによる型安全な実装を徹底
   - Domain層: 各種Value Objectで型安全性を保証
   - Server Actions: フォームデータはZodで最小限のバリデーション

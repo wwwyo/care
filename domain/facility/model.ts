@@ -10,22 +10,28 @@ export type FacilityData = {
   contacts: FacilityContact[]
 }
 
+export type FacilityError =
+  | { type: 'InvalidName'; message: string }
+  | { type: 'InvalidNameKana'; message: string }
+  | { type: 'InvalidDescription'; message: string }
+  | { type: 'InvalidServiceType'; message: string }
+
 export class Facility {
   private constructor(
     private readonly id: string,
-    private name: FacilityName,
-    private nameKana: FacilityNameKana | null,
-    private description: FacilityDescription | null,
-    private serviceType: ServiceType | null,
-    private address: string | null,
-    private postalCode: string | null,
-    private phone: string | null,
-    private fax: string | null,
-    private email: string | null,
-    private website: string | null,
-    private accessInfo: string | null,
-    private latitude: number | null,
-    private longitude: number | null,
+    private readonly name: FacilityName,
+    private readonly nameKana: FacilityNameKana | null,
+    private readonly description: FacilityDescription | null,
+    private readonly serviceType: ServiceType | null,
+    private readonly address: string | null,
+    private readonly postalCode: string | null,
+    private readonly phone: string | null,
+    private readonly fax: string | null,
+    private readonly email: string | null,
+    private readonly website: string | null,
+    private readonly accessInfo: string | null,
+    private readonly latitude: number | null,
+    private readonly longitude: number | null,
   ) {}
 
   static create(data: FacilityData): Facility | null {
@@ -110,25 +116,37 @@ export class Facility {
     nameKana?: string | null
     description?: string | null
     serviceType?: string | null
-  }): boolean {
+  }): Facility | FacilityError {
     const newName = FacilityName.create(params.name)
-    if (!newName) return false
-
-    this.name = newName
-
-    if (params.nameKana !== undefined) {
-      this.nameKana = FacilityNameKana.create(params.nameKana)
+    if (!newName) {
+      return { type: 'InvalidName', message: '施設名が無効です' }
     }
 
-    if (params.description !== undefined) {
-      this.description = FacilityDescription.create(params.description)
-    }
+    const newNameKana =
+      params.nameKana !== undefined ? FacilityNameKana.create(params.nameKana) : this.nameKana
+    const newDescription =
+      params.description !== undefined
+        ? FacilityDescription.create(params.description)
+        : this.description
+    const newServiceType =
+      params.serviceType !== undefined ? ServiceType.create(params.serviceType) : this.serviceType
 
-    if (params.serviceType !== undefined) {
-      this.serviceType = ServiceType.create(params.serviceType)
-    }
-
-    return true
+    return new Facility(
+      this.id,
+      newName,
+      newNameKana,
+      newDescription,
+      newServiceType,
+      this.address,
+      this.postalCode,
+      this.phone,
+      this.fax,
+      this.email,
+      this.website,
+      this.accessInfo,
+      this.latitude,
+      this.longitude,
+    )
   }
 
   updateContact(params: {
@@ -136,11 +154,23 @@ export class Facility {
     fax?: string | null
     email?: string | null
     website?: string | null
-  }): void {
-    if (params.phone !== undefined) this.phone = params.phone
-    if (params.fax !== undefined) this.fax = params.fax
-    if (params.email !== undefined) this.email = params.email
-    if (params.website !== undefined) this.website = params.website
+  }): Facility {
+    return new Facility(
+      this.id,
+      this.name,
+      this.nameKana,
+      this.description,
+      this.serviceType,
+      this.address,
+      this.postalCode,
+      params.phone !== undefined ? params.phone : this.phone,
+      params.fax !== undefined ? params.fax : this.fax,
+      params.email !== undefined ? params.email : this.email,
+      params.website !== undefined ? params.website : this.website,
+      this.accessInfo,
+      this.latitude,
+      this.longitude,
+    )
   }
 
   updateLocation(params: {
@@ -149,12 +179,23 @@ export class Facility {
     accessInfo?: string | null
     latitude?: number | null
     longitude?: number | null
-  }): void {
-    if (params.address !== undefined) this.address = params.address
-    if (params.postalCode !== undefined) this.postalCode = params.postalCode
-    if (params.accessInfo !== undefined) this.accessInfo = params.accessInfo
-    if (params.latitude !== undefined) this.latitude = params.latitude
-    if (params.longitude !== undefined) this.longitude = params.longitude
+  }): Facility {
+    return new Facility(
+      this.id,
+      this.name,
+      this.nameKana,
+      this.description,
+      this.serviceType,
+      params.address !== undefined ? params.address : this.address,
+      params.postalCode !== undefined ? params.postalCode : this.postalCode,
+      this.phone,
+      this.fax,
+      this.email,
+      this.website,
+      params.accessInfo !== undefined ? params.accessInfo : this.accessInfo,
+      params.latitude !== undefined ? params.latitude : this.latitude,
+      params.longitude !== undefined ? params.longitude : this.longitude,
+    )
   }
 
   // Additional getters for repository access
@@ -186,4 +227,9 @@ export class Facility {
   hasCompleteProfile(): boolean {
     return !!(this.name && this.serviceType && this.address && this.phone && this.description)
   }
+}
+
+// Type guard
+export function isFacility(value: Facility | FacilityError): value is Facility {
+  return !(value as FacilityError).type
 }

@@ -5,7 +5,6 @@ describe('Client', () => {
   describe('create', () => {
     it('必須フィールドを持つクライアントを作成できる', () => {
       const result = Client.create({
-        userId: 'user-123',
         tenantId: 'tenant-456',
         name: '山田太郎',
         birthDate: new Date('1990-01-01'),
@@ -28,7 +27,6 @@ describe('Client', () => {
 
       expect(result.toData()).toEqual({
         id: expect.any(String),
-        userId: 'user-123',
         tenantId: 'tenant-456',
         name: '山田太郎',
         birthDate: new Date('1990-01-01'),
@@ -56,7 +54,6 @@ describe('Client', () => {
 
     it('オプションフィールドを含むクライアントを作成できる', () => {
       const result = Client.create({
-        userId: 'user-123',
         tenantId: 'tenant-456',
         name: '田中一郎',
         birthDate: new Date('1985-05-15'),
@@ -90,7 +87,6 @@ describe('Client', () => {
   describe('update', () => {
     it('基本情報を更新できる', () => {
       const result = Client.create({
-        userId: 'user-123',
         tenantId: 'tenant-456',
         name: '佐藤太郎',
         birthDate: new Date('1995-03-20'),
@@ -139,7 +135,6 @@ describe('Client', () => {
 
     it('緊急連絡先を更新できる', () => {
       const result = Client.create({
-        userId: 'user-123',
         tenantId: 'tenant-456',
         name: '鈴木太郎',
         birthDate: new Date('2000-08-10'),
@@ -186,7 +181,6 @@ describe('Client', () => {
 
       validPhoneNumbers.forEach((phoneNumber) => {
         const result = Client.create({
-          userId: 'user-123',
           tenantId: 'tenant-456',
           name: 'テスト太郎',
           birthDate: new Date('1990-01-01'),
@@ -216,7 +210,6 @@ describe('Client', () => {
 
       invalidPhoneNumbers.forEach((phoneNumber) => {
         const result = Client.create({
-          userId: 'user-123',
           tenantId: 'tenant-456',
           name: 'テスト太郎',
           birthDate: new Date('1990-01-01'),
@@ -241,7 +234,6 @@ describe('Client', () => {
 
     it('必須フィールドが不足している場合エラーを返す', () => {
       const result = Client.create({
-        userId: 'user-123',
         tenantId: 'tenant-456',
         name: '',
         birthDate: new Date('1990-01-01'),
@@ -270,7 +262,6 @@ describe('Client', () => {
     it('データベースのデータからクライアントを復元できる', () => {
       const dbData = {
         id: 'client-789',
-        userId: 'user-123',
         tenantId: 'tenant-456',
         name: '伊藤太郎',
         birthDate: new Date('1988-12-25'),
