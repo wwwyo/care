@@ -14,7 +14,7 @@ export type SaveFacilityStaffError = {
 
 export async function saveFacilityStaffUseCase(
   input: SaveFacilityStaffInput,
-): Promise<void | SaveFacilityStaffError> {
+): Promise<undefined | SaveFacilityStaffError> {
   try {
     // FacilityStaffドメインモデルを作成
     const facilityStaff = FacilityStaff.create({
@@ -23,6 +23,7 @@ export async function saveFacilityStaffUseCase(
 
     // リポジトリで永続化
     await facilityStaffRepository.save(facilityStaff)
+    return
   } catch (error) {
     console.error(`❌ FacilityStaff作成に失敗しました: userId=${input.userId}`, error)
     return {

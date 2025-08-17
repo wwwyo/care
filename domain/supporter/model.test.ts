@@ -6,7 +6,7 @@ beforeEach(() => {
   let callCount = 0
   global.crypto = {
     randomUUID: mock(() => `test-uuid-${++callCount}`),
-  } as any
+  } as unknown as Crypto
 })
 
 describe('Supporter', () => {

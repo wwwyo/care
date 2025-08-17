@@ -16,6 +16,7 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    autoSignIn: true,
   },
   session: {
     expiresIn: SESSION_EXPIRY_DAYS * 24 * 60 * 60, // 7日間
@@ -60,7 +61,7 @@ export const auth = betterAuth({
           }
 
           // realmに応じて適切なユースケースを呼び出し
-          let result: { type: string; message: string } | void
+          let result: { type: string; message: string } | undefined
 
           switch (realmResult.data) {
             case USER_REALMS.SUPPORTER:

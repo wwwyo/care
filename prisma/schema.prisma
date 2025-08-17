@@ -34,17 +34,17 @@ model Tenant {
 // supporters: 支援者（相談支援専門員）
 
 model Supporter {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId   String   @map("tenant_id") @db.Uuid
-  userId     String   @map("user_id")
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  tenant              Tenant              @relation(fields: [tenantId], references: [id])
-  user                User                @relation(fields: [userId], references: [id])
+  tenant              Tenant            @relation(fields: [tenantId], references: [id])
+  user                User              @relation(fields: [userId], references: [id])
   profile             SupporterProfile?
   clientSupporters    ClientSupporter[]
-  planVersionsCreated PlanVersion[]       @relation("PlanVersionCreatedBy")
+  planVersionsCreated PlanVersion[]     @relation("PlanVersionCreatedBy")
 
   @@index([tenantId])
   @@index([userId])
@@ -54,12 +54,12 @@ model Supporter {
 // clients: サービス利用者
 
 model Client {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId   String   @map("tenant_id") @db.Uuid
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  tenant           Tenant           @relation(fields: [tenantId], references: [id])
+  tenant           Tenant            @relation(fields: [tenantId], references: [id])
   profile          ClientProfile?
   addresses        ClientAddress[]
   clientSupporters ClientSupporter[]
@@ -108,10 +108,10 @@ model Facility {
 // facility_staff: 施設職員
 
 model FacilityStaff {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId     String   @map("user_id")
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   user         User                    @relation(fields: [userId], references: [id])
   facilities   FacilityStaffFacility[]
@@ -165,15 +165,21 @@ model SupporterProfile {
 // user_profiles: 利用者プロファイル
 
 model ClientProfile {
-  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  clientId  String    @unique @map("client_id") @db.Uuid
-  name      String    @db.VarChar(255)
-  nameKana  String?   @map("name_kana") @db.VarChar(255)
-  gender    String?   @db.VarChar(10)
-  birthDate DateTime? @map("birth_date") @db.Date
-  phone     String?   @db.VarChar(20)
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  id                       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId                 String    @unique @map("client_id") @db.Uuid
+  name                     String    @db.VarChar(255)
+  nameKana                 String?   @map("name_kana") @db.VarChar(255)
+  gender                   String?   @db.VarChar(10)
+  birthDate                DateTime? @map("birth_date") @db.Date
+  phone                    String?   @db.VarChar(20)
+  disability               String?   @db.VarChar(255)
+  careLevel                String?   @map("care_level") @db.VarChar(50)
+  notes                    String?   @db.Text
+  emergencyContactName     String?   @map("emergency_contact_name") @db.VarChar(255)
+  emergencyContactRelation String?   @map("emergency_contact_relation") @db.VarChar(50)
+  emergencyContactPhone    String?   @map("emergency_contact_phone") @db.VarChar(20)
+  createdAt                DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
@@ -208,6 +214,7 @@ model FacilityProfile {
   nameKana    String?  @map("name_kana") @db.VarChar(255)
   description String?  @db.Text
   capacity    Int?
+  serviceType String?  @map("service_type") @db.VarChar(50)
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -228,6 +235,7 @@ model FacilityLocation {
   building   String?  @db.VarChar(255)
   latitude   Decimal? @db.Decimal(10, 8)
   longitude  Decimal? @db.Decimal(11, 8)
+  accessInfo String?  @map("access_info") @db.Text
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -245,7 +253,9 @@ model FacilityContact {
   contactType String   @map("contact_type") @db.VarChar(20)
   name        String?  @db.VarChar(255)
   phone       String?  @db.VarChar(20)
+  fax         String?  @db.VarChar(20)
   email       String?  @db.VarChar(255)
+  website     String?  @db.VarChar(255)
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
@@ -376,19 +386,19 @@ model PlanCustomField {
 // slots: 空き状況
 
 model Slot {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  facilityId String   @map("facility_id") @db.Uuid
-  status     String   @db.VarChar(20)
-  expiresAt  DateTime @map("expires_at") @db.Timestamptz
-  updatedBy  String   @map("updated_by") @db.Uuid
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  facilityId String    @unique @map("facility_id") @db.Uuid
+  status     String    @db.VarChar(20)
+  comment    String?   @db.VarChar(100)
+  expiresAt  DateTime? @map("expires_at") @db.Timestamptz
+  updatedBy  String    @map("updated_by") @db.Uuid
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   facility Facility      @relation(fields: [facilityId], references: [id])
   updater  FacilityStaff @relation(fields: [updatedBy], references: [id])
   details  SlotDetail[]
 
-  @@index([facilityId])
   @@index([status])
   @@index([expiresAt])
   @@map("slots")
@@ -524,6 +534,7 @@ model Audit {
   @@map("audits")
 }
 
+// better-authの認証専用テーブル
 model User {
   id            String    @id
   name          String
@@ -537,8 +548,8 @@ model User {
 
   realm String
 
-  supporters     Supporter[]
-  facilityStaff  FacilityStaff[]
+  supporters    Supporter[]
+  facilityStaff FacilityStaff[]
 
   @@unique([email])
   @@map("users")
