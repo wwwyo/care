@@ -1,3 +1,4 @@
+import { isFacility } from '@/domain/facility/model'
 import type { FacilityRepository } from '@/domain/facility/repository'
 import { facilityRepository } from '@/infra/repositories/facility-repository'
 
@@ -36,22 +37,22 @@ export async function updateFacility(
     }
 
     // 基本情報更新（ドメイン層でバリデーション）
-    const updateSuccess = facility.updateBasicInfo({
+    let updatedFacility = facility.updateBasicInfo({
       name: input.name,
       nameKana: input.nameKana,
       description: input.description,
       serviceType: input.serviceType,
     })
 
-    if (!updateSuccess) {
+    if (!isFacility(updatedFacility)) {
       return {
         type: 'ValidationError',
-        message: '入力内容に誤りがあります。施設名称を確認してください。',
+        message: updatedFacility.message,
       }
     }
 
     // 連絡先更新
-    facility.updateContact({
+    updatedFacility = updatedFacility.updateContact({
       phone: input.phone,
       fax: input.fax,
       email: input.email,
@@ -59,13 +60,13 @@ export async function updateFacility(
     })
 
     // 場所情報更新
-    facility.updateLocation({
+    updatedFacility = updatedFacility.updateLocation({
       address: input.address,
       postalCode: input.postalCode,
       accessInfo: input.accessInfo,
     })
 
-    await repository.save(facility)
+    await repository.save(updatedFacility)
 
     return { success: true }
   } catch (error) {
