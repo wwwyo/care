@@ -137,7 +137,7 @@ async function main() {
     },
   })
 
-  // クライアント作成
+  // 利用者作成
   const client1 = await prisma.client.create({
     data: {
       tenantId: tenant1.id,
@@ -185,7 +185,7 @@ async function main() {
     },
   })
 
-  // クライアントとサポーターの関連付け
+  // 利用者とサポーターの関連付け
   await prisma.clientSupporter.create({
     data: {
       clientId: client1.id,

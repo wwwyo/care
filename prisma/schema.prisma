@@ -69,7 +69,7 @@ model Client {
   @@map("clients")
 }
 
-// client_supporters: クライアントと支援者の中間テーブル
+// client_supporters: 利用者と支援者の中間テーブル
 model ClientSupporter {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   clientId    String   @map("client_id") @db.Uuid

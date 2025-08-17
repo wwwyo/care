@@ -1,13 +1,14 @@
-import { describe, expect, it, vi } from 'bun:test'
+import { describe, expect, it, mock } from 'bun:test'
 import { createClient } from './create-client'
 
 describe('createClient', () => {
-  it('新規クライアントを作成できる', async () => {
-    const mockSave = vi.fn().mockResolvedValue({ type: 'success' })
+  it('新規利用者を作成できる', async () => {
+    const mockSave = mock(() => Promise.resolve({ type: 'success' as const }))
     const mockRepository = {
       save: mockSave,
-      findById: vi.fn(),
-      findAll: vi.fn(),
+      findById: mock(() => Promise.resolve(null)),
+      findBySupporterId: mock(() => Promise.resolve([])),
+      delete: mock(() => Promise.resolve()),
     }
 
     const result = await createClient(
@@ -39,12 +40,13 @@ describe('createClient', () => {
     expect(mockSave).toHaveBeenCalledTimes(1)
   })
 
-  it('障害とケアレベルを含むクライアントを作成できる', async () => {
-    const mockSave = vi.fn().mockResolvedValue({ type: 'success' })
+  it('障害とケアレベルを含む利用者を作成できる', async () => {
+    const mockSave = mock(() => Promise.resolve({ type: 'success' as const }))
     const mockRepository = {
       save: mockSave,
-      findById: vi.fn(),
-      findAll: vi.fn(),
+      findById: mock(() => Promise.resolve(null)),
+      findBySupporterId: mock(() => Promise.resolve([])),
+      delete: mock(() => Promise.resolve()),
     }
 
     const result = await createClient(
@@ -82,9 +84,10 @@ describe('createClient', () => {
 
   it('無効な電話番号でエラーを返す', async () => {
     const mockRepository = {
-      save: vi.fn(),
-      findById: vi.fn(),
-      findAll: vi.fn(),
+      save: mock(() => Promise.resolve({ type: 'success' as const })),
+      findById: mock(() => Promise.resolve(null)),
+      findBySupporterId: mock(() => Promise.resolve([])),
+      delete: mock(() => Promise.resolve()),
     }
 
     const result = await createClient(
@@ -114,9 +117,10 @@ describe('createClient', () => {
 
   it('必須フィールドが不足している場合エラーを返す', async () => {
     const mockRepository = {
-      save: vi.fn(),
-      findById: vi.fn(),
-      findAll: vi.fn(),
+      save: mock(() => Promise.resolve({ type: 'success' as const })),
+      findById: mock(() => Promise.resolve(null)),
+      findBySupporterId: mock(() => Promise.resolve([])),
+      delete: mock(() => Promise.resolve()),
     }
 
     const result = await createClient(
@@ -145,14 +149,17 @@ describe('createClient', () => {
   })
 
   it('リポジトリ保存エラーを処理する', async () => {
-    const mockSave = vi.fn().mockResolvedValue({
-      type: 'SaveError',
-      message: 'データベース接続エラー',
-    })
+    const mockSave = mock(() =>
+      Promise.resolve({
+        type: 'SaveError' as const,
+        message: 'データベース接続エラー',
+      }),
+    )
     const mockRepository = {
       save: mockSave,
-      findById: vi.fn(),
-      findAll: vi.fn(),
+      findById: mock(() => Promise.resolve(null)),
+      findBySupporterId: mock(() => Promise.resolve([])),
+      delete: mock(() => Promise.resolve()),
     }
 
     const result = await createClient(

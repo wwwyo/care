@@ -3,7 +3,7 @@ import { Client, isClient } from './model'
 
 describe('Client', () => {
   describe('create', () => {
-    it('必須フィールドを持つクライアントを作成できる', () => {
+    it('必須フィールドを持つ利用者を作成できる', () => {
       const result = Client.create({
         tenantId: 'tenant-456',
         name: '山田太郎',
@@ -52,7 +52,7 @@ describe('Client', () => {
       })
     })
 
-    it('オプションフィールドを含むクライアントを作成できる', () => {
+    it('オプションフィールドを含む利用者を作成できる', () => {
       const result = Client.create({
         tenantId: 'tenant-456',
         name: '田中一郎',
@@ -259,7 +259,7 @@ describe('Client', () => {
   })
 
   describe('fromData', () => {
-    it('データベースのデータからクライアントを復元できる', () => {
+    it('データベースのデータから利用者を復元できる', () => {
       const dbData = {
         id: 'client-789',
         tenantId: 'tenant-456',

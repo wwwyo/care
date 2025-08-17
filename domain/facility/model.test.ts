@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { Facility, type FacilityData } from './model'
+import { Facility, type FacilityData, isFacility } from './model'
 
 describe('Facility', () => {
   const validFacilityData: FacilityData = {
@@ -121,14 +121,18 @@ describe('Facility', () => {
         serviceType: '就労継続支援A型',
       })
 
-      expect(result).toBe(true)
-      expect(facility!.getName()).toBe('更新された施設名')
-      expect(facility!.getNameKana()).toBe('コウシンサレタシセツメイ')
-      expect(facility!.getDescription()).toBe('新しい説明文です。')
-      expect(facility!.getServiceType()).toBe('就労継続支援A型')
+      expect(isFacility(result)).toBe(true)
+      if (isFacility(result)) {
+        expect(result.getName()).toBe('更新された施設名')
+        expect(result.getNameKana()).toBe('コウシンサレタシセツメイ')
+        expect(result.getDescription()).toBe('新しい説明文です。')
+        expect(result.getServiceType()).toBe('就労継続支援A型')
+        // 元のインスタンスは変更されていない
+        expect(facility!.getName()).toBe('テスト施設')
+      }
     })
 
-    it('無効な施設名の場合falseを返す', () => {
+    it('無効な施設名の場合エラーを返す', () => {
       const facility = Facility.create(validFacilityData)
       expect(facility).not.toBeNull()
 
@@ -139,8 +143,12 @@ describe('Facility', () => {
         serviceType: '就労継続支援A型',
       })
 
-      expect(result).toBe(false)
-      // 元の値が保持されている
+      expect(isFacility(result)).toBe(false)
+      if (!isFacility(result)) {
+        expect(result.type).toBe('InvalidName')
+        expect(result.message).toBe('施設名が無効です')
+      }
+      // 元のインスタンスは変更されていない
       expect(facility!.getName()).toBe('テスト施設')
     })
 
@@ -155,9 +163,11 @@ describe('Facility', () => {
         serviceType: '就労継続支援A型',
       })
 
-      expect(result).toBe(true)
-      expect(facility!.getName()).toBe('更新された施設名')
-      expect(facility!.getNameKana()).toBeNull() // 無効なカナ名はnullになる
+      expect(isFacility(result)).toBe(true)
+      if (isFacility(result)) {
+        expect(result.getName()).toBe('更新された施設名')
+        expect(result.getNameKana()).toBeNull() // 無効なカナ名はnullになる
+      }
     })
 
     it('無効なサービス種別の場合も更新できるがnullになる', () => {
@@ -171,9 +181,11 @@ describe('Facility', () => {
         serviceType: '無効なサービス',
       })
 
-      expect(result).toBe(true)
-      expect(facility!.getName()).toBe('更新された施設名')
-      expect(facility!.getServiceType()).toBeNull() // 無効なサービス種別はnullになる
+      expect(isFacility(result)).toBe(true)
+      if (isFacility(result)) {
+        expect(result.getName()).toBe('更新された施設名')
+        expect(result.getServiceType()).toBeNull() // 無効なサービス種別はnullになる
+      }
     })
 
     it('説明文が501文字以上の場合も更新できるがnullになる', () => {
@@ -187,9 +199,11 @@ describe('Facility', () => {
         serviceType: '就労継続支援A型',
       })
 
-      expect(result).toBe(true)
-      expect(facility!.getName()).toBe('更新された施設名')
-      expect(facility!.getDescription()).toBeNull() // 501文字以上はnullになる
+      expect(isFacility(result)).toBe(true)
+      if (isFacility(result)) {
+        expect(result.getName()).toBe('更新された施設名')
+        expect(result.getDescription()).toBeNull() // 501文字以上はnullになる
+      }
     })
 
     it('null値を許可する', () => {
@@ -203,11 +217,13 @@ describe('Facility', () => {
         serviceType: null,
       })
 
-      expect(result).toBe(true)
-      expect(facility!.getName()).toBe('更新された施設名')
-      expect(facility!.getNameKana()).toBeNull()
-      expect(facility!.getDescription()).toBeNull()
-      expect(facility!.getServiceType()).toBeNull()
+      expect(isFacility(result)).toBe(true)
+      if (isFacility(result)) {
+        expect(result.getName()).toBe('更新された施設名')
+        expect(result.getNameKana()).toBeNull()
+        expect(result.getDescription()).toBeNull()
+        expect(result.getServiceType()).toBeNull()
+      }
     })
   })
 
@@ -216,17 +232,19 @@ describe('Facility', () => {
       const facility = Facility.create(validFacilityData)
       expect(facility).not.toBeNull()
 
-      facility!.updateContact({
+      const updated = facility!.updateContact({
         phone: '090-1234-5678',
         fax: '03-9876-5432',
         email: 'new@example.com',
         website: 'https://new-example.com',
       })
 
-      expect(facility!.getPhone()).toBe('090-1234-5678')
-      expect(facility!.getFax()).toBe('03-9876-5432')
-      expect(facility!.getEmail()).toBe('new@example.com')
-      expect(facility!.getWebsite()).toBe('https://new-example.com')
+      expect(updated.getPhone()).toBe('090-1234-5678')
+      expect(updated.getFax()).toBe('03-9876-5432')
+      expect(updated.getEmail()).toBe('new@example.com')
+      expect(updated.getWebsite()).toBe('https://new-example.com')
+      // 元のインスタンスは変更されていない
+      expect(facility!.getPhone()).toBe('03-1234-5678')
     })
 
     it('バリデーションなしで値を更新できる', () => {
@@ -234,30 +252,30 @@ describe('Facility', () => {
       expect(facility).not.toBeNull()
 
       // 現在のモデルではバリデーションを行わない
-      facility!.updateContact({
+      const updated = facility!.updateContact({
         phone: '123', // 短い値でも受け入れる
         email: 'invalid-email', // @がなくても受け入れる
       })
 
-      expect(facility!.getPhone()).toBe('123')
-      expect(facility!.getEmail()).toBe('invalid-email')
+      expect(updated.getPhone()).toBe('123')
+      expect(updated.getEmail()).toBe('invalid-email')
     })
 
     it('null値を許可する', () => {
       const facility = Facility.create(validFacilityData)
       expect(facility).not.toBeNull()
 
-      facility!.updateContact({
+      const updated = facility!.updateContact({
         phone: null,
         fax: null,
         email: null,
         website: null,
       })
 
-      expect(facility!.getPhone()).toBeNull()
-      expect(facility!.getFax()).toBeNull()
-      expect(facility!.getEmail()).toBeNull()
-      expect(facility!.getWebsite()).toBeNull()
+      expect(updated.getPhone()).toBeNull()
+      expect(updated.getFax()).toBeNull()
+      expect(updated.getEmail()).toBeNull()
+      expect(updated.getWebsite()).toBeNull()
     })
   })
 
@@ -266,15 +284,17 @@ describe('Facility', () => {
       const facility = Facility.create(validFacilityData)
       expect(facility).not.toBeNull()
 
-      facility!.updateLocation({
+      const updated = facility!.updateLocation({
         address: '大阪府大阪市北区2-2-2',
         postalCode: '530-0001',
         accessInfo: 'バス停から徒歩3分',
       })
 
-      expect(facility!.getAddress()).toBe('大阪府大阪市北区2-2-2')
-      expect(facility!.getPostalCode()).toBe('530-0001')
-      expect(facility!.getAccessInfo()).toBe('バス停から徒歩3分')
+      expect(updated.getAddress()).toBe('大阪府大阪市北区2-2-2')
+      expect(updated.getPostalCode()).toBe('530-0001')
+      expect(updated.getAccessInfo()).toBe('バス停から徒歩3分')
+      // 元のインスタンスは変更されていない
+      expect(facility!.getAddress()).toBe('東京都渋谷区1-1-1')
     })
 
     it('バリデーションなしで値を更新できる', () => {
@@ -282,30 +302,30 @@ describe('Facility', () => {
       expect(facility).not.toBeNull()
 
       // 現在のモデルではバリデーションを行わない
-      facility!.updateLocation({
+      const updated = facility!.updateLocation({
         address: 'あ'.repeat(256), // 長い値でも受け入れる
         postalCode: '123456', // フォーマットが違っても受け入れる
         accessInfo: 'バス停から徒歩3分',
       })
 
-      expect(facility!.getAddress()).toBe('あ'.repeat(256))
-      expect(facility!.getPostalCode()).toBe('123456')
-      expect(facility!.getAccessInfo()).toBe('バス停から徒歩3分')
+      expect(updated.getAddress()).toBe('あ'.repeat(256))
+      expect(updated.getPostalCode()).toBe('123456')
+      expect(updated.getAccessInfo()).toBe('バス停から徒歩3分')
     })
 
     it('null値を許可する', () => {
       const facility = Facility.create(validFacilityData)
       expect(facility).not.toBeNull()
 
-      facility!.updateLocation({
+      const updated = facility!.updateLocation({
         address: null,
         postalCode: null,
         accessInfo: null,
       })
 
-      expect(facility!.getAddress()).toBeNull()
-      expect(facility!.getPostalCode()).toBeNull()
-      expect(facility!.getAccessInfo()).toBeNull()
+      expect(updated.getAddress()).toBeNull()
+      expect(updated.getPostalCode()).toBeNull()
+      expect(updated.getAccessInfo()).toBeNull()
     })
   })
 

@@ -1,5 +1,6 @@
 'use server'
 
+import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { getFacilityByStaffUserId } from '@/infra/query/facility-query'
 import { requireRealm } from '@/lib/auth/helpers'
@@ -7,58 +8,112 @@ import { updateFacility } from '@/uc/facility/update-facility'
 
 // フォームデータの基本的な型変換のみ行う（詳細なバリデーションはドメイン層で実施）
 const updateFacilitySchema = z.object({
-  name: z.string().transform((str) => str.trim()),
-  nameKana: z.string().nullable().optional(),
-  description: z.string().nullable().optional(),
-  serviceType: z.string().nullable().optional(),
-  phone: z.string().nullable().optional(),
-  fax: z.string().nullable().optional(),
-  email: z.string().nullable().optional(),
-  website: z.string().nullable().optional(),
-  address: z.string().nullable().optional(),
-  postalCode: z.string().nullable().optional(),
-  accessInfo: z.string().nullable().optional(),
+  name: z
+    .string()
+    .min(1, '施設名称は必須です')
+    .transform((str) => str.trim()),
+  nameKana: z.string().optional(),
+  description: z.string().optional(),
+  serviceType: z.string().optional(),
+  phone: z.string().optional(),
+  fax: z.string().optional(),
+  email: z
+    .string()
+    .email('正しいメールアドレス形式で入力してください')
+    .optional()
+    .or(z.literal('')),
+  website: z.string().url('正しいURL形式で入力してください').optional().or(z.literal('')),
+  address: z.string().optional(),
+  postalCode: z.string().optional(),
+  accessInfo: z.string().optional(),
 })
 
-export async function updateFacilityAction(formData: FormData) {
-  const session = await requireRealm('facility_staff', '/login')
+type ActionState = {
+  type: 'error'
+  message?: string
+  fieldErrors?: Record<string, string>
+  values?: Record<string, string>
+} | null
 
-  const facility = await getFacilityByStaffUserId(session.user.id)
-  if (!facility) {
-    return { type: 'NotFound' as const, message: '施設が見つかりません' }
-  }
+export async function updateFacilityAction(
+  prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const session = await requireRealm('facility_staff', '/login')
 
-  // FormDataをオブジェクトに変換
-  const rawData = {
-    name: formData.get('name'),
-    nameKana: formData.get('nameKana') || null,
-    description: formData.get('description') || null,
-    serviceType: formData.get('serviceType') || null,
-    phone: formData.get('phone') || null,
-    fax: formData.get('fax') || null,
-    email: formData.get('email') || null,
-    website: formData.get('website') || null,
-    address: formData.get('address') || null,
-    postalCode: formData.get('postalCode') || null,
-    accessInfo: formData.get('accessInfo') || null,
-  }
+    const facility = await getFacilityByStaffUserId(session.user.id)
+    if (!facility) {
+      return {
+        type: 'error' as const,
+        message: '施設が見つかりません',
+      }
+    }
 
-  // 基本的な型変換のみ実施
-  const validationResult = updateFacilitySchema.safeParse(rawData)
+    // フォームの値を保存（エラー時に返す）
+    const formValues = Object.fromEntries(formData.entries())
 
-  if (!validationResult.success) {
-    const firstError = validationResult.error.issues[0]
+    // FormDataをオブジェクトに変換
+    const rawData = {
+      name: formData.get('name'),
+      nameKana: formData.get('nameKana') || undefined,
+      description: formData.get('description') || undefined,
+      serviceType: formData.get('serviceType') || undefined,
+      phone: formData.get('phone') || undefined,
+      fax: formData.get('fax') || undefined,
+      email: formData.get('email') || undefined,
+      website: formData.get('website') || undefined,
+      address: formData.get('address') || undefined,
+      postalCode: formData.get('postalCode') || undefined,
+      accessInfo: formData.get('accessInfo') || undefined,
+    }
+
+    // バリデーション
+    const parsed = updateFacilitySchema.safeParse(rawData)
+
+    if (!parsed.success) {
+      // Zodエラーをfieldごとにまとめて返す
+      const fieldErrors: Record<string, string> = {}
+      parsed.error.issues.forEach((err) => {
+        const fieldName = err.path[0]
+        if (fieldName && typeof fieldName === 'string') {
+          fieldErrors[fieldName] = err.message
+        }
+      })
+
+      return {
+        type: 'error' as const,
+        fieldErrors,
+        values: formValues,
+      }
+    }
+
+    // ドメイン層とユースケース層で詳細なバリデーションを実施
+    const result = await updateFacility({
+      facilityId: facility.id,
+      ...parsed.data,
+    })
+
+    if ('success' in result) {
+      redirect('/facility')
+    }
+
+    // エラーメッセージのマッピング
+    const errorMessages: Record<string, string> = {
+      NotFound: '施設が見つかりません',
+      ValidationError: '入力内容に誤りがあります',
+      SaveError: 'データの保存に失敗しました',
+    }
+
     return {
-      type: 'ValidationError' as const,
-      message: firstError?.message || '入力内容に誤りがあります',
+      type: 'error' as const,
+      message: errorMessages[result.type] || 'エラーが発生しました',
+      values: formValues,
+    }
+  } catch {
+    return {
+      type: 'error' as const,
+      message: '施設情報の更新に失敗しました',
     }
   }
-
-  // ドメイン層とユースケース層で詳細なバリデーションを実施
-  const result = await updateFacility({
-    facilityId: facility.id,
-    ...validationResult.data,
-  })
-
-  return result
 }

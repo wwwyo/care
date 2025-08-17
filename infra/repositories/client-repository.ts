@@ -1,159 +1,225 @@
-import {
-  Client,
-  type ClientAddress,
-  type ClientProfile,
-  type ClientSupporter,
-} from '@/domain/client/model'
+import { Client, type ClientData, isClient } from '@/domain/client/model'
 import type { ClientRepository } from '@/domain/client/repository'
 import { prisma } from '@/lib/prisma'
 
-export const clientRepository: ClientRepository = {
-  async save(client: Client): Promise<void> {
+export type SaveError = { type: 'SaveError'; message: string }
+
+async function save(client: Client): Promise<{ type: 'success' } | SaveError> {
+  try {
+    const data = client.toData()
+
     await prisma.$transaction(async (tx) => {
-      // Client本体を保存
-      await tx.client.create({
-        data: {
-          id: client.id,
-          tenantId: client.tenantId,
+      // 利用者の作成または更新
+      await tx.client.upsert({
+        where: { id: data.id },
+        create: {
+          id: data.id,
+          tenantId: data.tenantId,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
+        },
+        update: {
+          updatedAt: data.updatedAt,
         },
       })
 
-      // プロフィールがあれば保存
-      if (client.profile) {
-        await tx.clientProfile.create({
-          data: {
-            id: client.profile.id,
-            clientId: client.id,
-            name: client.profile.name,
-            nameKana: client.profile.nameKana,
-            gender: client.profile.gender,
-            birthDate: client.profile.birthDate,
-            phone: client.profile.phone,
-          },
-        })
-      }
-
-      // 住所があれば保存
-      if (client.addresses.length > 0) {
-        await tx.clientAddress.createMany({
-          data: client.addresses.map((address) => ({
-            id: address.id,
-            clientId: client.id,
-            postalCode: address.postalCode,
-            prefecture: address.prefecture,
-            city: address.city,
-            street: address.street,
-            building: address.building,
-          })),
-        })
-      }
-
-      // サポーターがあれば保存
-      if (client.supporters.length > 0) {
-        await tx.clientSupporter.createMany({
-          data: client.supporters.map((supporter) => ({
-            id: supporter.id,
-            clientId: client.id,
-            supporterId: supporter.supporterId,
-          })),
-        })
-      }
-    })
-  },
-
-  async findById(id: string): Promise<Client | null> {
-    const data = await prisma.client.findUnique({
-      where: { id },
-      include: {
-        profile: true,
-        addresses: true,
-        clientSupporters: true,
-      },
-    })
-
-    if (!data) return null
-
-    const profile: ClientProfile | undefined = data.profile
-      ? {
-          id: data.profile.id,
-          clientId: data.profile.clientId,
-          name: data.profile.name,
-          nameKana: data.profile.nameKana ?? undefined,
-          gender: data.profile.gender ?? undefined,
-          birthDate: data.profile.birthDate ?? undefined,
-          phone: data.profile.phone ?? undefined,
-        }
-      : undefined
-
-    const addresses: ClientAddress[] = data.addresses.map((addr) => ({
-      id: addr.id,
-      clientId: addr.clientId,
-      postalCode: addr.postalCode ?? undefined,
-      prefecture: addr.prefecture ?? undefined,
-      city: addr.city ?? undefined,
-      street: addr.street ?? undefined,
-      building: addr.building ?? undefined,
-    }))
-
-    const supporters: ClientSupporter[] = data.clientSupporters.map((cs) => ({
-      id: cs.id,
-      clientId: cs.clientId,
-      supporterId: cs.supporterId,
-      createdAt: cs.createdAt,
-      updatedAt: cs.updatedAt,
-    }))
-
-    return new Client(data.id, data.tenantId, profile, addresses, supporters)
-  },
-
-  async findBySupporterId(supporterId: string): Promise<Client[]> {
-    const clients = await prisma.client.findMany({
-      where: {
-        clientSupporters: {
-          some: {
-            supporterId,
-          },
+      // プロファイルの作成または更新
+      await tx.clientProfile.upsert({
+        where: { clientId: data.id },
+        create: {
+          clientId: data.id,
+          name: data.name,
+          gender: data.gender,
+          birthDate: data.birthDate,
+          phone: data.phoneNumber,
+          disability: data.disability,
+          careLevel: data.careLevel,
+          notes: data.notes,
+          emergencyContactName: data.emergencyContact.name,
+          emergencyContactRelation: data.emergencyContact.relationship,
+          emergencyContactPhone: data.emergencyContact.phoneNumber,
         },
-      },
-      include: {
-        profile: true,
-        addresses: true,
-        clientSupporters: true,
-      },
+        update: {
+          name: data.name,
+          gender: data.gender,
+          birthDate: data.birthDate,
+          phone: data.phoneNumber,
+          disability: data.disability,
+          careLevel: data.careLevel,
+          notes: data.notes,
+          emergencyContactName: data.emergencyContact.name,
+          emergencyContactRelation: data.emergencyContact.relationship,
+          emergencyContactPhone: data.emergencyContact.phoneNumber,
+        },
+      })
+
+      // 住所の作成または更新
+      const existingAddress = await tx.clientAddress.findFirst({
+        where: { clientId: data.id },
+      })
+
+      if (existingAddress) {
+        await tx.clientAddress.update({
+          where: { id: existingAddress.id },
+          data: {
+            postalCode: data.address.postalCode,
+            prefecture: data.address.prefecture,
+            city: data.address.city,
+            street: data.address.street,
+            building: data.address.building,
+          },
+        })
+      } else {
+        await tx.clientAddress.create({
+          data: {
+            clientId: data.id,
+            postalCode: data.address.postalCode,
+            prefecture: data.address.prefecture,
+            city: data.address.city,
+            street: data.address.street,
+            building: data.address.building,
+          },
+        })
+      }
     })
 
-    return clients.map((data) => {
-      const profile: ClientProfile | undefined = data.profile
-        ? {
-            id: data.profile.id,
-            clientId: data.profile.clientId,
-            name: data.profile.name,
-            nameKana: data.profile.nameKana ?? undefined,
-            gender: data.profile.gender ?? undefined,
-            birthDate: data.profile.birthDate ?? undefined,
-            phone: data.profile.phone ?? undefined,
-          }
-        : undefined
+    return { type: 'success' }
+  } catch (error) {
+    return {
+      type: 'SaveError',
+      message: error instanceof Error ? error.message : '保存に失敗しました',
+    }
+  }
+}
 
-      const addresses: ClientAddress[] = data.addresses.map((addr) => ({
-        id: addr.id,
-        clientId: addr.clientId,
-        postalCode: addr.postalCode ?? undefined,
-        prefecture: addr.prefecture ?? undefined,
-        city: addr.city ?? undefined,
-        street: addr.street ?? undefined,
-        building: addr.building ?? undefined,
-      }))
+async function findById(id: string): Promise<Client | null> {
+  // TODO: tenantIdはcontextから取得する必要がある
+  const tenantId = 'default-tenant'
+  const clientRecord = await prisma.client.findFirst({
+    where: {
+      id,
+      tenantId,
+    },
+    include: {
+      profile: true,
+      addresses: true,
+    },
+  })
 
-      const supporters: ClientSupporter[] = data.clientSupporters.map((cs) => ({
-        id: cs.id,
-        clientId: cs.clientId,
-        supporterId: cs.supporterId,
-        createdAt: cs.createdAt,
-        updatedAt: cs.updatedAt,
-      }))
+  if (!clientRecord || !clientRecord.profile) {
+    return null
+  }
 
-      return new Client(data.id, data.tenantId, profile, addresses, supporters)
-    })
-  },
+  const address = clientRecord.addresses[0]
+  if (!address) {
+    return null
+  }
+
+  const clientData: ClientData = {
+    id: clientRecord.id,
+    tenantId: clientRecord.tenantId,
+    name: clientRecord.profile.name,
+    birthDate: clientRecord.profile.birthDate || new Date(),
+    gender: (clientRecord.profile.gender || 'other') as 'male' | 'female' | 'other',
+    address: {
+      postalCode: address.postalCode || undefined,
+      prefecture: address.prefecture || '',
+      city: address.city || '',
+      street: address.street || '',
+      building: address.building || undefined,
+    },
+    phoneNumber: clientRecord.profile.phone || '',
+    emergencyContact: {
+      name: clientRecord.profile.emergencyContactName || '',
+      relationship: clientRecord.profile.emergencyContactRelation || '',
+      phoneNumber: clientRecord.profile.emergencyContactPhone || '',
+    },
+    disability: clientRecord.profile.disability || undefined,
+    careLevel: clientRecord.profile.careLevel || undefined,
+    notes: clientRecord.profile.notes || undefined,
+    createdAt: clientRecord.createdAt,
+    updatedAt: clientRecord.updatedAt,
+  }
+
+  const client = Client.fromData(clientData)
+  return isClient(client) ? client : null
+}
+
+async function findBySupporterId(_supporterId: string): Promise<Client[]> {
+  // TODO: 実装が必要
+  return []
+}
+
+async function _findAll(
+  tenantId: string,
+  options?: { limit?: number; offset?: number },
+): Promise<Client[]> {
+  const clientRecords = await prisma.client.findMany({
+    where: { tenantId },
+    include: {
+      profile: true,
+      addresses: true,
+    },
+    take: options?.limit,
+    skip: options?.offset,
+    orderBy: { createdAt: 'desc' },
+  })
+
+  const clients: Client[] = []
+
+  for (const record of clientRecords) {
+    if (!record.profile || record.addresses.length === 0) {
+      continue
+    }
+
+    const address = record.addresses[0]
+    const clientData: ClientData = {
+      id: record.id,
+      tenantId: record.tenantId,
+      name: record.profile.name,
+      birthDate: record.profile.birthDate || new Date(),
+      gender: (record.profile.gender || 'other') as 'male' | 'female' | 'other',
+      address: {
+        postalCode: address?.postalCode || undefined,
+        prefecture: address?.prefecture || '',
+        city: address?.city || '',
+        street: address?.street || '',
+        building: address?.building || undefined,
+      },
+      phoneNumber: record.profile.phone || '',
+      emergencyContact: {
+        name: record.profile.emergencyContactName || '',
+        relationship: record.profile.emergencyContactRelation || '',
+        phoneNumber: record.profile.emergencyContactPhone || '',
+      },
+      disability: record.profile.disability || undefined,
+      careLevel: record.profile.careLevel || undefined,
+      notes: record.profile.notes || undefined,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
+    }
+
+    const client = Client.fromData(clientData)
+    if (isClient(client)) {
+      clients.push(client)
+    }
+  }
+
+  return clients
+}
+
+async function deleteById(id: string): Promise<void> {
+  await prisma.client.delete({
+    where: { id },
+  })
+}
+
+/**
+ * 利用者リポジトリの実装
+ */
+export const clientRepository: ClientRepository = {
+  save,
+  findById,
+  findBySupporterId,
+  delete: deleteById,
 }

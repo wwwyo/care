@@ -69,11 +69,11 @@ export class Address {
     if (cityMatch?.[1]) {
       city = cityMatch[1]
       const remainingAfterCity = remaining.substring(city.length).trim()
-      street = remainingAfterCity || undefined
+      street = remainingAfterCity || ''
     } else {
       // 市区町村が見つからない場合は、残り全体を市区町村として扱う
       city = remaining
-      street = undefined
+      street = ''
     }
 
     return new Address(undefined, prefecture, city, street, undefined)

@@ -42,7 +42,7 @@ care/
 │       ├── slot/       # 施設の空き枠管理
 │       │               # 空き状況（○/△/×）、有効期限、自動ステータス変更
 │       ├── supporter/  # 支援者（相談支援専門員）の管理
-│       │               # ケアマネージャー情報、担当クライアント管理、テナント所属
+│       │               # ケアマネージャー情報、担当利用者管理、テナント所属
 │       ├── consent/    # 同意管理
 │       │               # 利用者の同意取得、証跡保存、2段階管理（リクエスト/記録）
 │       ├── inquiry/    # 照会管理
@@ -92,9 +92,16 @@ care/
 
 - index.ts での re-export 禁止
 - ファイル名は kebab-case
-- フォームは Next.js 15 の `Form` コンポーネント使用（shadcn/ui の Form は使用しない）
+- フォームは Next.js 15 の `Form` (import Form from 'next/form')コンポーネント使用（shadcn/ui の Form は使用しない）
+- actions属性を使ってform actionを実行する
+- **フォームの状態管理**: `useActionState` を使用（例: `const [state, formAction, isPending] = useActionState(fn, initialState)`）
+  - エラー状態とローディング状態を統一的に管理
+  - エラー時はフォームフィールドの値も保持し、defaultValueに設定（ユーザーの入力を失わない）
 - 環境変数は env.ts でチェック後に使用
 - 後方互換性は不要
+- **UIフィードバック**:
+  - フォームバリデーションエラー: 該当フィールドの近くに表示（インライン）
+  - 一時的な通知: actionの成功/エラー通知は出さなくてもわかるようなui設計を前提とし、ユーザが混乱する場合にのみ用いる。`components/ui/sonner` を使用
 - **Domain層のモデルのみclass定義を許可**（その他は関数型で実装）
   - ファクトリメソッドの命名は常に `create` とする（例: `Client.create()`）
   - `create` メソッドでは ID を `crypto.randomUUID()` で生成する
@@ -138,3 +145,7 @@ type DomainError =
 // 成功時はデータ、失敗時はエラーオブジェクトを返す
 function useCase(): Promise<Data | DomainError>
 ```
+
+**try-catchの使用ガイドライン:**
+- `try-catch`は例外(外部ライブラリやPrismaなど)がthrowする可能性がある場合のみ使用
+- 使用する際は最小スコープで実装（必要最小限のコードのみをtryブロックに含める）
