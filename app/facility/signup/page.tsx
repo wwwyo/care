@@ -30,18 +30,19 @@ export default function FacilitySignupPage() {
     setIsLoading(true)
     setError(null)
 
-    // サインアップ時にrealmを指定
+    // サインアップ時にrealmを指定（autoSignIn: trueにより自動的にサインインされる）
     await authClient.signUp.email(
       {
         email,
         password,
         name,
         realm: USER_REALMS.FACILITY_STAFF,
-        callbackURL: '/facility/onboarding',
+        callbackURL: '/facility',
       },
       {
         onSuccess: () => {
           setIsLoading(false)
+          // autoSignInとcallbackURLにより自動的に /facility へ遷移
         },
         onError: (ctx) => {
           setError(ctx.error.message || 'サインアップに失敗しました')

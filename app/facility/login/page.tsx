@@ -33,7 +33,7 @@ export default function FacilityLoginPage() {
       {
         email,
         password,
-        callbackURL: '/facility/dashboard',
+        callbackURL: '/facility',
       },
       {
         onSuccess: () => {
