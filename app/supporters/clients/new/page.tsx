@@ -64,12 +64,11 @@ export default function NewClientPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="birthDate">生年月日 *</Label>
+                <Label htmlFor="birthDate">生年月日</Label>
                 <Input
                   id="birthDate"
                   name="birthDate"
                   type="date"
-                  required
                   defaultValue={state?.values?.birthDate ?? ''}
                 />
                 {state?.fieldErrors?.birthDate && (

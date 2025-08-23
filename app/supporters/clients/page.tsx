@@ -63,7 +63,7 @@ export default async function ClientsPage() {
                       : profile.gender === 'female'
                         ? '女性'
                         : 'その他'}{' '}
-                    ・ {calculateAge(profile.birthDate)}歳
+                    ・ {profile.birthDate ? `${calculateAge(profile.birthDate)}歳` : '年齢未定義'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

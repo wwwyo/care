@@ -40,7 +40,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
   const profile = clientRecord.profile
   const address = clientRecord.addresses[0]
-  const age = calculateAge(profile.birthDate)
+  const age = profile.birthDate ? calculateAge(profile.birthDate) : undefined
 
   // 計画書を取得
   const plan = await getPlanByClientId(id)
@@ -82,7 +82,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               <div>
                 <p className="text-sm text-muted-foreground">生年月日</p>
                 <p className="text-lg font-medium">
-                  {profile.birthDate.toLocaleDateString('ja-JP')} ({age}歳)
+                  {profile.birthDate
+                    ? `${profile.birthDate.toLocaleDateString('ja-JP')} (${age}歳)`
+                    : '未定義'}
                 </p>
               </div>
               <div>

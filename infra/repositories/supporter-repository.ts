@@ -19,13 +19,13 @@ export const supporterRepository: SupporterRepository = {
         await tx.supporterProfile.create({
           data: {
             id: supporter.profile.id,
-            supporterId: supporter.id,
             tenantId: supporter.tenantId,
             name: supporter.profile.name,
             nameKana: supporter.profile.nameKana,
             gender: supporter.profile.gender,
             birthDate: supporter.profile.birthDate,
             phone: supporter.profile.phone,
+            supporter: { connect: { id: supporter.id } },
           },
         })
       }

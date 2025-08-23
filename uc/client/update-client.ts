@@ -3,7 +3,7 @@ import type { ClientRepository } from '@/domain/client/repository'
 
 type UpdateClientData = {
   name: string
-  birthDate: Date
+  birthDate?: Date
   gender: 'male' | 'female' | 'other'
   address: {
     postalCode?: string

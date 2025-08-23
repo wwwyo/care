@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 
-export async function getPlansByClientId(clientId: string) {
-  return prisma.plan.findMany({
+export async function getPlanByClientId(clientId: string) {
+  return prisma.plan.findUnique({
     where: {
       clientId,
     },
@@ -18,9 +18,6 @@ export async function getPlansByClientId(clientId: string) {
           },
         },
       },
-    },
-    orderBy: {
-      createdAt: 'desc',
     },
   })
 }

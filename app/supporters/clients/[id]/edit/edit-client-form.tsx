@@ -87,13 +87,12 @@ export default function EditClientForm({ clientData }: EditClientFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="birthDate">生年月日 *</Label>
+                <Label htmlFor="birthDate">生年月日</Label>
                 <Input
                   id="birthDate"
                   name="birthDate"
                   type="date"
-                  required
-                  defaultValue={state?.values?.birthDate ?? clientData.birthDate}
+                  defaultValue={state?.values?.birthDate ?? clientData.birthDate ?? ''}
                 />
                 {state?.fieldErrors?.birthDate && (
                   <p className="text-sm text-red-500">{state.fieldErrors.birthDate}</p>

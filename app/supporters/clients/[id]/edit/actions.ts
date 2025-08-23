@@ -13,7 +13,7 @@ import { updateClient } from '@/uc/client/update-client'
 const updateClientSchema = z.object({
   id: z.string().min(1, 'IDは必須です'),
   name: z.string().min(1, '氏名は必須です'),
-  birthDate: z.string().min(1, '生年月日は必須です'),
+  birthDate: z.string().optional(),
   gender: z.enum(['male', 'female', 'other']),
   prefecture: z.string().min(1, '都道府県は必須です'),
   city: z.string().min(1, '市区町村は必須です'),
@@ -154,7 +154,7 @@ export async function updateClientAction(
     existingClient,
     {
       name: validatedData.name,
-      birthDate: new Date(validatedData.birthDate),
+      birthDate: validatedData.birthDate ? new Date(validatedData.birthDate) : undefined,
       gender: validatedData.gender,
       address: {
         postalCode: validatedData.postalCode,
