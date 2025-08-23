@@ -318,8 +318,8 @@ model Plan {
   consents  Consent[]
   inquiries Inquiry[]
 
+  @@unique([clientId])
   @@index([tenantId])
-  @@index([clientId])
   @@index([currentVersionId])
   @@map("plans")
 }

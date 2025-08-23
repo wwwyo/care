@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { requireRealm } from '@/lib/auth/helpers'
 import { prisma } from '@/lib/prisma'
+import { parseArrayFromFormData } from '@/lib/utils/form-parser'
 import { createPlanUseCase } from '@/uc/plan/create-plan'
 
 const createPlanSchema = z.object({
@@ -11,8 +12,17 @@ const createPlanSchema = z.object({
   desiredLife: z.string().optional(),
   troubles: z.string().optional(),
   considerations: z.string().optional(),
-  services: z.union([z.array(z.string()), z.string()]).optional(),
 })
+
+const serviceSchema = z.object({
+  serviceCategory: z.string(),
+  serviceType: z.string(),
+  desiredAmount: z.string().optional(),
+  desiredLifeByService: z.string().optional(),
+  achievementPeriod: z.string().optional(),
+})
+
+type ServiceFormData = z.infer<typeof serviceSchema>
 
 type State = {
   error: string | null
@@ -49,7 +59,6 @@ export async function createPlanAction(_prevState: State, formData: FormData): P
     desiredLife: formData.get('desiredLife'),
     troubles: formData.get('troubles'),
     considerations: formData.get('considerations'),
-    services: formData.getAll('services'),
   }
 
   // バリデーション
@@ -66,6 +75,13 @@ export async function createPlanAction(_prevState: State, formData: FormData): P
   }
 
   const data = validationResult.data
+
+  // サービスデータをパース
+  const servicesData = parseArrayFromFormData<ServiceFormData>(formData, 'services')
+  const validServices = servicesData
+    .map((service) => serviceSchema.safeParse(service))
+    .filter((result) => result.success)
+    .map((result) => result.data)
 
   // クライアントがサポーターと同じテナントに属しているか確認
   const client = await prisma.client.findUnique({
@@ -91,6 +107,7 @@ export async function createPlanAction(_prevState: State, formData: FormData): P
     desiredLife: data.desiredLife || undefined,
     troubles: data.troubles || undefined,
     considerations: data.considerations || undefined,
+    services: validServices,
   })
 
   if ('type' in result) {
@@ -103,9 +120,6 @@ export async function createPlanAction(_prevState: State, formData: FormData): P
       },
     }
   }
-
-  // サービスを追加（今回は簡略化のため、次の実装で対応）
-  // TODO: 選択されたサービスをPlanVersionに追加する処理
 
   // 成功したらクライアント詳細ページにリダイレクト
   redirect(`/supporters/clients/${data.clientId}`)

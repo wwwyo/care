@@ -1,10 +1,20 @@
-import { AlertCircle, ArrowLeft, Edit, FileText, MapPin, Phone, Plus, User } from 'lucide-react'
+import {
+  AlertCircle,
+  ArrowLeft,
+  Edit,
+  FileText,
+  MapPin,
+  Mic,
+  Phone,
+  Plus,
+  User,
+} from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getClientById } from '@/infra/query/client-query'
-import { getPlansByClientId } from '@/infra/query/plan-query'
+import { getPlanByClientId } from '@/infra/query/plan-query'
 import { getSupporterByUserId } from '@/infra/query/supporter-query'
 import { requireRealm } from '@/lib/auth/helpers'
 import { calculateAge } from '@/lib/utils/age-calculator'
@@ -33,7 +43,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
   const age = calculateAge(profile.birthDate)
 
   // 計画書を取得
-  const plans = await getPlansByClientId(id)
+  const plan = await getPlanByClientId(id)
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -130,38 +140,40 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               <Button asChild size="sm">
                 <Link href={`/supporters/clients/${id}/plans/new`}>
                   <Plus className="mr-2 h-4 w-4" />
-                  {plans.length > 0 ? '新バージョン作成' : '新規作成'}
+                  {plan ? '新バージョン作成' : '新規作成'}
                 </Link>
               </Button>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {plans.length === 0 ? (
+            {!plan ? (
               <p className="text-muted-foreground">計画書はまだ作成されていません</p>
             ) : (
               <div className="space-y-2">
-                {plans.map((plan) => {
-                  const latestVersion = plan.versions[0]
-                  return (
-                    <div
-                      key={plan.id}
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div>
-                        <p className="font-medium">
-                          {latestVersion ? `バージョン ${latestVersion.versionNumber}` : '計画書'}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {latestVersion?.versionType === 'published' ? '確定版' : '下書き'} ・
-                          作成日: {new Date(plan.createdAt).toLocaleDateString('ja-JP')}
-                        </p>
-                      </div>
+                {plan.versions.map((version) => (
+                  <div
+                    key={version.id}
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div>
+                      <p className="font-medium">バージョン {version.versionNumber}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {version.versionType === 'published' ? '確定版' : '下書き'} ・ 作成日:{' '}
+                        {new Date(version.createdAt).toLocaleDateString('ja-JP')}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
                       <Button asChild variant="outline" size="sm">
                         <Link href={`/supporters/clients/${id}/plans/${plan.id}/edit`}>編集</Link>
                       </Button>
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={`/supporters/clients/${id}/plans/${plan.id}/record`}>
+                          <Mic className="h-4 w-4" />
+                        </Link>
+                      </Button>
                     </div>
-                  )
-                })}
+                  </div>
+                ))}
               </div>
             )}
           </CardContent>

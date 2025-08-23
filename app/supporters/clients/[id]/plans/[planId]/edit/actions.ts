@@ -23,6 +23,8 @@ const serviceSchema = z.object({
   achievementPeriod: z.string().optional(),
 })
 
+type ServiceFormData = z.infer<typeof serviceSchema>
+
 type UpdateState = {
   error: string | null
   formData?: {
@@ -59,11 +61,11 @@ export async function updatePlanAction(
   const data = validationResult.data
 
   // サービスデータをパース
-  const servicesData = parseArrayFromFormData<any>(formData, 'services')
+  const servicesData = parseArrayFromFormData<ServiceFormData>(formData, 'services')
   const validServices = servicesData
     .map((service) => serviceSchema.safeParse(service))
     .filter((result) => result.success)
-    .map((result) => result.data as z.infer<typeof serviceSchema>)
+    .map((result) => result.data)
 
   const result = await updatePlanUseCase({
     planId: data.planId,

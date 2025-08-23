@@ -1,6 +1,7 @@
+import { ServiceCategory, type ServiceCategoryType } from './service-category'
+
 type PlanStatus = 'draft' | 'published'
 type VersionType = 'draft' | 'published'
-type ServiceCategory = 'home' | 'residential' | 'daytime' | 'other' | 'child'
 
 export type PlanError =
   | { type: 'ValidationError'; message: string }
@@ -51,7 +52,11 @@ export class Plan {
 
   addVersion(version: PlanVersion): Plan | PlanError {
     // バージョン番号の連続性チェック
-    const expectedVersionNumber = this.versions.length + 1
+    const latestVersion = this.versions.reduce(
+      (max, v) => (v.versionNumber > max ? v.versionNumber : max),
+      0,
+    )
+    const expectedVersionNumber = latestVersion + 1
     if (version.versionNumber !== expectedVersionNumber) {
       return {
         type: 'ValidationError',
@@ -73,10 +78,21 @@ export class Plan {
     troubles?: string
     considerations?: string
     reasonForUpdate?: string
+    services?: Array<{
+      serviceCategory: string
+      serviceType: string
+      desiredAmount?: string
+      desiredLifeByService?: string
+      achievementPeriod?: string
+    }>
   }): Plan | PlanError {
-    const nextVersionNumber = this.versions.length + 1
+    const latestVersionNumber = this.versions.reduce(
+      (max, v) => (v.versionNumber > max ? v.versionNumber : max),
+      0,
+    )
+    const nextVersionNumber = latestVersionNumber + 1
 
-    const newVersion = PlanVersion.create({
+    let newVersion = PlanVersion.create({
       planId: this.id,
       versionNumber: nextVersionNumber,
       createdBy: props.createdBy,
@@ -85,6 +101,27 @@ export class Plan {
       considerations: props.considerations,
       reasonForUpdate: props.reasonForUpdate,
     })
+
+    // サービスを追加
+    if (props.services && props.services.length > 0) {
+      for (const serviceInput of props.services) {
+        const serviceCategory = ServiceCategory.fromString(serviceInput.serviceCategory)
+        const service = PlanService.create({
+          planVersionId: newVersion.id,
+          serviceCategory,
+          serviceType: serviceInput.serviceType,
+          desiredAmount: serviceInput.desiredAmount,
+          desiredLifeByService: serviceInput.desiredLifeByService,
+          achievementPeriod: serviceInput.achievementPeriod,
+        })
+
+        const addServiceResult = newVersion.addService(service)
+        if (!(addServiceResult instanceof PlanVersion)) {
+          return addServiceResult
+        }
+        newVersion = addServiceResult
+      }
+    }
 
     return new Plan({
       ...this,
@@ -113,6 +150,94 @@ export class Plan {
     return new Plan({
       ...this,
       status: 'published',
+      versions: updatedVersions,
+      updatedAt: new Date(),
+    })
+  }
+
+  updateVersion(
+    versionId: string,
+    props: {
+      desiredLife?: string
+      troubles?: string
+      considerations?: string
+      services?: Array<{
+        id?: string
+        serviceCategory: string
+        serviceType: string
+        desiredAmount?: string
+        desiredLifeByService?: string
+        achievementPeriod?: string
+      }>
+    },
+  ): Plan | PlanError {
+    const versionIndex = this.versions.findIndex((v) => v.id === versionId)
+    if (versionIndex === -1) {
+      return {
+        type: 'NotFound',
+        message: 'Version not found',
+      }
+    }
+
+    const version = this.versions[versionIndex]
+    if (!version) {
+      return {
+        type: 'NotFound',
+        message: 'Version not found',
+      }
+    }
+
+    // 更新可能かチェック
+    if (!version.canUpdate()) {
+      return {
+        type: 'ValidationError',
+        message: '確定版は編集できません。新しいバージョンを作成してください。',
+      }
+    }
+
+    // バージョンを更新
+    const updateResult = version.update({
+      desiredLife: props.desiredLife,
+      troubles: props.troubles,
+      considerations: props.considerations,
+    })
+    if (!(updateResult instanceof PlanVersion)) {
+      return updateResult
+    }
+
+    let finalVersion = updateResult
+
+    // サービスの更新がある場合
+    if (props.services && props.services.length > 0) {
+      // 既存のサービスをクリアして新しいサービスを追加
+      const newServices: PlanService[] = []
+      for (const serviceInput of props.services) {
+        const serviceCategory = ServiceCategory.fromString(serviceInput.serviceCategory)
+        const service = PlanService.create({
+          planVersionId: finalVersion.id,
+          serviceCategory,
+          serviceType: serviceInput.serviceType,
+          desiredAmount: serviceInput.desiredAmount,
+          desiredLifeByService: serviceInput.desiredLifeByService,
+          achievementPeriod: serviceInput.achievementPeriod,
+        })
+        newServices.push(service)
+      }
+
+      // サービスを置き換えた新しいバージョンを作成
+      finalVersion = PlanVersion.fromPersistence({
+        ...finalVersion,
+        services: newServices,
+        updatedAt: new Date(),
+      })
+    }
+
+    // 更新したバージョンで計画書を再構築
+    const updatedVersions = [...this.versions]
+    updatedVersions[versionIndex] = finalVersion
+
+    return new Plan({
+      ...this,
       versions: updatedVersions,
       updatedAt: new Date(),
     })
@@ -293,7 +418,7 @@ export class PlanVersion {
 export class PlanService {
   readonly id: string
   readonly planVersionId: string
-  readonly serviceCategory: ServiceCategory
+  readonly serviceCategory: ServiceCategoryType
   readonly serviceType: string
   readonly desiredAmount: string | null
   readonly desiredLifeByService: string | null
@@ -304,7 +429,7 @@ export class PlanService {
   private constructor(props: {
     id: string
     planVersionId: string
-    serviceCategory: ServiceCategory
+    serviceCategory: ServiceCategoryType
     serviceType: string
     desiredAmount: string | null
     desiredLifeByService: string | null
@@ -325,7 +450,7 @@ export class PlanService {
 
   static create(props: {
     planVersionId: string
-    serviceCategory: ServiceCategory
+    serviceCategory: ServiceCategoryType
     serviceType: string
     desiredAmount?: string
     desiredLifeByService?: string
@@ -361,7 +486,7 @@ export class PlanService {
   static fromPersistence(props: {
     id: string
     planVersionId: string
-    serviceCategory: ServiceCategory
+    serviceCategory: ServiceCategoryType
     serviceType: string
     desiredAmount: string | null
     desiredLifeByService: string | null
