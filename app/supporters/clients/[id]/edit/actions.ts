@@ -118,7 +118,7 @@ export async function updateClientAction(
     id: existingClientRecord.id,
     tenantId: existingClientRecord.tenantId,
     name: profile.name,
-    birthDate: profile.birthDate,
+    birthDate: profile.birthDate ?? undefined,
     gender: (profile.gender || 'other') as 'male' | 'female' | 'other',
     address: {
       postalCode: address.postalCode || undefined,
