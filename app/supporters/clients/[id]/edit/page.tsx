@@ -25,12 +25,13 @@ export default async function EditClientPage({ params }: EditClientPageProps) {
 
   const profile = clientRecord.profile
   const address = clientRecord.addresses[0]
+  const birthDateString = profile.birthDate.toISOString().split('T')[0]!
 
   // フォーム用のデータに変換
   const clientData = {
     id: clientRecord.id,
     name: profile.name,
-    birthDate: profile.birthDate.toISOString().split('T')[0], // YYYY-MM-DD形式
+    birthDate: birthDateString, // YYYY-MM-DD形式
     gender: (profile.gender || 'other') as 'male' | 'female' | 'other',
     postalCode: address.postalCode || undefined,
     prefecture: address.prefecture || '',

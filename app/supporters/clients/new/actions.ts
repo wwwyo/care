@@ -34,7 +34,7 @@ type ActionState = {
 } | null
 
 export async function createClientAction(
-  prevState: ActionState,
+  _prevState: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
   // フォームの値を保存（エラー時に返す）

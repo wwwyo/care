@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
+import { Client, type ClientData, isClient } from '@/domain/client/model'
 import { getClientById } from '@/infra/query/client-query'
 import { getSupporterByUserId } from '@/infra/query/supporter-query'
 import { clientRepository } from '@/infra/repositories/client-repository'
@@ -36,7 +37,7 @@ type ActionState = {
 } | null
 
 export async function updateClientAction(
-  prevState: ActionState,
+  _prevState: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
   // フォームの値を保存（エラー時に返す）
@@ -97,11 +98,53 @@ export async function updateClientAction(
   const validatedData = parsed.data
 
   // 既存のクライアントを取得
-  const existingClient = await getClientById(validatedData.id, supporter.tenantId)
-  if (!existingClient) {
+  const existingClientRecord = await getClientById(validatedData.id, supporter.tenantId)
+  if (
+    !existingClientRecord ||
+    !existingClientRecord.profile ||
+    !existingClientRecord.addresses[0]
+  ) {
     return {
       type: 'error' as const,
       message: '利用者が見つかりません',
+      values: formValues,
+    }
+  }
+
+  // Prismaの型からドメインモデルに変換
+  const profile = existingClientRecord.profile
+  const address = existingClientRecord.addresses[0]
+  const clientData: ClientData = {
+    id: existingClientRecord.id,
+    tenantId: existingClientRecord.tenantId,
+    name: profile.name,
+    birthDate: profile.birthDate,
+    gender: (profile.gender || 'other') as 'male' | 'female' | 'other',
+    address: {
+      postalCode: address.postalCode || undefined,
+      prefecture: address.prefecture || '',
+      city: address.city || '',
+      street: address.street || '',
+      building: address.building || undefined,
+    },
+    phoneNumber: profile.phone || '',
+    emergencyContact: {
+      name: profile.emergencyContactName || '',
+      relationship: profile.emergencyContactRelation || '',
+      phoneNumber: profile.emergencyContactPhone || '',
+    },
+    disability: profile.disability || undefined,
+    careLevel: profile.careLevel || undefined,
+    notes: profile.notes || undefined,
+    createdAt: existingClientRecord.createdAt,
+    updatedAt: existingClientRecord.updatedAt,
+  }
+
+  const existingClient = Client.fromData(clientData)
+  if (!isClient(existingClient)) {
+    return {
+      type: 'error' as const,
+      message: 'データの変換に失敗しました',
       values: formValues,
     }
   }
