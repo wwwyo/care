@@ -4,9 +4,9 @@ import { prisma } from '@/lib/prisma'
 import { planRepository } from './plan-repository'
 
 describe('PlanRepository', () => {
-  const testTenantId = `test-tenant-${crypto.randomUUID()}`
-  const testClientId = `test-client-${crypto.randomUUID()}`
-  const testSupporterId = `test-supporter-${crypto.randomUUID()}`
+  const testTenantId = `test-tenant-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  const testClientId = `test-client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  const testSupporterId = `test-supporter-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
   beforeEach(async () => {
     // テスト用のテナント、クライアント、サポーターを作成
@@ -25,12 +25,12 @@ describe('PlanRepository', () => {
     })
 
     // テスト用のユーザーとサポーターを作成
-    const testUserId = `test-user-${crypto.randomUUID()}`
+    const testUserId = `test-user-${`${Date.now()}-${Math.random().toString(36).substr(2, 9)}`}`
     await prisma.user.create({
       data: {
         id: testUserId,
         name: 'Test User',
-        email: `test-${crypto.randomUUID()}@example.com`,
+        email: `test-${`${Date.now()}-${Math.random().toString(36).substr(2, 9)}`}@example.com`,
         emailVerified: true,
         realm: 'local',
         createdAt: new Date(),

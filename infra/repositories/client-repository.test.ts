@@ -8,16 +8,24 @@ describe('ClientRepository', () => {
   const testTenantId = 'test-tenant-123'
 
   beforeEach(async () => {
-    // テストデータのクリーンアップ
+    // テストデータのクリーンアップ（依存関係の順番で削除）
+    await prisma.planService.deleteMany()
+    await prisma.planVersion.deleteMany()
+    await prisma.plan.deleteMany()
     await prisma.clientAddress.deleteMany()
     await prisma.clientProfile.deleteMany()
+    await prisma.clientSupporter.deleteMany()
     await prisma.client.deleteMany()
   })
 
   afterEach(async () => {
-    // テストデータのクリーンアップ
+    // テストデータのクリーンアップ（依存関係の順番で削除）
+    await prisma.planService.deleteMany()
+    await prisma.planVersion.deleteMany()
+    await prisma.plan.deleteMany()
     await prisma.clientAddress.deleteMany()
     await prisma.clientProfile.deleteMany()
+    await prisma.clientSupporter.deleteMany()
     await prisma.client.deleteMany()
   })
 
