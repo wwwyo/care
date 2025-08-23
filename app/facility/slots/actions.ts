@@ -1,13 +1,15 @@
 'use server'
 
+import { redirect } from 'next/navigation'
 import { z } from 'zod'
-import type { SlotStatus } from '@/domain/slot/model'
 import { getFacilityByStaffUserId } from '@/infra/query/facility-query'
 import { requireRealm } from '@/lib/auth/helpers'
 import { updateSlotStatus } from '@/uc/slot/update-slot-status'
 
 const updateSlotStatusSchema = z.object({
-  status: z.enum(['available', 'limited', 'unavailable']),
+  status: z.enum(['available', 'limited', 'unavailable'], {
+    error: '無効な空き状況が選択されました',
+  }),
   comment: z
     .string()
     .max(100, 'コメントは100文字以内で入力してください')
@@ -15,31 +17,84 @@ const updateSlotStatusSchema = z.object({
     .transform((val) => val || undefined),
 })
 
-export async function updateSlotStatusAction(input: { status: SlotStatus; comment?: string }) {
-  const session = await requireRealm('facility_staff', '/login')
+type ActionState = {
+  type: 'error'
+  message?: string
+  fieldErrors?: Record<string, string>
+  values?: Record<string, string>
+} | null
 
-  const facility = await getFacilityByStaffUserId(session.user.id)
-  if (!facility) {
-    return { type: 'NotFound' as const, message: '施設が見つかりません' }
-  }
+export async function updateSlotStatusAction(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const session = await requireRealm('facility_staff', '/login')
 
-  // Zodでバリデーション
-  const validationResult = updateSlotStatusSchema.safeParse(input)
+    const facility = await getFacilityByStaffUserId(session.user.id)
+    if (!facility) {
+      return {
+        type: 'error',
+        message: '施設が見つかりません',
+      }
+    }
 
-  if (!validationResult.success) {
-    const firstError = validationResult.error.issues[0]
+    // フォームの値を保存（エラー時に返す）
+    const formValues = Object.fromEntries(formData.entries())
+
+    // FormDataから値を取得
+    const rawData = {
+      status: formData.get('status'),
+      comment: formData.get('comment') || undefined,
+    }
+
+    // バリデーション
+    const parsed = updateSlotStatusSchema.safeParse(rawData)
+
+    if (!parsed.success) {
+      // Zodエラーをfieldごとにまとめて返す
+      const fieldErrors: Record<string, string> = {}
+      parsed.error.issues.forEach((err) => {
+        const fieldName = err.path[0]
+        if (fieldName && typeof fieldName === 'string') {
+          fieldErrors[fieldName] = err.message
+        }
+      })
+
+      return {
+        type: 'error',
+        fieldErrors,
+        values: formValues,
+      }
+    }
+
+    const result = await updateSlotStatus({
+      facilityId: facility.id,
+      status: parsed.data.status,
+      comment: parsed.data.comment,
+      updatedBy: session.user.id,
+    })
+
+    if ('success' in result) {
+      redirect('/facility')
+    }
+
+    // エラーメッセージのマッピング
+    const errorMessages: Record<string, string> = {
+      NotFound: '施設が見つかりません',
+      ValidationError: '入力内容に誤りがあります',
+      SaveError: 'データの保存に失敗しました',
+    }
+
     return {
-      type: 'ValidationError' as const,
-      message: firstError?.message || '入力内容に誤りがあります',
+      type: 'error',
+      message: errorMessages[result.type] || 'エラーが発生しました',
+      values: formValues,
+    }
+  } catch {
+    return {
+      type: 'error',
+      message: '空き状況の更新に失敗しました',
     }
   }
-
-  const result = await updateSlotStatus({
-    facilityId: facility.id,
-    status: validationResult.data.status,
-    comment: validationResult.data.comment,
-    updatedBy: session.user.id,
-  })
-
-  return result
 }

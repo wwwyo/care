@@ -1,0 +1,126 @@
+'use server'
+
+import { redirect } from 'next/navigation'
+import { z } from 'zod'
+import { requireRealm } from '@/lib/auth/helpers'
+import { prisma } from '@/lib/prisma'
+import { parseArrayFromFormData } from '@/lib/utils/form-parser'
+import { createPlanUseCase } from '@/uc/plan/create-plan'
+
+const createPlanSchema = z.object({
+  clientId: z.string().uuid(),
+  desiredLife: z.string().optional(),
+  troubles: z.string().optional(),
+  considerations: z.string().optional(),
+})
+
+const serviceSchema = z.object({
+  serviceCategory: z.string(),
+  serviceType: z.string(),
+  desiredAmount: z.string().optional(),
+  desiredLifeByService: z.string().optional(),
+  achievementPeriod: z.string().optional(),
+})
+
+type ServiceFormData = z.infer<typeof serviceSchema>
+
+type State = {
+  error: string | null
+  formData?: {
+    desiredLife?: string
+    troubles?: string
+    considerations?: string
+  }
+}
+
+export async function createPlanAction(_prevState: State, formData: FormData): Promise<State> {
+  // セッションからサポーター情報を取得
+  const session = await requireRealm('supporter')
+  const supporter = await prisma.supporter.findFirst({
+    where: {
+      userId: session.user.id,
+    },
+  })
+
+  if (!supporter) {
+    return {
+      error: 'サポーター情報が見つかりません',
+      formData: {
+        desiredLife: formData.get('desiredLife') as string,
+        troubles: formData.get('troubles') as string,
+        considerations: formData.get('considerations') as string,
+      },
+    }
+  }
+
+  // フォームデータを取得
+  const rawData = {
+    clientId: formData.get('clientId'),
+    desiredLife: formData.get('desiredLife'),
+    troubles: formData.get('troubles'),
+    considerations: formData.get('considerations'),
+  }
+
+  // バリデーション
+  const validationResult = createPlanSchema.safeParse(rawData)
+  if (!validationResult.success) {
+    return {
+      error: '入力内容に誤りがあります',
+      formData: {
+        desiredLife: rawData.desiredLife as string,
+        troubles: rawData.troubles as string,
+        considerations: rawData.considerations as string,
+      },
+    }
+  }
+
+  const data = validationResult.data
+
+  // サービスデータをパース
+  const servicesData = parseArrayFromFormData<ServiceFormData>(formData, 'services')
+  const validServices = servicesData
+    .map((service) => serviceSchema.safeParse(service))
+    .filter((result) => result.success)
+    .map((result) => result.data)
+
+  // クライアントがサポーターと同じテナントに属しているか確認
+  const client = await prisma.client.findUnique({
+    where: { id: data.clientId },
+  })
+
+  if (!client || client.tenantId !== supporter.tenantId) {
+    return {
+      error: '無効なクライアントです',
+      formData: {
+        desiredLife: data.desiredLife,
+        troubles: data.troubles,
+        considerations: data.considerations,
+      },
+    }
+  }
+
+  // 計画書を作成
+  const result = await createPlanUseCase({
+    tenantId: supporter.tenantId,
+    clientId: data.clientId,
+    supporterId: supporter.id,
+    desiredLife: data.desiredLife || undefined,
+    troubles: data.troubles || undefined,
+    considerations: data.considerations || undefined,
+    services: validServices,
+  })
+
+  if ('type' in result) {
+    return {
+      error: '計画書の作成に失敗しました',
+      formData: {
+        desiredLife: data.desiredLife,
+        troubles: data.troubles,
+        considerations: data.considerations,
+      },
+    }
+  }
+
+  // 成功したらクライアント詳細ページにリダイレクト
+  redirect(`/supporters/clients/${data.clientId}`)
+}

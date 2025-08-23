@@ -1,6 +1,8 @@
 import type { CreateClientParams } from '@/domain/client/model'
 import { Client, type ClientError, isClient } from '@/domain/client/model'
-import type { ClientRepository, SaveError } from '@/infra/repositories/client-repository'
+import type { ClientRepository } from '@/domain/client/repository'
+
+type SaveError = { type: 'SaveError'; message: string }
 
 export type CreateClientResult = { type: 'success'; client: Client } | ClientError | SaveError
 

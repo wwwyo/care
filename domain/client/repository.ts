@@ -1,27 +1,27 @@
 import type { Client } from './model'
 
 /**
- * クライアントリポジトリインターフェース
+ * 利用者リポジトリインターフェース
  * インフラ層で実装される
  */
 export interface ClientRepository {
   /**
-   * クライアントを保存（新規作成または更新）
+   * 利用者を保存（新規作成または更新）
    */
   save: (client: Client) => Promise<{ type: 'success' } | { type: 'SaveError'; message: string }>
 
   /**
-   * IDでクライアントを取得
+   * IDで利用者を取得
    */
   findById: (id: string) => Promise<Client | null>
 
   /**
-   * サポーターIDでクライアントを取得
+   * サポーターIDで利用者を取得
    */
   findBySupporterId: (supporterId: string) => Promise<Client[]>
 
   /**
-   * クライアントを削除
+   * 利用者を削除
    */
   delete: (id: string) => Promise<void>
 }

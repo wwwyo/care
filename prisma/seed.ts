@@ -137,7 +137,7 @@ async function main() {
     },
   })
 
-  // クライアント作成
+  // 利用者作成
   const client1 = await prisma.client.create({
     data: {
       tenantId: tenant1.id,
@@ -185,7 +185,7 @@ async function main() {
     },
   })
 
-  // クライアントとサポーターの関連付け
+  // 利用者とサポーターの関連付け
   await prisma.clientSupporter.create({
     data: {
       clientId: client1.id,
@@ -373,13 +373,30 @@ async function main() {
     data: {
       planId: plan1.id,
       versionNumber: 1,
-      serviceType: '生活介護',
-      frequency: '週3日',
-      area: '東京都内',
-      startDate: new Date(),
-      endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1年後
-      notes: '初回のケアプランです。',
+      versionType: 'draft',
+      desiredLife: '地域で自立した生活を送りたい',
+      troubles: '日常生活での身体介助が必要。移動に車椅子を使用。',
+      considerations: '医療的ケアが必要な場合があります。',
       createdBy: supporter1.id,
+      reasonForUpdate: '初回作成',
+      services: {
+        create: [
+          {
+            serviceCategory: 'daytime',
+            serviceType: '生活介護',
+            desiredAmount: '週3日',
+            desiredLifeByService: '日中活動を通じて生活リズムを整える',
+            achievementPeriod: '6ヶ月',
+          },
+          {
+            serviceCategory: 'home',
+            serviceType: '居宅介護',
+            desiredAmount: '週2回',
+            desiredLifeByService: '自宅での安定した生活を維持する',
+            achievementPeriod: '継続',
+          },
+        ],
+      },
       accessibilityRequirements: {
         create: [
           { requirementType: 'wheelchair', details: '車椅子での移動が必要' },
@@ -394,13 +411,30 @@ async function main() {
     data: {
       planId: plan2.id,
       versionNumber: 1,
-      serviceType: '就労継続支援B型',
-      frequency: '週5日',
-      area: '神奈川県内',
-      startDate: new Date(),
-      endDate: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000), // 6ヶ月後
-      notes: 'お試し利用からスタート',
+      versionType: 'draft',
+      desiredLife: '就労を通じて社会参加したい',
+      troubles: '一般就労が困難な状況。作業能力の向上が必要。',
+      considerations: '集中力の持続が困難な場合があります。',
       createdBy: supporter2.id,
+      reasonForUpdate: '初回作成',
+      services: {
+        create: [
+          {
+            serviceCategory: 'daytime',
+            serviceType: '就労継続支援B型',
+            desiredAmount: '週5日',
+            desiredLifeByService: '作業能力の向上と就労意欲の維持',
+            achievementPeriod: '1年',
+          },
+          {
+            serviceCategory: 'other',
+            serviceType: '相談支援',
+            desiredAmount: '月1回',
+            desiredLifeByService: '定期的な相談による生活の安定',
+            achievementPeriod: '継続',
+          },
+        ],
+      },
       accessibilityRequirements: {
         create: [{ requirementType: 'no_stairs', details: '階段の昇降が困難' }],
       },

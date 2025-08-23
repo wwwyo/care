@@ -64,7 +64,7 @@ export class Address {
     // 市区町村と番地を簡易的に分割
     const cityMatch = remaining.match(/^(.+?[市区町村])/)
     let city: string
-    let street: string
+    let street: string | undefined
 
     if (cityMatch?.[1]) {
       city = cityMatch[1]

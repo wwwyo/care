@@ -18,6 +18,9 @@ export const auth = betterAuth({
     enabled: true,
     autoSignIn: true,
   },
+  emailVerification: {
+    sendOnSignUp: false,
+  },
   session: {
     expiresIn: SESSION_EXPIRY_DAYS * 24 * 60 * 60, // 7日間
     updateAge: SESSION_UPDATE_AGE_DAYS * 24 * 60 * 60, // 1日後に更新

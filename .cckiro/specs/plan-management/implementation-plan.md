@@ -48,7 +48,7 @@
 - [ ] 確定版作成フロー
 - [ ] 計画書履歴表示
 
-## Phase 2: 音声録音機能（2-3週間）
+## Phase 2: 音声録音機能
 
 ### Week 3: 音声録音基盤
 
@@ -69,7 +69,7 @@
 - [ ] HearingSessionRepository
 - [ ] セッション管理UseCase
 
-### Week 4: Speechmatics連携
+### 文字起こしAPI連携
 
 #### Day 16-17: WebSocket接続
 - [ ] Speechmatics認証JWT生成

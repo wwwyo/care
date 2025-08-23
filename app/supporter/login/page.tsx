@@ -33,7 +33,7 @@ export default function SupporterLoginPage() {
       {
         email,
         password,
-        callbackURL: '/supporter/dashboard',
+        callbackURL: '/supporters/clients',
       },
       {
         onSuccess: () => {

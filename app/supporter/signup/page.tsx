@@ -2,6 +2,7 @@
 
 import { AlertCircle } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -19,6 +20,7 @@ import { authClient } from '@/lib/auth/client'
 import { USER_REALMS } from '@/lib/auth/schemas'
 
 export default function SupporterSignupPage() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
@@ -37,11 +39,12 @@ export default function SupporterSignupPage() {
         password,
         name,
         realm: USER_REALMS.SUPPORTER,
-        callbackURL: '/supporter/onboarding',
+        callbackURL: '/supporters/clients',
       },
       {
         onSuccess: () => {
           setIsLoading(false)
+          router.push('/supporters/clients')
         },
         onError: (ctx) => {
           setError(ctx.error.message || 'サインアップに失敗しました')

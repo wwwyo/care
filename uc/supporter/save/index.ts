@@ -15,7 +15,7 @@ export type SaveSupporterError = {
 
 export async function saveSupporterUseCase(
   input: SaveSupporterInput,
-): Promise<void | SaveSupporterError> {
+): Promise<undefined | SaveSupporterError> {
   try {
     // デフォルトテナントを取得または作成
     const tenant = await getOrCreateDefaultTenant()
@@ -29,6 +29,7 @@ export async function saveSupporterUseCase(
 
     // リポジトリで永続化
     await supporterRepository.save(supporter)
+    return
   } catch (error) {
     console.error(`❌ Supporter作成に失敗しました: userId=${input.userId}`, error)
     return {
