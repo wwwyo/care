@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation'
-import type { ClientData } from '@/domain/client/model'
 import { getClientById } from '@/infra/query/client-query'
 import { getSupporterByUserId } from '@/infra/query/supporter-query'
 import { requireRealm } from '@/lib/auth/helpers'
@@ -18,35 +17,33 @@ export default async function EditClientPage({ params }: EditClientPageProps) {
     throw new Error('サポーター情報が見つかりません')
   }
 
-  const client = await getClientById(id, supporter.tenantId)
+  const clientRecord = await getClientById(id, supporter.tenantId)
 
-  if (!client) {
+  if (!clientRecord || !clientRecord.profile || !clientRecord.addresses[0]) {
     notFound()
   }
 
-  const data: ClientData = client.toData()
-
-  // 日付をフォーマット（非nullアサーションを使用）
-  const birthDateString = data.birthDate.toISOString().split('T')[0]!
+  const profile = clientRecord.profile
+  const address = clientRecord.addresses[0]
 
   // フォーム用のデータに変換
   const clientData = {
-    id: data.id,
-    name: data.name,
-    birthDate: birthDateString, // YYYY-MM-DD形式
-    gender: data.gender,
-    postalCode: data.address.postalCode,
-    prefecture: data.address.prefecture,
-    city: data.address.city,
-    street: data.address.street || '', // streetは必須フィールドなので空文字列をデフォルトに
-    building: data.address.building,
-    phoneNumber: data.phoneNumber,
-    disability: data.disability,
-    careLevel: data.careLevel,
-    emergencyContactName: data.emergencyContact.name,
-    emergencyContactRelationship: data.emergencyContact.relationship,
-    emergencyContactPhone: data.emergencyContact.phoneNumber,
-    notes: data.notes,
+    id: clientRecord.id,
+    name: profile.name,
+    birthDate: profile.birthDate.toISOString().split('T')[0], // YYYY-MM-DD形式
+    gender: (profile.gender || 'other') as 'male' | 'female' | 'other',
+    postalCode: address.postalCode || undefined,
+    prefecture: address.prefecture || '',
+    city: address.city || '',
+    street: address.street || '',
+    building: address.building || undefined,
+    phoneNumber: profile.phone || '',
+    disability: profile.disability || undefined,
+    careLevel: profile.careLevel || undefined,
+    emergencyContactName: profile.emergencyContactName || '',
+    emergencyContactRelationship: profile.emergencyContactRelation || '',
+    emergencyContactPhone: profile.emergencyContactPhone || '',
+    notes: profile.notes || undefined,
   }
 
   return <EditClientForm clientData={clientData} />

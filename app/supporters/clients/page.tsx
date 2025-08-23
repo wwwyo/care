@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { getAllClients } from '@/infra/query/client-query'
 import { getSupporterByUserId } from '@/infra/query/supporter-query'
 import { requireRealm } from '@/lib/auth/helpers'
+import { calculateAge } from '@/lib/utils/age-calculator'
 
 export default async function ClientsPage() {
   const session = await requireRealm('supporter')
@@ -14,7 +15,7 @@ export default async function ClientsPage() {
     throw new Error('サポーター情報が見つかりません')
   }
 
-  const clients = await getAllClients(supporter.tenantId)
+  const clientRecords = await getAllClients(supporter.tenantId)
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -31,7 +32,7 @@ export default async function ClientsPage() {
         </Button>
       </div>
 
-      {clients.length === 0 ? (
+      {clientRecords.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <User className="h-12 w-12 text-muted-foreground mb-4" />
@@ -43,20 +44,26 @@ export default async function ClientsPage() {
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {clients.map((client) => {
-            const data = client.toData()
+          {clientRecords.map((record) => {
+            if (!record.profile || !record.addresses[0]) return null
+            const profile = record.profile
+            const address = record.addresses[0]
             return (
-              <Card key={data.id} className="hover:shadow-lg transition-shadow">
+              <Card key={record.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
-                    <span>{data.name}</span>
+                    <span>{profile.name}</span>
                     <span className="text-sm font-normal bg-primary/10 text-primary px-2 py-1 rounded">
-                      {data.careLevel || '未記入'}
+                      {profile.careLevel || '未記入'}
                     </span>
                   </CardTitle>
                   <CardDescription>
-                    {data.gender === 'male' ? '男性' : data.gender === 'female' ? '女性' : 'その他'}{' '}
-                    ・ {new Date().getFullYear() - data.birthDate.getFullYear()}歳
+                    {profile.gender === 'male'
+                      ? '男性'
+                      : profile.gender === 'female'
+                        ? '女性'
+                        : 'その他'}{' '}
+                    ・ {calculateAge(profile.birthDate)}歳
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -64,29 +71,31 @@ export default async function ClientsPage() {
                     <div className="flex items-start">
                       <span className="font-medium w-20">住所:</span>
                       <span className="flex-1">
-                        {data.address.prefecture}
-                        {data.address.city}
-                        {data.address.street}
+                        {address.prefecture || ''}
+                        {address.city || ''}
+                        {address.street || ''}
                       </span>
                     </div>
                     <div className="flex items-start">
                       <span className="font-medium w-20">電話番号:</span>
-                      <span className="flex-1">{data.phoneNumber}</span>
+                      <span className="flex-1">{profile.phone || '未登録'}</span>
                     </div>
                     <div className="flex items-start">
                       <span className="font-medium w-20">障害:</span>
-                      <span className="flex-1">{data.disability || '未記入'}</span>
+                      <span className="flex-1">{profile.disability || '未記入'}</span>
                     </div>
                     <div className="flex items-start">
                       <span className="font-medium w-20">緊急連絡先:</span>
                       <span className="flex-1">
-                        {data.emergencyContact.name} ({data.emergencyContact.relationship})
+                        {profile.emergencyContactName || '未登録'}
+                        {profile.emergencyContactRelation &&
+                          ` (${profile.emergencyContactRelation})`}
                       </span>
                     </div>
                   </div>
                   <div className="mt-4">
                     <Button asChild variant="outline" size="sm" className="w-full">
-                      <Link href={`/supporters/clients/${data.id}`}>詳細を見る</Link>
+                      <Link href={`/supporters/clients/${record.id}`}>詳細を見る</Link>
                     </Button>
                   </div>
                 </CardContent>

@@ -60,6 +60,8 @@ export async function updateClient(
   // 更新されたクライアントオブジェクトを作成
   const updatedClient = client.update({
     name: data.name,
+    birthDate: data.birthDate,
+    gender: data.gender,
     address: {
       postalCode: data.address.postalCode,
       prefecture: data.address.prefecture,

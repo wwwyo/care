@@ -38,6 +38,8 @@ export interface CreateClientParams {
 
 export interface UpdateClientParams {
   name?: string
+  birthDate?: Date
+  gender?: 'male' | 'female' | 'other'
   address?: AddressData
   phoneNumber?: string
   emergencyContact?: EmergencyContactData
@@ -167,8 +169,8 @@ export class Client {
       this.id,
       this.tenantId,
       params.name ?? this.name,
-      this.birthDate,
-      this.gender,
+      params.birthDate ?? this.birthDate,
+      params.gender ?? this.gender,
       address as Address,
       phoneNumber as PhoneNumber,
       emergencyContact as EmergencyContact,

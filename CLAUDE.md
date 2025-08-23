@@ -125,6 +125,7 @@ care/
   - **依存性逆転の原則**: Repositoryインターフェースは `domain/<feature>/repository.ts` に定義
   - infra層は domain層のインターフェースを実装（domain → infra の依存は禁止）
   - **実装パターン**: Singleton Pattern - オブジェクトに関数を定義する形式で実装（例: `export const clientRepository: ClientRepository = { save, delete, findById }`）
+  - **入出力の原則**: Repositoryは常にドメインモデルを受け取り、ドメインモデルを返す（Prismaの型変換は内部で処理）
 
 ### レイヤー間の呼び出しルール
 
