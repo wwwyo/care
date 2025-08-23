@@ -36,7 +36,7 @@ type ActionState = {
 } | null
 
 export async function updateFacilityAction(
-  prevState: ActionState,
+  _prevState: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
   try {
@@ -45,7 +45,7 @@ export async function updateFacilityAction(
     const facility = await getFacilityByStaffUserId(session.user.id)
     if (!facility) {
       return {
-        type: 'error' as const,
+        type: 'error',
         message: '施設が見つかりません',
       }
     }
@@ -82,7 +82,7 @@ export async function updateFacilityAction(
       })
 
       return {
-        type: 'error' as const,
+        type: 'error',
         fieldErrors,
         values: formValues,
       }
@@ -106,13 +106,13 @@ export async function updateFacilityAction(
     }
 
     return {
-      type: 'error' as const,
+      type: 'error',
       message: errorMessages[result.type] || 'エラーが発生しました',
       values: formValues,
     }
   } catch {
     return {
-      type: 'error' as const,
+      type: 'error',
       message: '施設情報の更新に失敗しました',
     }
   }

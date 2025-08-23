@@ -8,8 +8,7 @@ import { updateSlotStatus } from '@/uc/slot/update-slot-status'
 
 const updateSlotStatusSchema = z.object({
   status: z.enum(['available', 'limited', 'unavailable'], {
-    required_error: '空き状況を選択してください',
-    invalid_type_error: '無効な空き状況が選択されました',
+    error: '無効な空き状況が選択されました',
   }),
   comment: z
     .string()
@@ -26,7 +25,7 @@ type ActionState = {
 } | null
 
 export async function updateSlotStatusAction(
-  prevState: ActionState,
+  _prevState: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
   try {
@@ -35,7 +34,7 @@ export async function updateSlotStatusAction(
     const facility = await getFacilityByStaffUserId(session.user.id)
     if (!facility) {
       return {
-        type: 'error' as const,
+        type: 'error',
         message: '施設が見つかりません',
       }
     }
@@ -63,7 +62,7 @@ export async function updateSlotStatusAction(
       })
 
       return {
-        type: 'error' as const,
+        type: 'error',
         fieldErrors,
         values: formValues,
       }
@@ -88,13 +87,13 @@ export async function updateSlotStatusAction(
     }
 
     return {
-      type: 'error' as const,
+      type: 'error',
       message: errorMessages[result.type] || 'エラーが発生しました',
       values: formValues,
     }
   } catch {
     return {
-      type: 'error' as const,
+      type: 'error',
       message: '空き状況の更新に失敗しました',
     }
   }
