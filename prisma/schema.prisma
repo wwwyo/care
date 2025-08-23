@@ -152,7 +152,7 @@ model SupporterProfile {
   name        String    @db.VarChar(255)
   nameKana    String?   @map("name_kana") @db.VarChar(255)
   gender      String?   @db.VarChar(10)
-  birthDate   DateTime @map("birth_date") @db.Date
+  birthDate   DateTime? @map("birth_date") @db.Date
   phone       String?   @db.VarChar(20)
   tenantId    String    @map("tenant_id") @db.Uuid
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
@@ -172,7 +172,7 @@ model ClientProfile {
   name                     String    @db.VarChar(255)
   nameKana                 String?   @map("name_kana") @db.VarChar(255)
   gender                   String?   @db.VarChar(10)
-  birthDate                DateTime @map("birth_date") @db.Date
+  birthDate                DateTime? @map("birth_date") @db.Date
   phone                    String?   @db.VarChar(20)
   disability               String?   @db.VarChar(255)
   careLevel                String?   @map("care_level") @db.VarChar(50)
@@ -343,10 +343,10 @@ model PlanVersion {
 
   plan                      Plan                           @relation(fields: [planId], references: [id], onDelete: Cascade)
   creator                   Supporter                      @relation("PlanVersionCreatedBy", fields: [createdBy], references: [id])
-  services                  PlanService[]                  // 利用したいサービス（厚労省様式3）
+  services                  PlanService[] // 利用したいサービス（厚労省様式3）
   accessibilityRequirements PlanAccessibilityRequirement[]
   customFields              PlanCustomField[]
-  hearingSessions           HearingSession[]               // ヒアリング記録との関連
+  hearingSessions           HearingSession[] // ヒアリング記録との関連
 
   @@unique([planId, versionNumber])
   @@index([planId])
@@ -390,15 +390,15 @@ model PlanCustomField {
 // plan_services: 利用したいサービス（厚労省様式3）
 
 model PlanService {
-  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  planVersionId       String    @map("plan_version_id") @db.Uuid
-  serviceCategory     String    @map("service_category") @db.VarChar(50) // home | residential | daytime | other | child
-  serviceType         String    @map("service_type") @db.VarChar(100)
-  desiredAmount       String?   @map("desired_amount") @db.VarChar(255) // 希望するサービス量
-  desiredLifeByService String?   @map("desired_life_by_service") @db.Text // サービス利用により望まれる生活
-  achievementPeriod   String?   @map("achievement_period") @db.VarChar(100) // 達成時期
-  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  planVersionId        String   @map("plan_version_id") @db.Uuid
+  serviceCategory      String   @map("service_category") @db.VarChar(50) // home | residential | daytime | other | child
+  serviceType          String   @map("service_type") @db.VarChar(100)
+  desiredAmount        String?  @map("desired_amount") @db.VarChar(255) // 希望するサービス量
+  desiredLifeByService String?  @map("desired_life_by_service") @db.Text // サービス利用により望まれる生活
+  achievementPeriod    String?  @map("achievement_period") @db.VarChar(100) // 達成時期
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   planVersion PlanVersion @relation(fields: [planVersionId], references: [id], onDelete: Cascade)
 
@@ -411,20 +411,20 @@ model PlanService {
 // hearing_sessions: ヒアリングセッション
 
 model HearingSession {
-  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  planVersionId String?   @map("plan_version_id") @db.Uuid
-  clientId      String    @map("client_id") @db.Uuid
-  supporterId   String    @map("supporter_id") @db.Uuid
-  sessionDate   DateTime  @map("session_date") @db.Timestamptz
-  duration      Int?      // 録音時間（秒）
-  audioFileUrl  String?   @map("audio_file_url") @db.Text
-  status        String    @default("completed") @db.VarChar(20) // recording | completed | error
-  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  planVersionId String?  @map("plan_version_id") @db.Uuid
+  clientId      String   @map("client_id") @db.Uuid
+  supporterId   String   @map("supporter_id") @db.Uuid
+  sessionDate   DateTime @map("session_date") @db.Timestamptz
+  duration      Int? // 録音時間（秒）
+  audioFileUrl  String?  @map("audio_file_url") @db.Text
+  status        String   @default("completed") @db.VarChar(20) // recording | completed | error
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  planVersion   PlanVersion?          @relation(fields: [planVersionId], references: [id])
-  client        Client                @relation(fields: [clientId], references: [id])
-  supporter     Supporter             @relation(fields: [supporterId], references: [id])
+  planVersion   PlanVersion?           @relation(fields: [planVersionId], references: [id])
+  client        Client                 @relation(fields: [clientId], references: [id])
+  supporter     Supporter              @relation(fields: [supporterId], references: [id])
   transcripts   HearingTranscript[]
   extractedData HearingExtractedData[]
 
@@ -458,13 +458,13 @@ model HearingTranscript {
 // hearing_extracted_data: 抽出された情報
 
 model HearingExtractedData {
-  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  hearingSessionId String   @map("hearing_session_id") @db.Uuid
-  dataType         String   @map("data_type") @db.VarChar(50) // desired_life | trouble | service | consideration
-  extractedContent String   @map("extracted_content") @db.Text
-  confidence       Decimal  @db.Decimal(3, 2) // 信頼度スコア（0-1）
-  sourceTranscriptId String? @map("source_transcript_id") @db.Uuid // 元となった文字起こしID
-  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  hearingSessionId   String   @map("hearing_session_id") @db.Uuid
+  dataType           String   @map("data_type") @db.VarChar(50) // desired_life | trouble | service | consideration
+  extractedContent   String   @map("extracted_content") @db.Text
+  confidence         Decimal  @db.Decimal(3, 2) // 信頼度スコア（0-1）
+  sourceTranscriptId String?  @map("source_transcript_id") @db.Uuid // 元となった文字起こしID
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   hearingSession HearingSession @relation(fields: [hearingSessionId], references: [id], onDelete: Cascade)
 
