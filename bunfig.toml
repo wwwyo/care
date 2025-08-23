@@ -1,2 +1,9 @@
 [install]
 exact = true
+
+[test]
+preload = ["./test-setup.ts"]
+
+# Force Node.js module resolution for jose
+[test.resolve]
+conditions = ["node", "import"]
