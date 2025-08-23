@@ -46,3 +46,4 @@ supabase/.temp/
 supabase/.branches/
 
 /lib/generated/prisma
+!.cckiro

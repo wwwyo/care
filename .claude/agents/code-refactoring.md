@@ -1,5 +1,5 @@
 ---
-name: code-refactoring-specialist
+name: code-refactoring
 description: Use this agent when you need to refactor existing code to improve its quality, maintainability, and adherence to project standards without changing its external behavior. This includes cleaning up code structure, improving naming conventions, extracting methods, reducing duplication, optimizing performance, and aligning with DDD patterns and CQRS architecture as defined in CLAUDE.md.\n\nExamples:\n<example>\nContext: The user wants to refactor recently written code to improve its quality.\nuser: "このコードをリファクタリングして"\nassistant: "I'll use the code-refactoring-specialist agent to analyze and refactor this code according to best practices."\n<commentary>\nSince the user is asking for refactoring, use the Task tool to launch the code-refactoring-specialist agent.\n</commentary>\n</example>\n<example>\nContext: After implementing a new feature, the user wants to clean up the code.\nuser: "実装が終わったので、コードを整理してください"\nassistant: "Let me use the code-refactoring-specialist agent to clean up and optimize the recently implemented code."\n<commentary>\nThe user wants to organize the code after implementation, so use the code-refactoring-specialist agent.\n</commentary>\n</example>
 model: sonnet
 ---

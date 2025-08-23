@@ -2,15 +2,15 @@
 
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
+import { requireRealm } from '@/lib/auth/helpers'
+import { prisma } from '@/lib/prisma'
 import { createPlanUseCase } from '@/uc/plan/create-plan'
 
 const createPlanSchema = z.object({
   clientId: z.string().uuid(),
-  supporterId: z.string().uuid(),
-  tenantId: z.string().uuid(),
-  desiredLife: z.string().max(1000).optional(),
-  troubles: z.string().max(1000).optional(),
-  considerations: z.string().max(1000).optional(),
+  desiredLife: z.string().optional(),
+  troubles: z.string().optional(),
+  considerations: z.string().optional(),
   services: z.union([z.array(z.string()), z.string()]).optional(),
 })
 
@@ -24,11 +24,28 @@ type State = {
 }
 
 export async function createPlanAction(_prevState: State, formData: FormData): Promise<State> {
+  // セッションからサポーター情報を取得
+  const session = await requireRealm('supporter')
+  const supporter = await prisma.supporter.findFirst({
+    where: {
+      userId: session.user.id,
+    },
+  })
+
+  if (!supporter) {
+    return {
+      error: 'サポーター情報が見つかりません',
+      formData: {
+        desiredLife: formData.get('desiredLife') as string,
+        troubles: formData.get('troubles') as string,
+        considerations: formData.get('considerations') as string,
+      },
+    }
+  }
+
   // フォームデータを取得
   const rawData = {
     clientId: formData.get('clientId'),
-    supporterId: formData.get('supporterId'),
-    tenantId: formData.get('tenantId'),
     desiredLife: formData.get('desiredLife'),
     troubles: formData.get('troubles'),
     considerations: formData.get('considerations'),
@@ -50,11 +67,27 @@ export async function createPlanAction(_prevState: State, formData: FormData): P
 
   const data = validationResult.data
 
+  // クライアントがサポーターと同じテナントに属しているか確認
+  const client = await prisma.client.findUnique({
+    where: { id: data.clientId },
+  })
+
+  if (!client || client.tenantId !== supporter.tenantId) {
+    return {
+      error: '無効なクライアントです',
+      formData: {
+        desiredLife: data.desiredLife,
+        troubles: data.troubles,
+        considerations: data.considerations,
+      },
+    }
+  }
+
   // 計画書を作成
   const result = await createPlanUseCase({
-    tenantId: data.tenantId,
+    tenantId: supporter.tenantId,
     clientId: data.clientId,
-    supporterId: data.supporterId,
+    supporterId: supporter.id,
     desiredLife: data.desiredLife || undefined,
     troubles: data.troubles || undefined,
     considerations: data.considerations || undefined,

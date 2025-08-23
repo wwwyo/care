@@ -7,15 +7,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
+import { PlanServiceForm } from '../[planId]/edit/plan-service-form'
 import { createPlanAction } from './actions'
 
 type Props = {
   clientId: string
-  supporterId: string
-  tenantId: string
 }
 
-export function PlanEditForm({ clientId, supporterId, tenantId }: Props) {
+export function PlanEditForm({ clientId }: Props) {
   const [state, formAction, isPending] = useActionState(createPlanAction, {
     error: null,
   })
@@ -23,8 +22,6 @@ export function PlanEditForm({ clientId, supporterId, tenantId }: Props) {
   return (
     <Form action={formAction} className="space-y-6">
       <input type="hidden" name="clientId" value={clientId} />
-      <input type="hidden" name="supporterId" value={supporterId} />
-      <input type="hidden" name="tenantId" value={tenantId} />
 
       {state.error && (
         <Alert variant="destructive">
@@ -43,9 +40,7 @@ export function PlanEditForm({ clientId, supporterId, tenantId }: Props) {
             placeholder="どのような生活を希望されていますか？"
             className="min-h-[120px]"
             defaultValue={state.formData?.desiredLife}
-            maxLength={1000}
           />
-          <p className="text-sm text-muted-foreground mt-1">最大1000文字</p>
         </CardContent>
       </Card>
 
@@ -59,72 +54,11 @@ export function PlanEditForm({ clientId, supporterId, tenantId }: Props) {
             placeholder="現在困っていることは何ですか？"
             className="min-h-[120px]"
             defaultValue={state.formData?.troubles}
-            maxLength={1000}
           />
-          <p className="text-sm text-muted-foreground mt-1">最大1000文字</p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>3. 利用したいサービス</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <h4 className="font-medium mb-2">日中活動サービス</h4>
-            <div className="space-y-2">
-              <label className="flex items-center space-x-2">
-                <input type="checkbox" name="services" value="生活介護" />
-                <span>生活介護</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input type="checkbox" name="services" value="就労移行支援" />
-                <span>就労移行支援</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input type="checkbox" name="services" value="就労継続支援A型" />
-                <span>就労継続支援A型</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input type="checkbox" name="services" value="就労継続支援B型" />
-                <span>就労継続支援B型</span>
-              </label>
-            </div>
-          </div>
-
-          <div>
-            <h4 className="font-medium mb-2">在宅サービス</h4>
-            <div className="space-y-2">
-              <label className="flex items-center space-x-2">
-                <input type="checkbox" name="services" value="家事援助" />
-                <span>家事援助</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input type="checkbox" name="services" value="身体介護" />
-                <span>身体介護</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input type="checkbox" name="services" value="通院等介助" />
-                <span>通院等介助</span>
-              </label>
-            </div>
-          </div>
-
-          <div>
-            <h4 className="font-medium mb-2">居住サービス</h4>
-            <div className="space-y-2">
-              <label className="flex items-center space-x-2">
-                <input type="checkbox" name="services" value="共同生活援助" />
-                <span>共同生活援助（グループホーム）</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input type="checkbox" name="services" value="施設入所支援" />
-                <span>施設入所支援</span>
-              </label>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <PlanServiceForm initialServices={[]} disabled={false} />
 
       <Card>
         <CardHeader>
@@ -136,9 +70,7 @@ export function PlanEditForm({ clientId, supporterId, tenantId }: Props) {
             placeholder="移動支援、設備要件、医療的ケア、食事要件など、配慮が必要な事項を記入してください"
             className="min-h-[120px]"
             defaultValue={state.formData?.considerations}
-            maxLength={1000}
           />
-          <p className="text-sm text-muted-foreground mt-1">最大1000文字</p>
         </CardContent>
       </Card>
 

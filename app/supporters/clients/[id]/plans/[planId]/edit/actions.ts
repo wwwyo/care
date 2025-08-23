@@ -2,15 +2,25 @@
 
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { parseArrayFromFormData } from '@/lib/utils/form-parser'
 import { publishPlanUseCase } from '@/uc/plan/publish-plan'
 import { updatePlanUseCase } from '@/uc/plan/update-plan'
 
 const updatePlanSchema = z.object({
   planId: z.string().uuid(),
   versionId: z.string().uuid(),
-  desiredLife: z.string().max(1000).optional(),
-  troubles: z.string().max(1000).optional(),
-  considerations: z.string().max(1000).optional(),
+  desiredLife: z.string().optional(),
+  troubles: z.string().optional(),
+  considerations: z.string().optional(),
+})
+
+const serviceSchema = z.object({
+  id: z.string().optional(),
+  serviceCategory: z.string(),
+  serviceType: z.string(),
+  desiredAmount: z.string().optional(),
+  desiredLifeByService: z.string().optional(),
+  achievementPeriod: z.string().optional(),
 })
 
 type UpdateState = {
@@ -48,12 +58,20 @@ export async function updatePlanAction(
 
   const data = validationResult.data
 
+  // サービスデータをパース
+  const servicesData = parseArrayFromFormData<any>(formData, 'services')
+  const validServices = servicesData
+    .map((service) => serviceSchema.safeParse(service))
+    .filter((result) => result.success)
+    .map((result) => result.data as z.infer<typeof serviceSchema>)
+
   const result = await updatePlanUseCase({
     planId: data.planId,
     versionId: data.versionId,
     desiredLife: data.desiredLife || undefined,
     troubles: data.troubles || undefined,
     considerations: data.considerations || undefined,
+    services: validServices,
   })
 
   if ('type' in result) {

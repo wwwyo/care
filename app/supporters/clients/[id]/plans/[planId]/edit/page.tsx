@@ -56,6 +56,15 @@ export default async function EditPlanPage({ params }: Props) {
           desiredLife: latestVersion.desiredLife || '',
           troubles: latestVersion.troubles || '',
           considerations: latestVersion.considerations || '',
+          services:
+            latestVersion.services?.map((s) => ({
+              id: s.id,
+              serviceCategory: s.serviceCategory,
+              serviceType: s.serviceType,
+              desiredAmount: s.desiredAmount || '',
+              desiredLifeByService: s.desiredLifeByService || '',
+              achievementPeriod: s.achievementPeriod || '',
+            })) || [],
         }}
         isPublished={latestVersion.versionType === 'published'}
       />

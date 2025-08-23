@@ -130,7 +130,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               <Button asChild size="sm">
                 <Link href={`/supporters/clients/${id}/plans/new`}>
                   <Plus className="mr-2 h-4 w-4" />
-                  新規作成
+                  {plans.length > 0 ? '新バージョン作成' : '新規作成'}
                 </Link>
               </Button>
             </CardTitle>
@@ -149,7 +149,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                     >
                       <div>
                         <p className="font-medium">
-                          バージョン {latestVersion?.versionNumber || 1}
+                          {latestVersion ? `バージョン ${latestVersion.versionNumber}` : '計画書'}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {latestVersion?.versionType === 'published' ? '確定版' : '下書き'} ・

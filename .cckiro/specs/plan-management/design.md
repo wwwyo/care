@@ -29,7 +29,7 @@ getUserMedia (マイク取得)
     ↓
 AudioWorklet (音声処理)
     ↓
-WebSocket → Speechmatics API
+    Speech Recognition API
     ↓
 リアルタイム文字起こし
     ↓
@@ -144,16 +144,13 @@ WebSocket → Speechmatics API
 - 音声ファイルと文字起こしの管理
 - 30日後の自動削除スケジューリング
 
-### 4.2 外部サービス連携
+### 4.2 文字起こしAPI
 
-**SpeechmaticsService**
-- WebSocket接続の管理
-- JWT認証トークンの生成
+**Speech Recognition API**
 - リアルタイムAPIの設定
+- https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition
   - 言語: 日本語（ja）
-  - 動作モード: enhanced（高精度）
-  - Partial transcripts: 有効（低遅延）
-  - 話者分離: 最大2名
+  - 話者分離
 
 **NLPService**
 - 自然言語処理による項目抽出

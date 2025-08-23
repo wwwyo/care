@@ -10,7 +10,6 @@ export async function getPlansByClientId(clientId: string) {
         orderBy: {
           versionNumber: 'desc',
         },
-        take: 1,
         include: {
           creator: {
             include: {
