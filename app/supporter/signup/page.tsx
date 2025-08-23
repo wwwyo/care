@@ -39,12 +39,12 @@ export default function SupporterSignupPage() {
         password,
         name,
         realm: USER_REALMS.SUPPORTER,
-        callbackURL: '/supporters',
+        callbackURL: '/supporters/clients',
       },
       {
         onSuccess: () => {
           setIsLoading(false)
-          router.push('/supporters')
+          router.push('/supporters/clients')
         },
         onError: (ctx) => {
           setError(ctx.error.message || 'サインアップに失敗しました')
