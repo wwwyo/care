@@ -25,7 +25,7 @@ export default async function EditClientPage({ params }: EditClientPageProps) {
 
   const profile = clientRecord.profile
   const address = clientRecord.addresses[0]
-  const birthDateString = profile.birthDate.toISOString().split('T')[0]!
+  const birthDateString = profile.birthDate ? profile.birthDate.toISOString().split('T')[0]! : ''
 
   // フォーム用のデータに変換
   const clientData = {

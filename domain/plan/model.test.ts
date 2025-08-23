@@ -242,7 +242,7 @@ describe('Plan', () => {
         desiredLife: 'バージョン1',
       }) as Plan
 
-      const version1Id = withVersion1.versions[0]?.id
+      const version1Id = withVersion1.versions[0]?.id ?? null
       expect(withVersion1.currentVersionId).toBe(version1Id)
 
       const withVersion2 = withVersion1.createNewVersion({
@@ -250,7 +250,7 @@ describe('Plan', () => {
         desiredLife: 'バージョン2',
       }) as Plan
 
-      const version2Id = withVersion2.versions[1]?.id
+      const version2Id = withVersion2.versions[1]?.id ?? null
       expect(withVersion2.currentVersionId).toBe(version2Id)
     })
   })

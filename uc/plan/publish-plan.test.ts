@@ -9,10 +9,16 @@ describe('publishPlanUseCase', () => {
 
   beforeEach(() => {
     // 既存の計画書を作成
-    existingPlan = Plan.create({
+    const plan = Plan.create({
       tenantId: 'tenant-123',
       clientId: 'client-456',
     })
+
+    if ('type' in plan) {
+      throw new Error('Failed to create plan')
+    }
+
+    existingPlan = plan
 
     const version = PlanVersion.create({
       planId: existingPlan.id,
@@ -23,7 +29,12 @@ describe('publishPlanUseCase', () => {
       considerations: '送迎が必要',
     })
 
-    existingPlan = existingPlan.addVersion(version)
+    const planWithVersion = existingPlan.addVersion(version)
+    if ('type' in planWithVersion) {
+      throw new Error('Failed to add version')
+    }
+
+    existingPlan = planWithVersion
 
     mockPlanRepository = {
       save: mock(() => Promise.resolve(undefined)),
@@ -37,7 +48,7 @@ describe('publishPlanUseCase', () => {
     const result = await publishPlanUseCase(
       {
         planId: existingPlan.id,
-        versionId: existingPlan.versions[0].id,
+        versionId: existingPlan.versions[0]?.id ?? '',
       },
       mockPlanRepository,
     )
@@ -50,7 +61,7 @@ describe('publishPlanUseCase', () => {
     expect(savedPlan.status).toBe('published')
 
     const publishedVersion = savedPlan.versions[0]
-    expect(publishedVersion.versionType).toBe('published')
+    expect(publishedVersion?.versionType).toBe('published')
   })
 
   it('存在しない計画書IDの場合はNotFoundエラー', async () => {
@@ -92,13 +103,16 @@ describe('publishPlanUseCase', () => {
 
   it('すでに確定版の場合はValidationError', async () => {
     // 確定版の計画書を作成
-    const publishedPlan = existingPlan.publish(existingPlan.versions[0].id)
+    const publishedPlan = existingPlan.publish(existingPlan.versions[0]?.id ?? '')
+    if ('type' in publishedPlan) {
+      throw new Error('Failed to publish plan')
+    }
     mockPlanRepository.findById = mock(() => Promise.resolve(publishedPlan))
 
     const result = await publishPlanUseCase(
       {
         planId: publishedPlan.id,
-        versionId: publishedPlan.versions[0].id,
+        versionId: publishedPlan.versions[0]?.id ?? '',
       },
       mockPlanRepository,
     )
@@ -120,7 +134,7 @@ describe('publishPlanUseCase', () => {
     const result = await publishPlanUseCase(
       {
         planId: existingPlan.id,
-        versionId: existingPlan.versions[0].id,
+        versionId: existingPlan.versions[0]?.id ?? '',
       },
       mockPlanRepository,
     )

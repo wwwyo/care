@@ -95,7 +95,7 @@
 
 #### 2.2.2 リアルタイム処理フロー
 1. 録音開始（支援者とクライアントの会話）
-2. WebSocket接続で[Speechmatics](https://docs.speechmatics.com/speech-to-text/realtime/quickstart)へ音声ストリーミング
+2. 音声ストリーミング
 3. Partial transcriptsで低遅延文字起こし表示
 4. Final transcriptsで確定テキスト受信
 5. 逐次的な自然言語処理と項目抽出
@@ -112,8 +112,8 @@
 
 ### 2.3 リアルタイム解析・マッピング機能（FR-PLAN-003）
 
-#### 2.3.1 ストリーミング文字起こし処理（Speechmatics）
-- 音声認識API: Speechmatics Real-time API (WebSocket接続)
+#### 2.3.1 ストリーミング文字起こし処理（）
+- 音声認識API
 - 日本語対応（ja言語モード）
 - トランスクリプトタイプ:
   - Final transcripts: 確定結果（インクリメンタル配信）

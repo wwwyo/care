@@ -110,7 +110,7 @@ describe('updatePlanUseCase', () => {
     })
   })
 
-  it('確定版の場合は新しいバージョンが作成される', async () => {
+  it('確定版の場合はエラーを返す', async () => {
     // 確定版の計画書を作成
     const publishedPlan = existingPlan.publish(existingPlan.versions[0]?.id ?? '')
     if ('type' in publishedPlan) {
@@ -128,18 +128,11 @@ describe('updatePlanUseCase', () => {
       mockPlanRepository,
     )
 
-    expect(result).not.toHaveProperty('type')
-    expect(mockPlanRepository.save).toHaveBeenCalledTimes(1)
-
-    const savedPlan = (mockPlanRepository.save as ReturnType<typeof mock>).mock
-      .calls[0]?.[0] as Plan
-    expect(savedPlan.versions).toHaveLength(2) // 新しいバージョンが追加される
-
-    const newVersion = savedPlan.versions[1]
-    expect(newVersion?.versionNumber).toBe(2)
-    expect(newVersion?.versionType).toBe('draft')
-    expect(newVersion?.desiredLife).toBe('働きたい')
-    expect(newVersion?.reasonForUpdate).toBe('確定版からの変更')
+    expect(result).toEqual({
+      type: 'ValidationError',
+      message: '確定版は編集できません。新しいバージョンを作成してください。',
+    })
+    expect(mockPlanRepository.save).not.toHaveBeenCalled()
   })
 
   it('リポジトリでエラーが発生した場合はエラーを返す', async () => {
