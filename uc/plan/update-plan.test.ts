@@ -9,10 +9,16 @@ describe('updatePlanUseCase', () => {
 
   beforeEach(() => {
     // 既存の計画書を作成
-    existingPlan = Plan.create({
+    const plan = Plan.create({
       tenantId: 'tenant-123',
       clientId: 'client-456',
     })
+
+    if ('type' in plan) {
+      throw new Error('Failed to create plan')
+    }
+
+    existingPlan = plan
 
     const version = PlanVersion.create({
       planId: existingPlan.id,
@@ -23,11 +29,16 @@ describe('updatePlanUseCase', () => {
       considerations: '送迎が必要',
     })
 
-    existingPlan = existingPlan.addVersion(version)
+    const planWithVersion = existingPlan.addVersion(version)
+    if ('type' in planWithVersion) {
+      throw new Error('Failed to add version')
+    }
+
+    existingPlan = planWithVersion
 
     mockPlanRepository = {
-      save: mock(() => Promise.resolve()),
-      delete: mock(() => Promise.resolve()),
+      save: mock(() => Promise.resolve(undefined)),
+      delete: mock(() => Promise.resolve(undefined)),
       findById: mock(() => Promise.resolve(existingPlan)),
       findByClientId: mock(() => Promise.resolve([])),
     }
@@ -37,7 +48,7 @@ describe('updatePlanUseCase', () => {
     const result = await updatePlanUseCase(
       {
         planId: existingPlan.id,
-        versionId: existingPlan.versions[0].id,
+        versionId: existingPlan.versions[0]?.id ?? '',
         desiredLife: '働きたい',
         troubles: '体力がない',
         supporterId: 'supporter-789',
@@ -48,13 +59,14 @@ describe('updatePlanUseCase', () => {
     expect(result).not.toHaveProperty('type')
     expect(mockPlanRepository.save).toHaveBeenCalledTimes(1)
 
-    const savedPlan = (mockPlanRepository.save as any).mock.calls[0][0] as Plan
+    const savedPlan = (mockPlanRepository.save as ReturnType<typeof mock>).mock
+      .calls[0]?.[0] as Plan
     expect(savedPlan.versions).toHaveLength(1)
 
     const updatedVersion = savedPlan.versions[0]
-    expect(updatedVersion.desiredLife).toBe('働きたい')
-    expect(updatedVersion.troubles).toBe('体力がない')
-    expect(updatedVersion.considerations).toBe('送迎が必要') // 変更されていない
+    expect(updatedVersion?.desiredLife).toBe('働きたい')
+    expect(updatedVersion?.troubles).toBe('体力がない')
+    expect(updatedVersion?.considerations).toBe('送迎が必要') // 変更されていない
   })
 
   it('存在しない計画書IDの場合はNotFoundエラー', async () => {
@@ -100,13 +112,16 @@ describe('updatePlanUseCase', () => {
 
   it('確定版の場合は新しいバージョンが作成される', async () => {
     // 確定版の計画書を作成
-    const publishedPlan = existingPlan.publish(existingPlan.versions[0].id)
+    const publishedPlan = existingPlan.publish(existingPlan.versions[0]?.id ?? '')
+    if ('type' in publishedPlan) {
+      throw new Error('Failed to publish plan')
+    }
     mockPlanRepository.findById = mock(() => Promise.resolve(publishedPlan))
 
     const result = await updatePlanUseCase(
       {
         planId: publishedPlan.id,
-        versionId: publishedPlan.versions[0].id,
+        versionId: publishedPlan.versions[0]?.id ?? '',
         desiredLife: '働きたい',
         supporterId: 'supporter-789',
       },
@@ -116,14 +131,15 @@ describe('updatePlanUseCase', () => {
     expect(result).not.toHaveProperty('type')
     expect(mockPlanRepository.save).toHaveBeenCalledTimes(1)
 
-    const savedPlan = (mockPlanRepository.save as any).mock.calls[0][0] as Plan
+    const savedPlan = (mockPlanRepository.save as ReturnType<typeof mock>).mock
+      .calls[0]?.[0] as Plan
     expect(savedPlan.versions).toHaveLength(2) // 新しいバージョンが追加される
 
     const newVersion = savedPlan.versions[1]
-    expect(newVersion.versionNumber).toBe(2)
-    expect(newVersion.versionType).toBe('draft')
-    expect(newVersion.desiredLife).toBe('働きたい')
-    expect(newVersion.reasonForUpdate).toBe('確定版からの変更')
+    expect(newVersion?.versionNumber).toBe(2)
+    expect(newVersion?.versionType).toBe('draft')
+    expect(newVersion?.desiredLife).toBe('働きたい')
+    expect(newVersion?.reasonForUpdate).toBe('確定版からの変更')
   })
 
   it('リポジトリでエラーが発生した場合はエラーを返す', async () => {
@@ -137,7 +153,7 @@ describe('updatePlanUseCase', () => {
     const result = await updatePlanUseCase(
       {
         planId: existingPlan.id,
-        versionId: existingPlan.versions[0].id,
+        versionId: existingPlan.versions[0]?.id ?? '',
         desiredLife: '働きたい',
         supporterId: 'supporter-789',
       },

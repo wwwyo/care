@@ -26,8 +26,8 @@ describe('publishPlanUseCase', () => {
     existingPlan = existingPlan.addVersion(version)
 
     mockPlanRepository = {
-      save: mock(() => Promise.resolve()),
-      delete: mock(() => Promise.resolve()),
+      save: mock(() => Promise.resolve(undefined)),
+      delete: mock(() => Promise.resolve(undefined)),
       findById: mock(() => Promise.resolve(existingPlan)),
       findByClientId: mock(() => Promise.resolve([])),
     }
@@ -45,7 +45,8 @@ describe('publishPlanUseCase', () => {
     expect(result).not.toHaveProperty('type')
     expect(mockPlanRepository.save).toHaveBeenCalledTimes(1)
 
-    const savedPlan = (mockPlanRepository.save as any).mock.calls[0][0] as Plan
+    const savedPlan = (mockPlanRepository.save as ReturnType<typeof mock>).mock
+      .calls[0]?.[0] as Plan
     expect(savedPlan.status).toBe('published')
 
     const publishedVersion = savedPlan.versions[0]

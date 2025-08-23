@@ -207,10 +207,13 @@ export function PlanServiceForm({ initialServices, disabled = false }: PlanServi
   const handleServiceChange = (index: number, field: keyof ServiceFormData, value: string) => {
     setServices((prev) => {
       const updated = [...prev]
-      updated[index] = { ...updated[index], [field]: value }
+      const currentService = updated[index]
+      if (!currentService) return updated
+
+      updated[index] = { ...currentService, [field]: value }
 
       // カテゴリが変更された場合、サービス種別をリセット
-      if (field === 'serviceCategory') {
+      if (field === 'serviceCategory' && updated[index]) {
         updated[index].serviceType = ''
       }
 
@@ -226,7 +229,7 @@ export function PlanServiceForm({ initialServices, disabled = false }: PlanServi
       <CardContent className="space-y-4">
         {services.map((service, index) => (
           <ServiceItemForm
-            key={index}
+            key={service.id || `service-${index}`}
             index={index}
             service={service}
             disabled={disabled}
