@@ -1,5 +1,5 @@
 import { AppSidebar } from '@/components/layout/app-sidebar'
-import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 
 export default function SupportersLayout({ children }: { children: React.ReactNode }) {
   return (
