@@ -20,16 +20,16 @@ export const MagicLinkEmail = ({ url }: MagicLinkEmailProps) => {
   return (
     <Html>
       <Head />
-      <Preview>ミタスケアへのログインリンク</Preview>
+      <Preview>Care Hubへのログインリンク</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={header}>
-            <Heading style={h1}>ミタスケア</Heading>
+            <Heading style={h1}>Care Hub</Heading>
           </Section>
 
           <Section style={content}>
             <Text style={paragraph}>こんにちは、</Text>
-            <Text style={paragraph}>ミタスケアへのログインリンクをお送りします。</Text>
+            <Text style={paragraph}>Care Hubへのログインリンクをお送りします。</Text>
             <Text style={paragraph}>下記のボタンをクリックしてログインしてください：</Text>
 
             <Section style={buttonContainer}>
@@ -58,7 +58,7 @@ export const MagicLinkEmail = ({ url }: MagicLinkEmailProps) => {
           </Section>
 
           <Section style={footer}>
-            <Text style={footerText}>© 2025 ミタスケア</Text>
+            <Text style={footerText}>© 2025 Care Hub</Text>
           </Section>
         </Container>
       </Body>

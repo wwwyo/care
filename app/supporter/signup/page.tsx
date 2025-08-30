@@ -58,12 +58,12 @@ export default function SupporterSignupPage() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold">MitasCare</h1>
+          <h1 className="text-3xl font-bold">CareHub</h1>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>支援者様アカウント作成</CardTitle>
+            <CardTitle>相談員様アカウント作成</CardTitle>
             <CardDescription>新規アカウントを作成してください</CardDescription>
           </CardHeader>
 
@@ -130,12 +130,6 @@ export default function SupporterSignupPage() {
               </Link>
 
               <div className="text-center space-y-2 pt-4 border-t w-full">
-                <Link
-                  href="/signup"
-                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  利用者の方はこちら
-                </Link>
                 <Link
                   href="/facility/signup"
                   className="block text-sm text-muted-foreground hover:text-primary transition-colors"

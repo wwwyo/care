@@ -102,7 +102,7 @@ export default async function FacilityDashboard() {
               照会管理
               {newInquiriesCount > 0 && <Badge variant="destructive">{newInquiriesCount}</Badge>}
             </CardTitle>
-            <CardDescription>支援者からの問い合わせ</CardDescription>
+            <CardDescription>相談員からの問い合わせ</CardDescription>
           </CardHeader>
           <CardContent>
             {newInquiriesCount > 0 ? (

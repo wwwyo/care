@@ -36,7 +36,7 @@ export async function getInquiriesByFacilityId(facilityId: string): Promise<Inqu
   return inquiries.map((inquiry) => ({
     id: inquiry.id,
     clientName: inquiry.plan.client.profile?.name ?? '名前未設定',
-    supporterName: '支援者', // TODO: supporterテーブルから取得
+    supporterName: '相談員', // TODO: supporterテーブルから取得
     tenantName: inquiry.plan.tenant.name,
     message: inquiry.messages[0]?.message ?? null,
     status: inquiry.status,

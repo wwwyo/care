@@ -51,12 +51,12 @@ export default function SupporterLoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold">MitasCare</h1>
+          <h1 className="text-3xl font-bold">CareHub</h1>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>支援者様ログイン</CardTitle>
+            <CardTitle>相談員様ログイン</CardTitle>
             <CardDescription>アカウント情報を入力してログインしてください</CardDescription>
           </CardHeader>
 
@@ -110,12 +110,6 @@ export default function SupporterLoginPage() {
               </Link>
 
               <div className="text-center space-y-2 pt-4 border-t w-full">
-                <Link
-                  href="/login"
-                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  利用者の方はこちら
-                </Link>
                 <Link
                   href="/facility/login"
                   className="block text-sm text-muted-foreground hover:text-primary transition-colors"

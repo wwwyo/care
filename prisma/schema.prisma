@@ -31,7 +31,7 @@ model Tenant {
   @@map("tenants")
 }
 
-// supporters: 支援者（相談支援専門員）
+// supporters: 相談員（相談支援専門員）
 
 model Supporter {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -46,6 +46,7 @@ model Supporter {
   clientSupporters    ClientSupporter[]
   planVersionsCreated PlanVersion[]     @relation("PlanVersionCreatedBy")
   hearingSessions     HearingSession[]
+  hearingMemos        HearingMemo[]
 
   @@index([tenantId])
   @@index([userId])
@@ -66,12 +67,13 @@ model Client {
   clientSupporters ClientSupporter[]
   plans            Plan[]
   hearingSessions  HearingSession[]
+  hearingMemos     HearingMemo[]
 
   @@index([tenantId])
   @@map("clients")
 }
 
-// client_supporters: 利用者と支援者の中間テーブル
+// client_supporters: 利用者と相談員の中間テーブル
 model ClientSupporter {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   clientId    String   @map("client_id") @db.Uuid
@@ -144,7 +146,7 @@ model FacilityStaffFacility {
 // プロファイル関連テーブル
 // =====================================================
 
-// supporter_profiles: 支援者プロファイル
+// supporter_profiles: 相談員プロファイル
 
 model SupporterProfile {
   id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -471,6 +473,27 @@ model HearingExtractedData {
   @@index([hearingSessionId])
   @@index([dataType])
   @@map("hearing_extracted_data")
+}
+
+// hearing_memos: ヒアリングメモ
+
+model HearingMemo {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId    String   @map("client_id") @db.Uuid
+  supporterId String   @map("supporter_id") @db.Uuid
+  date        DateTime @db.Date
+  title       String   @db.VarChar(255)
+  content     String   @db.Text // JSON型からText型に変更
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  client    Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  supporter Supporter @relation(fields: [supporterId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([supporterId])
+  @@index([date])
+  @@map("hearing_memos")
 }
 
 // slots: 空き状況

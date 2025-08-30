@@ -1,6 +1,7 @@
 import {
   AlertCircle,
   ArrowLeft,
+  ClipboardList,
   Edit,
   FileText,
   MapPin,
@@ -11,13 +12,21 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getClientById } from '@/infra/query/client-query'
+import { getHearingMemosByClient } from '@/infra/query/hearing-memo'
 import { getPlanByClientId } from '@/infra/query/plan-query'
 import { getSupporterByUserId } from '@/infra/query/supporter-query'
 import { requireRealm } from '@/lib/auth/helpers'
 import { calculateAge } from '@/lib/utils/age-calculator'
+
+// メモのcontent型定義（簡易版）
+const MemoContentSchema = z.object({
+  document: z.string().optional(),
+  transcription: z.string().optional(),
+})
 
 interface ClientDetailPageProps {
   params: Promise<{ id: string }>
@@ -45,6 +54,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
   // 計画書を取得
   const plan = await getPlanByClientId(id)
 
+  // ヒアリングメモを取得（最新3件）
+  const hearingMemos = await getHearingMemosByClient(id)
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="flex items-center gap-4 mb-6">
@@ -65,6 +77,120 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       </div>
 
       <div className="space-y-6">
+        {/* ヒアリングメモ */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <ClipboardList className="h-5 w-5" />
+                ヒアリングメモ
+              </span>
+              <Button asChild size="sm">
+                <Link href={`/supporters/clients/${id}/hearing`}>
+                  <Mic className="mr-2 h-4 w-4" />
+                  メモ一覧へ
+                </Link>
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {hearingMemos.length === 0 ? (
+              <p className="text-muted-foreground">
+                まだヒアリングメモがありません。音声認識機能を使って記録を始めましょう。
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {hearingMemos.slice(0, 3).map((memo) => (
+                  <Link
+                    key={memo.id}
+                    href={`/supporters/clients/${id}/hearing/${memo.id}`}
+                    className="block p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="font-medium">{memo.title}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(memo.date).toLocaleDateString('ja-JP')}
+                        </p>
+                        {(() => {
+                          const content = MemoContentSchema.safeParse(memo.content)
+                          return content.success && content.data.document ? (
+                            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                              {content.data.document}
+                            </p>
+                          ) : null
+                        })()}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+                {hearingMemos.length > 3 && (
+                  <div className="pt-2 border-t">
+                    <Link
+                      href={`/supporters/clients/${id}/hearing`}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      すべてのメモを見る ({hearingMemos.length}件)
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* 計画書 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                サービス等利用計画書
+              </span>
+              <Button asChild size="sm">
+                <Link href={`/supporters/clients/${id}/plans/new`}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  {plan ? '新バージョン作成' : '新規作成'}
+                </Link>
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!plan ? (
+              <p className="text-muted-foreground">計画書はまだ作成されていません</p>
+            ) : (
+              <div className="space-y-2">
+                {plan.versions.map((version) => (
+                  <div
+                    key={version.id}
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div>
+                      <p className="font-medium">バージョン {version.versionNumber}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {version.versionType === 'published' ? '確定版' : '下書き'} ・ 作成日:{' '}
+                        {new Date(version.createdAt).toLocaleDateString('ja-JP')}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={`/supporters/clients/${id}/plans/${version.id}/edit`}>
+                          編集
+                        </Link>
+                      </Button>
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={`/supporters/clients/${id}/plans/${version.id}/record`}>
+                          <Mic className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* 基本情報 */}
         <Card>
           <CardHeader>
@@ -128,56 +254,6 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               </p>
               {address.building && <p className="text-lg">{address.building}</p>}
             </div>
-          </CardContent>
-        </Card>
-
-        {/* 計画書 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                サービス等利用計画書
-              </span>
-              <Button asChild size="sm">
-                <Link href={`/supporters/clients/${id}/plans/new`}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  {plan ? '新バージョン作成' : '新規作成'}
-                </Link>
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {!plan ? (
-              <p className="text-muted-foreground">計画書はまだ作成されていません</p>
-            ) : (
-              <div className="space-y-2">
-                {plan.versions.map((version) => (
-                  <div
-                    key={version.id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
-                  >
-                    <div>
-                      <p className="font-medium">バージョン {version.versionNumber}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {version.versionType === 'published' ? '確定版' : '下書き'} ・ 作成日:{' '}
-                        {new Date(version.createdAt).toLocaleDateString('ja-JP')}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button asChild variant="outline" size="sm">
-                        <Link href={`/supporters/clients/${id}/plans/${plan.id}/edit`}>編集</Link>
-                      </Button>
-                      <Button asChild variant="outline" size="sm">
-                        <Link href={`/supporters/clients/${id}/plans/${plan.id}/record`}>
-                          <Mic className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </CardContent>
         </Card>
 

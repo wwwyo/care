@@ -6,7 +6,7 @@ import { Toaster } from '@/components/ui/sonner'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'MitasCare',
+  title: 'CareHub',
   description: '厚生労働省標準様式のサービス等利用計画書を基に、福祉施設とのマッチングを支援',
 }
 

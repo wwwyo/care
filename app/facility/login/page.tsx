@@ -51,7 +51,7 @@ export default function FacilityLoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold">MitasCare</h1>
+          <h1 className="text-3xl font-bold">CareHub</h1>
         </div>
 
         <Card>
@@ -111,16 +111,10 @@ export default function FacilityLoginPage() {
 
               <div className="text-center space-y-2 pt-4 border-t w-full">
                 <Link
-                  href="/login"
-                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  利用者の方はこちら
-                </Link>
-                <Link
                   href="/supporter/login"
                   className="block text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  支援者の方はこちら
+                  相談員の方はこちら
                 </Link>
               </div>
             </CardFooter>
