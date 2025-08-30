@@ -58,7 +58,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
   const hearingMemos = await getHearingMemosByClient(id)
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="max-w-5xl mx-auto">
       <div className="flex items-center gap-4 mb-6">
         <Button asChild variant="ghost" size="icon">
           <Link href="/supporters/clients">

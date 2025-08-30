@@ -41,7 +41,7 @@ export default async function FacilityDashboard() {
     : null
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="max-w-7xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">{facility.profile?.name || '未設定'}</h1>
         {facility.profile?.nameKana && (

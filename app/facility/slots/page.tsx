@@ -32,7 +32,7 @@ export default function SlotManagementPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="max-w-5xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">空き状況を更新</h1>
         <p className="text-muted-foreground">現在の空き状況を選択してください</p>

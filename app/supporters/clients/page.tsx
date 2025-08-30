@@ -18,7 +18,7 @@ export default async function ClientsPage() {
   const clientRecords = await getAllClients(supporter.tenantId)
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold">利用者一覧</h1>
