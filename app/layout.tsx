@@ -8,6 +8,9 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'CareHub',
   description: '厚生労働省標準様式のサービス等利用計画書を基に、福祉施設とのマッチングを支援',
+  icons: {
+    icon: '/icon.svg',
+  },
 }
 
 export default function RootLayout({
