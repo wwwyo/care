@@ -28,77 +28,70 @@ export async function updateSlotStatusAction(
   _prevState: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  try {
-    const session = await requireRealm('facility_staff', '/login')
+  const session = await requireRealm('facility_staff', '/login')
 
-    const [facility, facilityStaff] = await Promise.all([
-      getFacilityByStaffUserId(session.user.id),
-      getFacilityStaffByUserId(session.user.id),
-    ])
+  const [facility, facilityStaff] = await Promise.all([
+    getFacilityByStaffUserId(session.user.id),
+    getFacilityStaffByUserId(session.user.id),
+  ])
 
-    if (!facility || !facilityStaff) {
-      return {
-        type: 'error',
-        message: '施設またはスタッフが見つかりません',
+  if (!facility || !facilityStaff) {
+    return {
+      type: 'error',
+      message: '施設またはスタッフが見つかりません',
+    }
+  }
+
+  // フォームの値を保存（エラー時に返す）
+  const formValues = Object.fromEntries(formData.entries())
+
+  // FormDataから値を取得
+  const rawData = {
+    status: formData.get('status'),
+    comment: formData.get('comment') || undefined,
+  }
+
+  // バリデーション
+  const parsed = updateSlotStatusSchema.safeParse(rawData)
+
+  if (!parsed.success) {
+    // Zodエラーをfieldごとにまとめて返す
+    const fieldErrors: Record<string, string> = {}
+    parsed.error.issues.forEach((err) => {
+      const fieldName = err.path[0]
+      if (fieldName && typeof fieldName === 'string') {
+        fieldErrors[fieldName] = err.message
       }
-    }
-
-    // フォームの値を保存（エラー時に返す）
-    const formValues = Object.fromEntries(formData.entries())
-
-    // FormDataから値を取得
-    const rawData = {
-      status: formData.get('status'),
-      comment: formData.get('comment') || undefined,
-    }
-
-    // バリデーション
-    const parsed = updateSlotStatusSchema.safeParse(rawData)
-
-    if (!parsed.success) {
-      // Zodエラーをfieldごとにまとめて返す
-      const fieldErrors: Record<string, string> = {}
-      parsed.error.issues.forEach((err) => {
-        const fieldName = err.path[0]
-        if (fieldName && typeof fieldName === 'string') {
-          fieldErrors[fieldName] = err.message
-        }
-      })
-
-      return {
-        type: 'error',
-        fieldErrors,
-        values: formValues,
-      }
-    }
-
-    const result = await updateSlotStatus({
-      facilityId: facility.id,
-      status: parsed.data.status,
-      comment: parsed.data.comment,
-      updatedBy: facilityStaff.id,
     })
 
-    if ('success' in result) {
-      redirect('/facility')
-    }
-
-    // エラーメッセージのマッピング
-    const errorMessages: Record<string, string> = {
-      NotFound: '施設が見つかりません',
-      ValidationError: '入力内容に誤りがあります',
-      UnexpectedError: 'データの保存に失敗しました',
-    }
-
     return {
       type: 'error',
-      message: errorMessages[result.type] || 'エラーが発生しました',
+      fieldErrors,
       values: formValues,
     }
-  } catch {
-    return {
-      type: 'error',
-      message: '空き状況の更新に失敗しました',
-    }
+  }
+
+  const result = await updateSlotStatus({
+    facilityId: facility.id,
+    status: parsed.data.status,
+    comment: parsed.data.comment,
+    updatedBy: facilityStaff.id,
+  })
+
+  if ('success' in result) {
+    redirect('/facility')
+  }
+
+  // エラーメッセージのマッピング
+  const errorMessages: Record<string, string> = {
+    NotFound: '施設が見つかりません',
+    ValidationError: '入力内容に誤りがあります',
+    UnexpectedError: 'データの保存に失敗しました',
+  }
+
+  return {
+    type: 'error',
+    message: errorMessages[result.type] || 'エラーが発生しました',
+    values: formValues,
   }
 }

@@ -4,7 +4,6 @@ import { Building2, ChevronLeft, ClipboardList, FileText, Home, Users } from 'lu
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import icon from '@/app/icon.svg'
 import { Button } from '@/components/ui/button'
 import {
   Sidebar,
@@ -93,7 +92,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
             className="flex items-center justify-center w-full h-full hover:opacity-80"
             onClick={toggleSidebar}
           >
-            <Image src={icon} alt="CareHub" width={32} height={32} priority />
+            <Image src="/icon.svg" alt="CareHub" width={32} height={32} priority />
           </button>
         )}
       </SidebarHeader>
