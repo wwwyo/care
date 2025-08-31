@@ -46,6 +46,22 @@ export async function getPlanWithVersions(planId: string) {
           },
         },
       },
+      consents: {
+        where: {
+          status: 'granted',
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        include: {
+          grants: {
+            orderBy: {
+              grantedAt: 'desc',
+            },
+            take: 1,
+          },
+        },
+      },
     },
   })
 }

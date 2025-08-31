@@ -37,6 +37,12 @@ export async function getFacilityByStaffUserId(userId: string) {
   return result?.facility ?? null
 }
 
+export async function getFacilityStaffByUserId(userId: string) {
+  return prisma.facilityStaff.findFirst({
+    where: { userId },
+  })
+}
+
 export async function getFacilityList() {
   const facilities = await prisma.facility.findMany({
     include: facilityWithDetailsInclude,

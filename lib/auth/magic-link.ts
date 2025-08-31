@@ -3,14 +3,14 @@ import { sendEmail } from '@/lib/email'
 import { isDevelopment } from '@/lib/env/server'
 
 export async function sendMagicLinkEmail(email: string, url: string) {
-  const subject = 'ミタスケア - ログインリンク'
+  const subject = 'Care Hub - ログインリンク'
 
   const text = `
-ミタスケア - ログインリンク
+Care Hub - ログインリンク
 
 こんにちは、
 
-ミタスケアへのログインリンクをお送りします。
+Care Hubへのログインリンクをお送りします。
 
 下記のリンクをクリックしてログインしてください：
 ${url}
@@ -19,7 +19,7 @@ ${url}
 
 このメールに心当たりがない場合は、無視していただいて構いません。
 
-© 2025 ミタスケア
+© 2025 Care Hub
   `.trim()
 
   await sendEmail({

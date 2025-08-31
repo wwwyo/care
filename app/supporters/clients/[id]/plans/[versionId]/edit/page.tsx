@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { getHearingMemosByClient } from '@/infra/query/hearing-memo'
 import { getPlanWithVersions } from '@/infra/query/plan-query'
 import { requireRealm } from '@/lib/auth/helpers'
 import { prisma } from '@/lib/prisma'
@@ -40,18 +41,36 @@ export default async function EditPlanPage({ params }: Props) {
     notFound()
   }
 
+  // ヒアリングメモを取得
+  const hearingMemos = await getHearingMemosByClient(clientId)
+
+  // 同意状態を取得
+  const hasConsent = plan.consents && plan.consents.length > 0
+  const latestConsent = hasConsent ? plan.consents[0] : null
+
   return (
     <div className="container mx-auto py-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">サービス等利用計画書 編集</h1>
         <p className="text-muted-foreground mt-1">
           {plan.client.profile?.name} 様 - バージョン {latestVersion.versionNumber}
+          {hasConsent && (
+            <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              同意済み
+            </span>
+          )}
         </p>
+        {latestConsent?.grants?.[0] && (
+          <p className="text-xs text-muted-foreground mt-1">
+            同意日: {new Date(latestConsent.grants[0].grantedAt).toLocaleDateString('ja-JP')}
+          </p>
+        )}
       </div>
 
       <PlanUpdateForm
         planId={planId}
         versionId={latestVersion.id}
+        clientId={clientId}
         initialData={{
           desiredLife: latestVersion.desiredLife || '',
           troubles: latestVersion.troubles || '',
@@ -67,6 +86,7 @@ export default async function EditPlanPage({ params }: Props) {
             })) || [],
         }}
         isPublished={latestVersion.versionType === 'published'}
+        hearingMemos={hearingMemos}
       />
     </div>
   )

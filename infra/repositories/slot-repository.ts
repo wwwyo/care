@@ -23,16 +23,15 @@ async function save(slot: Slot): Promise<void> {
     status: slot.getStatus(),
     comment: slot.getComment(),
     updatedBy: slot.getUpdatedBy(),
+    updatedAt: slot.getUpdatedAt(),
   }
 
   // 1施設1スロットの制約を活かし、facilityIdをキーとしてupsert
   await prisma.slot.upsert({
     where: { facilityId },
-    update: {
-      ...slotData,
-      updatedAt: new Date(),
-    },
+    update: slotData,
     create: {
+      id: slot.getId(),
       facilityId,
       ...slotData,
     },

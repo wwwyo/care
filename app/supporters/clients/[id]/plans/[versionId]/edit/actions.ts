@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { parseArrayFromFormData } from '@/lib/utils/form-parser'
+import { createInquiryUseCase } from '@/uc/inquiry/create-inquiry'
 import { publishPlanUseCase } from '@/uc/plan/publish-plan'
 import { updatePlanUseCase } from '@/uc/plan/update-plan'
 
@@ -21,6 +22,14 @@ const serviceSchema = z.object({
   desiredAmount: z.string().optional(),
   desiredLifeByService: z.string().optional(),
   achievementPeriod: z.string().optional(),
+  selectedFacilities: z
+    .array(
+      z.object({
+        id: z.string().uuid(),
+        name: z.string(),
+      }),
+    )
+    .optional(),
 })
 
 type ServiceFormData = z.infer<typeof serviceSchema>
@@ -73,7 +82,14 @@ export async function updatePlanAction(
     desiredLife: data.desiredLife || undefined,
     troubles: data.troubles || undefined,
     considerations: data.considerations || undefined,
-    services: validServices,
+    services: validServices.map((s) => ({
+      id: s.id,
+      serviceCategory: s.serviceCategory,
+      serviceType: s.serviceType,
+      desiredAmount: s.desiredAmount,
+      desiredLifeByService: s.desiredLifeByService,
+      achievementPeriod: s.achievementPeriod,
+    })),
   })
 
   if ('type' in result) {
@@ -84,6 +100,19 @@ export async function updatePlanAction(
         troubles: data.troubles,
         considerations: data.considerations,
       },
+    }
+  }
+
+  // 選択された施設がある場合はinquiryを作成
+  for (const service of validServices) {
+    if (service.selectedFacilities && service.selectedFacilities.length > 0) {
+      for (const facility of service.selectedFacilities) {
+        await createInquiryUseCase({
+          planId: data.planId,
+          facilityId: facility.id,
+          message: `${data.desiredLife || ''} ${service.desiredLifeByService || ''}`.trim(),
+        })
+      }
     }
   }
 

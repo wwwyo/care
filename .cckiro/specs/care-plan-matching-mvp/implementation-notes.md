@@ -20,13 +20,13 @@
    - User モデルを Client モデルにリネーム（認証用Userと区別するため）
    - Better Auth用テーブル名を標準化
      - `User` → `users`
-     - `Session` → `sessions`  
+     - `Session` → `sessions`
      - `Account` → `accounts`
      - `Verification` → `verifications`
 
 3. **ログインページの実装**
    - `/login` - 利用者用（realm='client'）
-   - `/supporter/login` - 支援者用（realm='supporter'）
+   - `/supporter/login` - 相談員用（realm='supporter'）
    - `/facility/login` - 施設管理者用（realm='facility'）
    - 各ページでサインアップ/ログインを切り替え可能
    - サインアップ時に自動的にrealmを設定
@@ -43,7 +43,7 @@
 ### 次のステップ
 1. **オンボーディングフロー実装**
    - `/onboarding` - 利用者用
-   - `/supporter/onboarding` - 支援者用
+   - `/supporter/onboarding` - 相談員用
    - `/facility/onboarding` - 施設管理者用
 
 2. **プロファイル連携**

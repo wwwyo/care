@@ -312,7 +312,7 @@ async function main() {
   await prisma.slot.create({
     data: {
       facilityId: facility1.id,
-      status: 'open',
+      status: 'available',
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30日後
       updatedBy: facilityStaff1.id,
       details: {

@@ -41,7 +41,7 @@ export default async function FacilityDashboard() {
     : null
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="max-w-7xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">{facility.profile?.name || '未設定'}</h1>
         {facility.profile?.nameKana && (
@@ -102,7 +102,7 @@ export default async function FacilityDashboard() {
               照会管理
               {newInquiriesCount > 0 && <Badge variant="destructive">{newInquiriesCount}</Badge>}
             </CardTitle>
-            <CardDescription>支援者からの問い合わせ</CardDescription>
+            <CardDescription>相談員からの問い合わせ</CardDescription>
           </CardHeader>
           <CardContent>
             {newInquiriesCount > 0 ? (

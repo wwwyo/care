@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { getHearingMemosByClient } from '@/infra/query/hearing-memo'
 import { requireRealm } from '@/lib/auth/helpers'
 import { prisma } from '@/lib/prisma'
 import { PlanEditForm } from './plan-edit-form'
@@ -38,6 +39,9 @@ export default async function NewPlanPage({ params }: Props) {
     notFound()
   }
 
+  // ヒアリングメモを取得
+  const hearingMemos = await getHearingMemosByClient(clientId)
+
   return (
     <div className="container mx-auto py-8">
       <div className="mb-6">
@@ -45,7 +49,7 @@ export default async function NewPlanPage({ params }: Props) {
         <p className="text-muted-foreground mt-1">{client.profile?.name} 様</p>
       </div>
 
-      <PlanEditForm clientId={clientId} />
+      <PlanEditForm clientId={clientId} hearingMemos={hearingMemos} />
     </div>
   )
 }

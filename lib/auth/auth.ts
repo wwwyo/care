@@ -10,7 +10,7 @@ import { SESSION_EXPIRY_DAYS, SESSION_UPDATE_AGE_DAYS } from './constants'
 import { USER_REALMS, userRealmSchema } from './schemas'
 
 export const auth = betterAuth({
-  appName: 'ミタスケア',
+  appName: 'Care Hub',
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
   }),

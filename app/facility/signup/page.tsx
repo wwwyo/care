@@ -2,6 +2,7 @@
 
 import { AlertCircle } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -19,6 +20,7 @@ import { authClient } from '@/lib/auth/client'
 import { USER_REALMS } from '@/lib/auth/schemas'
 
 export default function FacilitySignupPage() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
@@ -42,7 +44,7 @@ export default function FacilitySignupPage() {
       {
         onSuccess: () => {
           setIsLoading(false)
-          // autoSignInとcallbackURLにより自動的に /facility へ遷移
+          router.push('/facility')
         },
         onError: (ctx) => {
           setError(ctx.error.message || 'サインアップに失敗しました')
@@ -56,7 +58,7 @@ export default function FacilitySignupPage() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold">MitasCare</h1>
+          <h1 className="text-3xl font-bold">CareHub</h1>
         </div>
 
         <Card>
@@ -129,16 +131,10 @@ export default function FacilitySignupPage() {
 
               <div className="text-center space-y-2 pt-4 border-t w-full">
                 <Link
-                  href="/signup"
-                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  利用者の方はこちら
-                </Link>
-                <Link
                   href="/supporter/signup"
                   className="block text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  支援者の方はこちら
+                  相談員の方はこちら
                 </Link>
               </div>
             </CardFooter>

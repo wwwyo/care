@@ -37,7 +37,7 @@ export default async function InquiriesPage() {
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">照会一覧</h1>
-        <p className="text-muted-foreground">支援者からの照会を確認できます</p>
+        <p className="text-muted-foreground">相談員からの照会を確認できます</p>
       </div>
 
       <div className="mb-4">

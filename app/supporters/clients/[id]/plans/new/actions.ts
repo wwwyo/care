@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { requireRealm } from '@/lib/auth/helpers'
 import { prisma } from '@/lib/prisma'
 import { parseArrayFromFormData } from '@/lib/utils/form-parser'
+import { createInquiryUseCase } from '@/uc/inquiry/create-inquiry'
 import { createPlanUseCase } from '@/uc/plan/create-plan'
 
 const createPlanSchema = z.object({
@@ -20,6 +21,14 @@ const serviceSchema = z.object({
   desiredAmount: z.string().optional(),
   desiredLifeByService: z.string().optional(),
   achievementPeriod: z.string().optional(),
+  selectedFacilities: z
+    .array(
+      z.object({
+        id: z.string().uuid(),
+        name: z.string(),
+      }),
+    )
+    .optional(),
 })
 
 type ServiceFormData = z.infer<typeof serviceSchema>
@@ -107,7 +116,13 @@ export async function createPlanAction(_prevState: State, formData: FormData): P
     desiredLife: data.desiredLife || undefined,
     troubles: data.troubles || undefined,
     considerations: data.considerations || undefined,
-    services: validServices,
+    services: validServices.map((s) => ({
+      serviceCategory: s.serviceCategory,
+      serviceType: s.serviceType,
+      desiredAmount: s.desiredAmount,
+      desiredLifeByService: s.desiredLifeByService,
+      achievementPeriod: s.achievementPeriod,
+    })),
   })
 
   if ('type' in result) {
@@ -118,6 +133,19 @@ export async function createPlanAction(_prevState: State, formData: FormData): P
         troubles: data.troubles,
         considerations: data.considerations,
       },
+    }
+  }
+
+  // 選択された施設がある場合はinquiryを作成
+  for (const service of validServices) {
+    if (service.selectedFacilities && service.selectedFacilities.length > 0) {
+      for (const facility of service.selectedFacilities) {
+        await createInquiryUseCase({
+          planId: result.id,
+          facilityId: facility.id,
+          message: `${data.desiredLife || ''} ${service.desiredLifeByService || ''}`.trim(),
+        })
+      }
     }
   }
 

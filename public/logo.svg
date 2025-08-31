@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="160" viewBox="0 0 640 160" role="img" aria-labelledby="title desc">
+  <title id="title">CareHub ロゴ</title>
+  <desc id="desc">シンボルと文字を横並びにし、文字ベースラインを中央に揃えたCareHubロゴ。</desc>
+  <!-- Palette -->
+  <defs>
+    <style>
+      .ch-blue{fill:#1D4ED8}       /* Primary Blue */
+      .ch-navy{fill:#0B3B66}       /* Deep Navy */
+      .ch-cyan{fill:#22D3EE}       /* Accent Cyan */
+      .ch-text{fill:#0B3B66}
+    </style>
+  </defs>
+
+  <!-- Symbol -->
+  <g transform="translate(24,32)">
+    <!-- embracing C (open ring) -->
+    <circle cx="48" cy="48" r="44" fill="none" stroke="#1D4ED8" stroke-width="12" stroke-linecap="round"
+            stroke-dasharray="240 120" stroke-dashoffset="90"/>
+    <!-- H pillars -->
+    <rect x="29" y="24" width="12" height="48" rx="6" class="ch-navy"/>
+    <rect x="55" y="24" width="12" height="48" rx="6" class="ch-navy"/>
+    <!-- H crossbar -->
+    <rect x="29" y="44" width="38" height="12" rx="6" class="ch-navy"/>
+    <!-- hub dot -->
+    <circle cx="48" cy="50" r="6" class="ch-cyan"/>
+  </g>
+
+  <!-- Logotype -->
+  <g transform="translate(140,108)" class="ch-text" font-family="Inter, 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+    <text x="0" y="0" font-size="56" font-weight="700" letter-spacing="0.5">CareHub</text>
+  </g>
+</svg>
