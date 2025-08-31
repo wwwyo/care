@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
-import { getFacilityByStaffUserId } from '@/infra/query/facility-query'
+import { getFacilityByStaffUserId, getFacilityStaffByUserId } from '@/infra/query/facility-query'
 import { requireRealm } from '@/lib/auth/helpers'
 import { updateSlotStatus } from '@/uc/slot/update-slot-status'
 
@@ -31,11 +31,15 @@ export async function updateSlotStatusAction(
   try {
     const session = await requireRealm('facility_staff', '/login')
 
-    const facility = await getFacilityByStaffUserId(session.user.id)
-    if (!facility) {
+    const [facility, facilityStaff] = await Promise.all([
+      getFacilityByStaffUserId(session.user.id),
+      getFacilityStaffByUserId(session.user.id),
+    ])
+
+    if (!facility || !facilityStaff) {
       return {
         type: 'error',
-        message: '施設が見つかりません',
+        message: '施設またはスタッフが見つかりません',
       }
     }
 
@@ -72,7 +76,7 @@ export async function updateSlotStatusAction(
       facilityId: facility.id,
       status: parsed.data.status,
       comment: parsed.data.comment,
-      updatedBy: session.user.id,
+      updatedBy: facilityStaff.id,
     })
 
     if ('success' in result) {
@@ -83,7 +87,7 @@ export async function updateSlotStatusAction(
     const errorMessages: Record<string, string> = {
       NotFound: '施設が見つかりません',
       ValidationError: '入力内容に誤りがあります',
-      SaveError: 'データの保存に失敗しました',
+      UnexpectedError: 'データの保存に失敗しました',
     }
 
     return {

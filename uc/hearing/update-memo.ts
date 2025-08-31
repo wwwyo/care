@@ -4,11 +4,11 @@ import { hearingMemoRepository } from '@/infra/repositories/hearing-memo'
 
 type UpdateHearingMemoError = HearingMemoRepositoryError
 
-export async function updateHearingMemoDocument(
+export async function updateHearingMemoContent(
   id: string,
-  document: string,
+  content: string,
 ): Promise<HearingMemoModel | UpdateHearingMemoError> {
-  console.log('updateHearingMemoDocument called with:', { id, documentLength: document?.length })
+  console.log('updateHearingMemoContent called with:', { id, contentLength: content?.length })
 
   const memo = await hearingMemoRepository.findById(id)
   if ('type' in memo) {
@@ -16,8 +16,8 @@ export async function updateHearingMemoDocument(
     return memo
   }
 
-  console.log('Found memo, updating document')
-  const updatedMemo = memo.updateDocument(document)
+  console.log('Found memo, updating content')
+  const updatedMemo = memo.updateContent(content)
 
   console.log('Saving updated memo')
   const result = await hearingMemoRepository.save(updatedMemo)

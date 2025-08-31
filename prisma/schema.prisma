@@ -45,7 +45,6 @@ model Supporter {
   profile             SupporterProfile?
   clientSupporters    ClientSupporter[]
   planVersionsCreated PlanVersion[]     @relation("PlanVersionCreatedBy")
-  hearingSessions     HearingSession[]
   hearingMemos        HearingMemo[]
 
   @@index([tenantId])
@@ -66,7 +65,6 @@ model Client {
   addresses        ClientAddress[]
   clientSupporters ClientSupporter[]
   plans            Plan[]
-  hearingSessions  HearingSession[]
   hearingMemos     HearingMemo[]
 
   @@index([tenantId])
@@ -348,7 +346,6 @@ model PlanVersion {
   services                  PlanService[] // 利用したいサービス（厚労省様式3）
   accessibilityRequirements PlanAccessibilityRequirement[]
   customFields              PlanCustomField[]
-  hearingSessions           HearingSession[] // ヒアリング記録との関連
 
   @@unique([planId, versionNumber])
   @@index([planId])
@@ -410,38 +407,11 @@ model PlanService {
   @@map("plan_services")
 }
 
-// hearing_sessions: ヒアリングセッション
-
-model HearingSession {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  planVersionId String?  @map("plan_version_id") @db.Uuid
-  clientId      String   @map("client_id") @db.Uuid
-  supporterId   String   @map("supporter_id") @db.Uuid
-  sessionDate   DateTime @map("session_date") @db.Timestamptz
-  duration      Int? // 録音時間（秒）
-  audioFileUrl  String?  @map("audio_file_url") @db.Text
-  status        String   @default("completed") @db.VarChar(20) // recording | completed | error
-  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
-
-  planVersion   PlanVersion?           @relation(fields: [planVersionId], references: [id])
-  client        Client                 @relation(fields: [clientId], references: [id])
-  supporter     Supporter              @relation(fields: [supporterId], references: [id])
-  transcripts   HearingTranscript[]
-  extractedData HearingExtractedData[]
-
-  @@index([planVersionId])
-  @@index([clientId])
-  @@index([supporterId])
-  @@index([sessionDate])
-  @@map("hearing_sessions")
-}
-
 // hearing_transcripts: 文字起こしデータ
 
 model HearingTranscript {
   id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  hearingSessionId String   @map("hearing_session_id") @db.Uuid
+  hearingMemoId    String   @map("hearing_memo_id") @db.Uuid
   transcriptType   String   @map("transcript_type") @db.VarChar(20) // partial | final
   content          String   @db.Text
   timestamp        Decimal  @db.Decimal(10, 3) // 開始時刻（秒）
@@ -450,29 +420,11 @@ model HearingTranscript {
   confidence       Decimal? @db.Decimal(3, 2) // 信頼度スコア（0-1）
   createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  hearingSession HearingSession @relation(fields: [hearingSessionId], references: [id], onDelete: Cascade)
+  hearingMemo HearingMemo @relation(fields: [hearingMemoId], references: [id], onDelete: Cascade)
 
-  @@index([hearingSessionId])
+  @@index([hearingMemoId])
   @@index([timestamp])
   @@map("hearing_transcripts")
-}
-
-// hearing_extracted_data: 抽出された情報
-
-model HearingExtractedData {
-  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  hearingSessionId   String   @map("hearing_session_id") @db.Uuid
-  dataType           String   @map("data_type") @db.VarChar(50) // desired_life | trouble | service | consideration
-  extractedContent   String   @map("extracted_content") @db.Text
-  confidence         Decimal  @db.Decimal(3, 2) // 信頼度スコア（0-1）
-  sourceTranscriptId String?  @map("source_transcript_id") @db.Uuid // 元となった文字起こしID
-  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
-
-  hearingSession HearingSession @relation(fields: [hearingSessionId], references: [id], onDelete: Cascade)
-
-  @@index([hearingSessionId])
-  @@index([dataType])
-  @@map("hearing_extracted_data")
 }
 
 // hearing_memos: ヒアリングメモ
@@ -483,17 +435,35 @@ model HearingMemo {
   supporterId String   @map("supporter_id") @db.Uuid
   date        DateTime @db.Date
   title       String   @db.VarChar(255)
-  content     String   @db.Text // JSON型からText型に変更
+  content     String   @db.Text // 議事録
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  client    Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  supporter Supporter @relation(fields: [supporterId], references: [id], onDelete: Cascade)
+  client        Client              @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  supporter     Supporter           @relation(fields: [supporterId], references: [id], onDelete: Cascade)
+  transcripts   HearingTranscript[] // 文字起こし
+  audioFiles    HearingAudio[]      // 音声ファイル
 
   @@index([clientId])
   @@index([supporterId])
   @@index([date])
   @@map("hearing_memos")
+}
+
+// hearing_audios: 音声ファイル管理
+
+model HearingAudio {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  hearingMemoId String   @map("hearing_memo_id") @db.Uuid
+  audioFileUrl  String   @map("audio_file_url") @db.Text
+  duration      Int?     // 録音時間（秒）
+  status        String   @default("completed") @db.VarChar(20) // recording | processing | completed | error
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  hearingMemo HearingMemo @relation(fields: [hearingMemoId], references: [id], onDelete: Cascade)
+
+  @@index([hearingMemoId])
+  @@map("hearing_audios")
 }
 
 // slots: 空き状況

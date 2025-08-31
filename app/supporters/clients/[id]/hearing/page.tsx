@@ -68,20 +68,11 @@ export default async function HearingMemoListPage({ params }: HearingMemoListPag
           ) : (
             <div className="space-y-4">
               {hearingMemos.map((memo) => {
-                let content: {
-                  document?: string
-                  structured?: { summary?: string }
-                } = {}
-
-                try {
-                  content = JSON.parse(memo.content)
-                } catch {
-                  // パースエラーの場合は空オブジェクトとして扱う
-                  content = {}
-                }
-
-                const hasDocument = content?.document && content.document.length > 0
-                const summary = content?.structured?.summary || ''
+                // memo.contentは現在はtext型でプレーンテキストとして保存されている
+                const hasContent = memo.content && memo.content.trim().length > 0
+                const contentPreview = hasContent
+                  ? memo.content.slice(0, 100) + (memo.content.length > 100 ? '...' : '')
+                  : ''
 
                 return (
                   <div
@@ -99,17 +90,19 @@ export default async function HearingMemoListPage({ params }: HearingMemoListPag
                           })}
                           ・担当: {memo.supporter.profile?.name || '担当者未設定'}
                         </p>
-                        {summary && (
-                          <p className="text-sm text-muted-foreground line-clamp-2">{summary}</p>
+                        {contentPreview && (
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {contentPreview}
+                          </p>
                         )}
-                        {!hasDocument && (
+                        {!hasContent && (
                           <p className="text-sm text-orange-600 mt-2">内容が未入力です</p>
                         )}
                       </div>
                       <div className="flex gap-2 ml-4">
                         <Button asChild variant="outline" size="sm">
                           <Link href={`/supporters/clients/${id}/hearing/${memo.id}`}>
-                            {hasDocument ? '表示' : '入力'}
+                            {hasContent ? '表示' : '入力'}
                           </Link>
                         </Button>
                       </div>

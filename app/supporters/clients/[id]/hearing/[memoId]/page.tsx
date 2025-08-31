@@ -1,29 +1,13 @@
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { getHearingMemo } from '@/infra/query/hearing-memo'
 import { getSupporterByUserId } from '@/infra/query/supporter-query'
 import { requireRealm } from '@/lib/auth/helpers'
 import { saveDocument, saveTranscription } from './actions'
 import { MemoContainer } from './memo-container'
-
-// contentの型定義
-const ContentSchema = z.object({
-  document: z.string().optional().default(''),
-  transcription: z
-    .array(
-      z.object({
-        text: z.string(),
-        timestamp: z
-          .union([z.string(), z.date()])
-          .transform((val) => (typeof val === 'string' ? new Date(val) : val)),
-      }),
-    )
-    .optional()
-    .default([]),
-})
+import { TitleEditor } from './title-editor'
 
 interface HearingMemoDetailPageProps {
   params: Promise<{ id: string; memoId: string }>
@@ -43,24 +27,11 @@ export default async function HearingMemoDetailPage({ params }: HearingMemoDetai
     notFound()
   }
 
-  // contentをパースして型安全にする（エラーハンドリング付き）
-  let content: z.infer<typeof ContentSchema>
-  try {
-    const parsedContent = typeof memo.content === 'string' ? JSON.parse(memo.content) : memo.content
-    const parseResult = ContentSchema.safeParse(parsedContent)
-    content = parseResult.success
-      ? parseResult.data
-      : {
-          document: '',
-          transcription: [],
-        }
-  } catch (error) {
-    console.error('Failed to parse content:', error)
-    content = {
-      document: '',
-      transcription: [],
-    }
-  }
+  // transcriptsのデータを整形
+  const transcription = memo.transcripts.map((t) => ({
+    text: t.content,
+    timestamp: new Date(t.timestamp.toNumber() * 1000), // 秒からミリ秒に変換
+  }))
 
   const boundSaveDocument = saveDocument.bind(null, memoId)
   const boundSaveTranscription = saveTranscription.bind(null, memoId)
@@ -74,13 +45,14 @@ export default async function HearingMemoDetailPage({ params }: HearingMemoDetai
           </Link>
         </Button>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold">{memo.title}</h1>
+          <TitleEditor initialTitle={memo.title} memoId={memoId} />
           <p className="text-muted-foreground">
             {new Date(memo.date).toLocaleDateString('ja-JP', {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
             })}
+            {memo.client?.profile?.name && ` ・ 利用者: ${memo.client.profile.name}`}
             {memo.supporter?.profile?.name && ` ・ 担当: ${memo.supporter.profile.name}`}
           </p>
         </div>
@@ -88,8 +60,8 @@ export default async function HearingMemoDetailPage({ params }: HearingMemoDetai
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <MemoContainer
-          initialDocument={content?.document || ''}
-          initialTranscription={content?.transcription || []}
+          initialDocument={memo.content}
+          initialTranscription={transcription}
           onSaveDocument={boundSaveDocument}
           onSaveTranscription={boundSaveTranscription}
         />

@@ -12,7 +12,6 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getClientById } from '@/infra/query/client-query'
@@ -21,12 +20,6 @@ import { getPlanByClientId } from '@/infra/query/plan-query'
 import { getSupporterByUserId } from '@/infra/query/supporter-query'
 import { requireRealm } from '@/lib/auth/helpers'
 import { calculateAge } from '@/lib/utils/age-calculator'
-
-// メモのcontent型定義（簡易版）
-const MemoContentSchema = z.object({
-  document: z.string().optional(),
-  transcription: z.string().optional(),
-})
 
 interface ClientDetailPageProps {
   params: Promise<{ id: string }>
@@ -112,14 +105,11 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                         <p className="text-sm text-muted-foreground">
                           {new Date(memo.date).toLocaleDateString('ja-JP')}
                         </p>
-                        {(() => {
-                          const content = MemoContentSchema.safeParse(memo.content)
-                          return content.success && content.data.document ? (
-                            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                              {content.data.document}
-                            </p>
-                          ) : null
-                        })()}
+                        {memo.content && (
+                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                            {memo.content}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </Link>

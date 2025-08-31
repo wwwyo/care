@@ -1,37 +1,47 @@
-import type { TranscriptionItem } from '@/domain/hearing-memo/model'
-import { hearingMemoRepository } from '@/infra/repositories/hearing-memo'
+import { HearingTranscriptModel } from '@/domain/hearing-transcript/model'
+import { hearingTranscriptRepository } from '@/infra/repositories/hearing-transcript'
 
-export async function updateHearingMemoTranscription(
-  id: string,
-  transcription: TranscriptionItem[],
+export async function updateHearingTranscripts(
+  memoId: string,
+  transcriptions: Array<{ text: string; timestamp: Date }>,
 ): Promise<{ success: true } | { type: 'NotFound' | 'UpdateFailed'; message: string }> {
-  const existing = await hearingMemoRepository.findById(id)
-  if ('type' in existing) {
-    return { type: 'NotFound', message: existing.message }
+  // 既存のtranscriptsを削除
+  const existing = await hearingTranscriptRepository.findByHearingMemoId(memoId)
+  if (!('type' in existing)) {
+    for (const transcript of existing) {
+      await hearingTranscriptRepository.delete(transcript.id)
+    }
   }
 
-  const updated = existing.updateTranscription(transcription)
-  const result = await hearingMemoRepository.save(updated)
-
-  if ('type' in result) {
-    return { type: 'UpdateFailed', message: result.message }
+  // 新しいtranscriptsを作成
+  for (const item of transcriptions) {
+    const transcript = HearingTranscriptModel.create({
+      hearingMemoId: memoId,
+      content: item.text,
+      timestamp: Math.floor(item.timestamp.getTime() / 1000), // ミリ秒を秒に変換
+      transcriptType: 'final',
+    })
+    const result = await hearingTranscriptRepository.save(transcript)
+    if ('type' in result) {
+      return { type: 'UpdateFailed', message: result.message }
+    }
   }
 
   return { success: true }
 }
 
-export async function addHearingMemoTranscriptionItem(
-  id: string,
+export async function addHearingTranscript(
+  memoId: string,
   text: string,
 ): Promise<{ success: true } | { type: 'NotFound' | 'UpdateFailed'; message: string }> {
-  const existing = await hearingMemoRepository.findById(id)
-  if ('type' in existing) {
-    return { type: 'NotFound', message: existing.message }
-  }
+  const transcript = HearingTranscriptModel.create({
+    hearingMemoId: memoId,
+    content: text,
+    timestamp: Math.floor(Date.now() / 1000), // 現在時刻を秒単位で
+    transcriptType: 'final',
+  })
 
-  const updated = existing.addTranscriptionItem(text)
-  const result = await hearingMemoRepository.save(updated)
-
+  const result = await hearingTranscriptRepository.save(transcript)
   if ('type' in result) {
     return { type: 'UpdateFailed', message: result.message }
   }

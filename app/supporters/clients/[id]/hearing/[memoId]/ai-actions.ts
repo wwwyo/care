@@ -2,7 +2,7 @@
 
 import { openai } from '@ai-sdk/openai'
 import { generateText } from 'ai'
-import type { TranscriptionItem } from '@/domain/hearing-memo/model'
+import type { TranscriptionItem } from './speech-recognition'
 
 const model = openai('gpt-5-nano') // 最新の高性能モデル
 

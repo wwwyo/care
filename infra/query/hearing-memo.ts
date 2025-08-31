@@ -9,6 +9,9 @@ export async function getHearingMemosByClient(clientId: string) {
           profile: true,
         },
       },
+      transcripts: {
+        orderBy: { timestamp: 'asc' },
+      },
     },
     orderBy: { date: 'desc' },
   })
@@ -27,6 +30,9 @@ export async function getHearingMemo(id: string) {
         include: {
           profile: true,
         },
+      },
+      transcripts: {
+        orderBy: { timestamp: 'asc' },
       },
     },
   })

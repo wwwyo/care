@@ -1,8 +1,4 @@
-import {
-  type HearingMemoContent,
-  HearingMemoContentSchema,
-  HearingMemoModel,
-} from '@/domain/hearing-memo/model'
+import { HearingMemoModel } from '@/domain/hearing-memo/model'
 import type {
   HearingMemoRepository,
   HearingMemoRepositoryError,
@@ -14,15 +10,13 @@ const save = async (
 ): Promise<HearingMemoModel | HearingMemoRepositoryError> => {
   try {
     const data = memo.toJSON()
-    // contentをJSON文字列に変換してTEXT型として保存
-    const contentString = JSON.stringify(data.content)
 
     const saved = await prisma.hearingMemo.upsert({
       where: { id: data.id },
       update: {
         date: data.date,
         title: data.title,
-        content: contentString,
+        content: data.content,
         updatedAt: data.updatedAt,
       },
       create: {
@@ -31,26 +25,13 @@ const save = async (
         supporterId: data.supporterId,
         date: data.date,
         title: data.title,
-        content: contentString,
+        content: data.content,
         createdAt: data.createdAt,
         updatedAt: data.updatedAt,
       },
     })
 
-    // contentをJSONとしてパースし、Zodでバリデーション
-    let content: HearingMemoContent
-    try {
-      content = HearingMemoContentSchema.parse(JSON.parse(saved.content))
-    } catch (error) {
-      console.error('Failed to parse or validate content:', error)
-      console.error('Raw content:', saved.content)
-      content = { document: '', transcription: [] }
-    }
-
-    return HearingMemoModel.fromPersistence({
-      ...saved,
-      content,
-    })
+    return HearingMemoModel.fromPersistence(saved)
   } catch (error) {
     console.error('Failed to save hearing memo:', error)
     if (error instanceof Error) {
@@ -86,19 +67,7 @@ const findById = async (id: string): Promise<HearingMemoModel | HearingMemoRepos
       return { type: 'NotFound', message: 'ヒアリングメモが見つかりません' }
     }
 
-    // contentをJSONとしてパースし、Zodでバリデーション
-    let content: HearingMemoContent
-    try {
-      content = HearingMemoContentSchema.parse(JSON.parse(memo.content))
-    } catch (error) {
-      console.error('Failed to parse or validate content for memo:', memo.id, error)
-      content = { document: '', transcription: [] }
-    }
-
-    return HearingMemoModel.fromPersistence({
-      ...memo,
-      content,
-    })
+    return HearingMemoModel.fromPersistence(memo)
   } catch (error) {
     console.error('Failed to find hearing memo:', error)
     console.error('Error details:', error instanceof Error ? error.message : 'Unknown error')
@@ -115,25 +84,7 @@ const findByClientId = async (
       orderBy: { date: 'desc' },
     })
 
-    const parsedMemos: HearingMemoModel[] = []
-    for (const memo of memos) {
-      let content: HearingMemoContent
-      try {
-        content = HearingMemoContentSchema.parse(JSON.parse(memo.content))
-      } catch (error) {
-        console.error('Failed to parse or validate content for memo:', memo.id, error)
-        content = { document: '', transcription: [] }
-      }
-
-      parsedMemos.push(
-        HearingMemoModel.fromPersistence({
-          ...memo,
-          content,
-        }),
-      )
-    }
-
-    return parsedMemos
+    return memos.map((memo) => HearingMemoModel.fromPersistence(memo))
   } catch (error) {
     console.error('Failed to find hearing memos by client:', error)
     return { type: 'NotFound', message: 'ヒアリングメモの取得に失敗しました' }
@@ -149,25 +100,7 @@ const findBySupporterId = async (
       orderBy: { date: 'desc' },
     })
 
-    const parsedMemos: HearingMemoModel[] = []
-    for (const memo of memos) {
-      let content: HearingMemoContent
-      try {
-        content = HearingMemoContentSchema.parse(JSON.parse(memo.content))
-      } catch (error) {
-        console.error('Failed to parse or validate content for memo:', memo.id, error)
-        content = { document: '', transcription: [] }
-      }
-
-      parsedMemos.push(
-        HearingMemoModel.fromPersistence({
-          ...memo,
-          content,
-        }),
-      )
-    }
-
-    return parsedMemos
+    return memos.map((memo) => HearingMemoModel.fromPersistence(memo))
   } catch (error) {
     console.error('Failed to find hearing memos by supporter:', error)
     return { type: 'NotFound', message: 'ヒアリングメモの取得に失敗しました' }

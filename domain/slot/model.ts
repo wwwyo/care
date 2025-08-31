@@ -67,9 +67,8 @@ export class Slot {
     return this.updatedBy
   }
 
-  updateStatus(status: SlotStatus, comment?: string): void {
-    this.status = status
-    this.comment = comment ?? null
+  updateStatus(status: SlotStatus, comment?: string): Slot {
+    return new Slot(this.id, this.facilityId, status, comment ?? null, new Date(), this.updatedBy)
   }
 
   isAvailable(): boolean {

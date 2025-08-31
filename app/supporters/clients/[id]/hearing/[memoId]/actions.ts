@@ -1,11 +1,7 @@
 'use server'
 
-import type { TranscriptionItem } from '@/domain/hearing-memo/model'
-import { updateHearingMemoDocument } from '@/uc/hearing/update-memo'
-import {
-  addHearingMemoTranscriptionItem,
-  updateHearingMemoTranscription,
-} from '@/uc/hearing/update-transcription'
+import { updateHearingMemoContent } from '@/uc/hearing/update-memo'
+import { addHearingTranscript, updateHearingTranscripts } from '@/uc/hearing/update-transcription'
 
 type ActionError = {
   type: 'Error'
@@ -20,7 +16,7 @@ export async function saveDocument(
   console.log('Saving document for memo:', memoId)
   console.log('Document content length:', document?.length)
 
-  const result = await updateHearingMemoDocument(memoId, document)
+  const result = await updateHearingMemoContent(memoId, document)
 
   if ('type' in result) {
     console.error('Failed to save document:', result)
@@ -33,9 +29,9 @@ export async function saveDocument(
 
 export async function saveTranscription(
   memoId: string,
-  transcription: TranscriptionItem[],
+  transcription: Array<{ text: string; timestamp: Date }>,
 ): Promise<{ success: true } | ActionError> {
-  const result = await updateHearingMemoTranscription(memoId, transcription)
+  const result = await updateHearingTranscripts(memoId, transcription)
 
   if ('type' in result) {
     return { type: 'Error', message: result.message }
@@ -48,7 +44,27 @@ export async function addTranscriptionItem(
   memoId: string,
   text: string,
 ): Promise<{ success: true } | ActionError> {
-  const result = await addHearingMemoTranscriptionItem(memoId, text)
+  const result = await addHearingTranscript(memoId, text)
+
+  if ('type' in result) {
+    return { type: 'Error', message: result.message }
+  }
+
+  return { success: true }
+}
+
+export async function updateTitle(
+  memoId: string,
+  formData: FormData,
+): Promise<{ success: true } | ActionError> {
+  const title = formData.get('title') as string
+
+  if (!title || title.trim() === '') {
+    return { type: 'Error', message: 'タイトルを入力してください' }
+  }
+
+  const { updateHearingMemoTitle } = await import('@/uc/hearing/update-memo')
+  const result = await updateHearingMemoTitle(memoId, title.trim())
 
   if ('type' in result) {
     return { type: 'Error', message: result.message }
