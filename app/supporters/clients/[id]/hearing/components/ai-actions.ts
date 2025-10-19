@@ -4,7 +4,7 @@ import { openai } from '@ai-sdk/openai'
 import { generateText } from 'ai'
 import type { TranscriptionItem } from './speech-recognition'
 
-const model = openai('gpt-5-nano') // 最新の高性能モデル
+const model = openai('gpt-5-nano') // コスト効率の良い高性能モデル
 
 type GenerateMemoResult = { success: true; memo: string } | { type: 'Error'; message: string }
 
@@ -19,6 +19,20 @@ type AnalyzeSuggestionsResult =
     }
   | { type: 'Error'; message: string }
 
+type StructuredSummarySection = {
+  slug: string | null
+  title: string
+  content: string
+}
+
+type StructuredSummaryResult =
+  | { success: true; sections: StructuredSummarySection[] }
+  | { type: 'Error'; message: string }
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
 export async function generateMemoFromTranscription(
   transcription: TranscriptionItem[],
   existingMemo: string,
@@ -28,7 +42,6 @@ export async function generateMemoFromTranscription(
       return { type: 'Error', message: '文字起こしデータがありません' }
     }
 
-    // 文字起こしを整形
     const transcriptionText = transcription
       .map((item) => {
         const time = new Date(item.timestamp).toLocaleTimeString('ja-JP')
@@ -73,7 +86,10 @@ ${existingMemo}
 
     return { success: true, memo: result.text }
   } catch (error) {
-    console.error('メモ生成エラー:', error)
+    console.error('メモ生成エラーの詳細:', error)
+    if (error instanceof Error) {
+      return { type: 'Error', message: `メモの生成に失敗しました: ${error.message}` }
+    }
     return { type: 'Error', message: 'メモの生成に失敗しました' }
   }
 }
@@ -83,7 +99,6 @@ export async function analyzeMemoForSuggestions(
   currentMemo: string,
 ): Promise<AnalyzeSuggestionsResult> {
   try {
-    // 文字起こしを整形
     const transcriptionText = transcription
       .map((item) => {
         const time = new Date(item.timestamp).toLocaleTimeString('ja-JP')
@@ -133,7 +148,7 @@ JSON形式で以下のように出力してください：
       model,
       prompt,
       temperature: 0.3,
-      maxOutputTokens: 1000,
+      maxOutputTokens: 100000,
     })
 
     try {
@@ -153,5 +168,107 @@ JSON形式で以下のように出力してください：
   } catch (error) {
     console.error('分析エラー:', error)
     return { type: 'Error', message: '分析に失敗しました' }
+  }
+}
+
+export async function generateStructuredSummary(
+  transcription: TranscriptionItem[],
+  sections: StructuredSummarySection[],
+): Promise<StructuredSummaryResult> {
+  try {
+    if (transcription.length === 0) {
+      return { type: 'Error', message: '文字起こしデータがありません' }
+    }
+
+    const recentSegments = transcription.slice(-10)
+    const transcriptionText = recentSegments
+      .map((item) => {
+        const time = new Date(item.timestamp).toLocaleTimeString('ja-JP')
+        return `[${time}] ${item.text}`
+      })
+      .join('\n')
+
+    const sectionDefinitions = sections
+      .map(
+        (section, index) =>
+          `${index + 1}. ${section.title}${section.slug ? ` (slug: ${section.slug})` : ''}`,
+      )
+      .join('\n')
+
+    const existingSummary = sections
+      .map((section) => `${section.title}: ${section.content || '（未入力）'}`)
+      .join('\n')
+
+    const prompt = `あなたは福祉相談のヒアリング内容を整理するアシスタントです。
+最新の文字起こしと現在の要約を基に、各セクションの内容を更新してください。
+
+## 文字起こし（最新${recentSegments.length}件）:
+${transcriptionText}
+
+## 現在の要約:
+${existingSummary}
+
+## セクション定義:
+${sectionDefinitions}
+
+## 指示:
+- セクションの順序は入力と同じにする
+- 各セクションのタイトルは必要に応じて補正できるが、大きく変更しない
+- 新しい情報がない場合は既存の内容を保つ
+- JSON配列のみで返答し、ペイロードは以下の形式とする
+[
+  { "slug": "support-history", "title": "支援経過", "content": "本文" },
+  ...
+]
+- slugが入力でnullの場合は出力もnullのまま
+- マークダウンや追加の説明は絶対に付けない`
+
+    const result = await generateText({
+      model,
+      prompt,
+      temperature: 0.2,
+      maxOutputTokens: 4000,
+    })
+
+    const cleaned = result.text
+      .trim()
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/```$/i, '')
+      .trim()
+
+    const parsed = JSON.parse(cleaned)
+    if (!Array.isArray(parsed)) {
+      return { type: 'Error', message: 'AIの要約結果が不正な形式です' }
+    }
+
+    const normalized: StructuredSummarySection[] = parsed.map((item, index) => {
+      const source = sections[index] ?? null
+      const itemRecord = isRecord(item) ? item : {}
+
+      const resolvedSlug =
+        typeof itemRecord.slug === 'string' ? itemRecord.slug : (source?.slug ?? null)
+
+      const inputTitle = typeof itemRecord.title === 'string' ? itemRecord.title.trim() : ''
+      const resolvedTitle =
+        inputTitle.length > 0 ? inputTitle : (source?.title ?? `セクション${index + 1}`)
+
+      const inputContent = typeof itemRecord.content === 'string' ? itemRecord.content.trim() : ''
+      const resolvedContent = inputContent.length > 0 ? inputContent : (source?.content ?? '')
+
+      return {
+        slug: resolvedSlug,
+        title: resolvedTitle,
+        content: resolvedContent,
+      }
+    })
+
+    return { success: true, sections: normalized }
+  } catch (error) {
+    console.error('構造化要約の生成に失敗しました:', error)
+    if (error instanceof SyntaxError) {
+      return { type: 'Error', message: 'AIの要約結果を読み取れませんでした' }
+    }
+    return { type: 'Error', message: 'AIによる要約生成に失敗しました' }
   }
 }

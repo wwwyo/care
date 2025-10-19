@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 
 export async function getHearingMemosByClient(clientId: string) {
-  return await prisma.hearingMemo.findMany({
+  const memos = await prisma.hearingMemo.findMany({
     where: { clientId },
     include: {
       supporter: {
@@ -15,10 +15,21 @@ export async function getHearingMemosByClient(clientId: string) {
     },
     orderBy: { date: 'desc' },
   })
+
+  // Decimal型をnumber型に変換
+  return memos.map((memo) => ({
+    ...memo,
+    transcripts: memo.transcripts.map((transcript) => ({
+      ...transcript,
+      timestamp: transcript.timestamp.toNumber(),
+      endTimestamp: transcript.endTimestamp ? transcript.endTimestamp.toNumber() : null,
+      confidence: transcript.confidence ? transcript.confidence.toNumber() : null,
+    })),
+  }))
 }
 
 export async function getHearingMemo(id: string) {
-  return await prisma.hearingMemo.findUnique({
+  const memo = await prisma.hearingMemo.findUnique({
     where: { id },
     include: {
       client: {
@@ -36,4 +47,17 @@ export async function getHearingMemo(id: string) {
       },
     },
   })
+
+  if (!memo) return null
+
+  // Decimal型をnumber型に変換
+  return {
+    ...memo,
+    transcripts: memo.transcripts.map((transcript) => ({
+      ...transcript,
+      timestamp: transcript.timestamp.toNumber(),
+      endTimestamp: transcript.endTimestamp ? transcript.endTimestamp.toNumber() : null,
+      confidence: transcript.confidence ? transcript.confidence.toNumber() : null,
+    })),
+  }
 }

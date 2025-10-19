@@ -75,9 +75,10 @@ export default async function HearingMemoListPage({ params }: HearingMemoListPag
                   : ''
 
                 return (
-                  <div
+                  <Link
                     key={memo.id}
-                    className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                    href={`/supporters/clients/${id}/hearing/${memo.id}`}
+                    className="block border border-border/60 rounded-lg p-4 transition-colors hover:bg-accent/50"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -99,15 +100,8 @@ export default async function HearingMemoListPage({ params }: HearingMemoListPag
                           <p className="text-sm text-orange-600 mt-2">内容が未入力です</p>
                         )}
                       </div>
-                      <div className="flex gap-2 ml-4">
-                        <Button asChild variant="outline" size="sm">
-                          <Link href={`/supporters/clients/${id}/hearing/${memo.id}`}>
-                            {hasContent ? '表示' : '入力'}
-                          </Link>
-                        </Button>
-                      </div>
                     </div>
-                  </div>
+                  </Link>
                 )
               })}
             </div>

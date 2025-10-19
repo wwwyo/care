@@ -13,17 +13,13 @@ export async function saveDocument(
   formData: FormData,
 ): Promise<{ success: true } | ActionError> {
   const document = formData.get('document') as string
-  console.log('Saving document for memo:', memoId)
-  console.log('Document content length:', document?.length)
 
   const result = await updateHearingMemoContent(memoId, document)
 
   if ('type' in result) {
-    console.error('Failed to save document:', result)
     return { type: 'Error', message: result.message }
   }
 
-  console.log('Document saved successfully')
   return { success: true }
 }
 

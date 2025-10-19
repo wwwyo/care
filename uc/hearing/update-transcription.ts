@@ -5,25 +5,31 @@ export async function updateHearingTranscripts(
   memoId: string,
   transcriptions: Array<{ text: string; timestamp: Date }>,
 ): Promise<{ success: true } | { type: 'NotFound' | 'UpdateFailed'; message: string }> {
-  // 既存のtranscriptsを削除
-  const existing = await hearingTranscriptRepository.findByHearingMemoId(memoId)
-  if (!('type' in existing)) {
-    for (const transcript of existing) {
-      await hearingTranscriptRepository.delete(transcript.id)
-    }
+  // HearingMemoの存在確認（事前チェック）
+  const { getHearingMemo } = await import('@/infra/query/hearing-memo')
+  const memo = await getHearingMemo(memoId)
+  if (!memo) {
+    return { type: 'NotFound', message: 'ヒアリングメモが見つかりません' }
   }
 
-  // 新しいtranscriptsを作成
-  for (const item of transcriptions) {
-    const transcript = HearingTranscriptModel.create({
+  const transcriptModels = transcriptions.map((item) =>
+    HearingTranscriptModel.create({
       hearingMemoId: memoId,
       content: item.text,
       timestamp: Math.floor(item.timestamp.getTime() / 1000), // ミリ秒を秒に変換
       transcriptType: 'final',
-    })
-    const result = await hearingTranscriptRepository.save(transcript)
-    if ('type' in result) {
-      return { type: 'UpdateFailed', message: result.message }
+    }),
+  )
+
+  const replaceResult = await hearingTranscriptRepository.replaceForHearingMemo(
+    memoId,
+    transcriptModels,
+  )
+
+  if ('type' in replaceResult) {
+    return {
+      type: 'UpdateFailed',
+      message: replaceResult.message,
     }
   }
 

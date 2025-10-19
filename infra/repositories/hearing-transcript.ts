@@ -45,6 +45,31 @@ const save = async (
     })
   } catch (error) {
     console.error('Failed to save hearing transcript:', error)
+
+    // エラーの詳細情報を含めて返す
+    if (error instanceof Error) {
+      // 外部キー制約エラーの場合
+      if (error.message.includes('Foreign key constraint failed')) {
+        return {
+          type: 'SaveFailed',
+          message: 'ヒアリングメモが見つからないため、文字起こしを保存できません',
+        }
+      }
+
+      // その他のPrismaエラー
+      if (error.message.includes('Unique constraint failed')) {
+        return { type: 'SaveFailed', message: '重複する文字起こしデータです' }
+      }
+
+      console.error('Detailed error:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+      })
+
+      return { type: 'SaveFailed', message: `文字起こしの保存に失敗しました: ${error.message}` }
+    }
+
     return { type: 'SaveFailed', message: '文字起こしの保存に失敗しました' }
   }
 }
@@ -117,9 +142,47 @@ const findByHearingMemoId = async (
   }
 }
 
+const replaceForHearingMemo = async (
+  hearingMemoId: string,
+  transcripts: HearingTranscriptModel[],
+): Promise<{ success: true } | HearingTranscriptRepositoryError> => {
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.hearingTranscript.deleteMany({ where: { hearingMemoId } })
+
+      if (transcripts.length === 0) {
+        return
+      }
+
+      for (const transcript of transcripts) {
+        const data = transcript.toJSON()
+        await tx.hearingTranscript.create({
+          data: {
+            id: data.id,
+            hearingMemoId: data.hearingMemoId,
+            transcriptType: data.transcriptType,
+            content: data.content,
+            timestamp: new Decimal(data.timestamp),
+            endTimestamp: data.endTimestamp ? new Decimal(data.endTimestamp) : null,
+            speaker: data.speaker,
+            confidence: data.confidence ? new Decimal(data.confidence) : null,
+            createdAt: data.createdAt,
+          },
+        })
+      }
+    })
+
+    return { success: true }
+  } catch (error) {
+    console.error('Failed to replace hearing transcripts:', error)
+    return { type: 'SaveFailed', message: '文字起こしの更新に失敗しました' }
+  }
+}
+
 export const hearingTranscriptRepository: HearingTranscriptRepository = {
   save,
   delete: deleteById,
   findById,
   findByHearingMemoId,
+  replaceForHearingMemo,
 }

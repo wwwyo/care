@@ -28,7 +28,7 @@ export function TitleEditor({ initialTitle, memoId }: TitleEditorProps) {
   if (!isEditing) {
     return (
       <div className="flex items-center gap-2 group">
-        <h1 className="text-3xl font-bold">{initialTitle}</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">{initialTitle}</h1>
         <Button
           variant="ghost"
           size="icon"
@@ -46,7 +46,7 @@ export function TitleEditor({ initialTitle, memoId }: TitleEditorProps) {
       <Input
         name="title"
         defaultValue={initialTitle}
-        className="font-bold h-auto py-1 px-2 text-3xl"
+        className="h-auto rounded-md border border-border/60 bg-background/60 py-2 px-3 text-3xl font-semibold tracking-tight shadow-none focus-visible:ring-2 focus-visible:ring-ring"
         autoFocus
         disabled={isPending}
         onKeyDown={(e) => {

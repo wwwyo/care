@@ -35,6 +35,7 @@ type PlanServiceFormWithRecommendationsProps = {
   initialServices: ServiceFormData[]
   disabled?: boolean
   onServicesChange?: (services: ServiceFormData[]) => void
+  onShowFacilityDetail?: (facilityId: string | null) => void
 }
 
 const SERVICE_CATEGORIES = [
@@ -64,6 +65,7 @@ export function PlanServiceFormWithRecommendations({
   initialServices = [],
   disabled = false,
   onServicesChange,
+  onShowFacilityDetail,
 }: PlanServiceFormWithRecommendationsProps) {
   const [services, setServices] = useState<ServiceFormData[]>(initialServices || [])
   const [activeServiceIndex, setActiveServiceIndex] = useState<number | null>(null)
@@ -399,6 +401,7 @@ export function PlanServiceFormWithRecommendations({
               onSelectFacility={(facility) =>
                 activeServiceIndex !== null && handleFacilitySelect(activeServiceIndex, facility)
               }
+              onShowDetail={onShowFacilityDetail}
               selectedFacilityIds={
                 activeServiceIndex !== null
                   ? selectedFacilitiesMap[activeServiceIndex]?.map((f) => f.id) || []

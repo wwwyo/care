@@ -6,7 +6,7 @@ export type SlotData = {
   status: string
   comment: string | null
   updatedAt: Date
-  updatedBy: string
+  updatedBy: string | null
 }
 
 export class Slot {
@@ -16,7 +16,7 @@ export class Slot {
     private status: SlotStatus,
     private comment: string | null,
     private readonly updatedAt: Date,
-    private readonly updatedBy: string,
+    private readonly updatedBy: string | null,
   ) {}
 
   static fromData(data: SlotData): Slot {
@@ -24,7 +24,12 @@ export class Slot {
     return new Slot(data.id, data.facilityId, status, data.comment, data.updatedAt, data.updatedBy)
   }
 
-  static create(facilityId: string, status: SlotStatus, updatedBy: string, comment?: string): Slot {
+  static create(
+    facilityId: string,
+    status: SlotStatus,
+    updatedBy: string | null,
+    comment?: string,
+  ): Slot {
     return new Slot(crypto.randomUUID(), facilityId, status, comment ?? null, new Date(), updatedBy)
   }
 
@@ -63,12 +68,19 @@ export class Slot {
     return this.updatedAt
   }
 
-  getUpdatedBy(): string {
+  getUpdatedBy(): string | null {
     return this.updatedBy
   }
 
-  updateStatus(status: SlotStatus, comment?: string): Slot {
-    return new Slot(this.id, this.facilityId, status, comment ?? null, new Date(), this.updatedBy)
+  updateStatus(status: SlotStatus, options: { comment?: string; updatedBy: string | null }): Slot {
+    return new Slot(
+      this.id,
+      this.facilityId,
+      status,
+      options.comment ?? null,
+      new Date(),
+      options.updatedBy,
+    )
   }
 
   isAvailable(): boolean {

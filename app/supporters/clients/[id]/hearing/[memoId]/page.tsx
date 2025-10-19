@@ -1,13 +1,9 @@
-import { ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import { getHearingMemo } from '@/infra/query/hearing-memo'
 import { getSupporterByUserId } from '@/infra/query/supporter-query'
 import { requireRealm } from '@/lib/auth/helpers'
-import { saveDocument, saveTranscription } from './actions'
-import { MemoContainer } from './memo-container'
-import { TitleEditor } from './title-editor'
+import { saveDocument } from './actions'
+import { type ClientSummaryData, HearingDetailShell } from './hearing-detail-shell'
 
 interface HearingMemoDetailPageProps {
   params: Promise<{ id: string; memoId: string }>
@@ -27,45 +23,66 @@ export default async function HearingMemoDetailPage({ params }: HearingMemoDetai
     notFound()
   }
 
-  // transcriptsのデータを整形
+  // transcriptsのデータを整形（Query層で既にDecimal→numberに変換済み）
   const transcription = memo.transcripts.map((t) => ({
     text: t.content,
-    timestamp: new Date(t.timestamp.toNumber() * 1000), // 秒からミリ秒に変換
+    timestamp: new Date(t.timestamp * 1000), // 秒からミリ秒に変換
   }))
 
   const boundSaveDocument = saveDocument.bind(null, memoId)
-  const boundSaveTranscription = saveTranscription.bind(null, memoId)
+
+  const formattedDate = new Date(memo.date).toLocaleDateString('ja-JP', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+
+  const clientName = memo.client?.profile?.name ?? '利用者'
+  const supporterName = memo.supporter?.profile?.name ?? null
+  const clientSummary = toClientSummaryData(memo)
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="flex items-center gap-4 mb-6">
-        <Button asChild variant="ghost" size="icon">
-          <Link href={`/supporters/clients/${clientId}/hearing`}>
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-        <div className="flex-1">
-          <TitleEditor initialTitle={memo.title} memoId={memoId} />
-          <p className="text-muted-foreground">
-            {new Date(memo.date).toLocaleDateString('ja-JP', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-            {memo.client?.profile?.name && ` ・ 利用者: ${memo.client.profile.name}`}
-            {memo.supporter?.profile?.name && ` ・ 担当: ${memo.supporter.profile.name}`}
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <MemoContainer
-          initialDocument={memo.content}
-          initialTranscription={transcription}
-          onSaveDocument={boundSaveDocument}
-          onSaveTranscription={boundSaveTranscription}
-        />
-      </div>
-    </div>
+    <HearingDetailShell
+      memoId={memoId}
+      backHref={`/supporters/clients/${clientId}/hearing`}
+      initialTitle={memo.title}
+      formattedDate={formattedDate}
+      clientName={clientName}
+      supporterName={supporterName}
+      clientSummary={clientSummary}
+      initialDocument={memo.content}
+      initialTranscription={transcription}
+      onSaveDocument={boundSaveDocument}
+    />
   )
+}
+
+function toClientSummaryData(memo: Awaited<ReturnType<typeof getHearingMemo>>): ClientSummaryData {
+  const profile = memo?.client?.profile
+
+  return {
+    nameKana: profile?.nameKana ?? null,
+    gender: profile?.gender ?? null,
+    birthDate: profile?.birthDate ? profile.birthDate.toISOString() : null,
+    age: calculateAge(profile?.birthDate ?? null),
+    phone: profile?.phone ?? null,
+    disability: profile?.disability ?? null,
+    careLevel: profile?.careLevel ?? null,
+    notes: profile?.notes ?? null,
+    emergencyContactName: profile?.emergencyContactName ?? null,
+    emergencyContactRelation: profile?.emergencyContactRelation ?? null,
+    emergencyContactPhone: profile?.emergencyContactPhone ?? null,
+    address: null,
+  }
+}
+
+function calculateAge(birthDate: Date | null) {
+  if (!birthDate) return null
+  const today = new Date()
+  let age = today.getFullYear() - birthDate.getFullYear()
+  const monthDiff = today.getMonth() - birthDate.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age -= 1
+  }
+  return age
 }

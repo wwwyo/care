@@ -14,4 +14,8 @@ export interface HearingTranscriptRepository {
   findByHearingMemoId: (
     hearingMemoId: string,
   ) => Promise<HearingTranscriptModel[] | HearingTranscriptRepositoryError>
+  replaceForHearingMemo: (
+    hearingMemoId: string,
+    transcripts: HearingTranscriptModel[],
+  ) => Promise<{ success: true } | HearingTranscriptRepositoryError>
 }

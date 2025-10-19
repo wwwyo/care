@@ -18,6 +18,9 @@ const serverEnvSchema = z.object({
 
   // Node environment
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+
+  // AI API Keys
+  OPENAI_API_KEY: z.string().min(1),
 })
 
 type ServerEnv = z.infer<typeof serverEnvSchema>
@@ -38,6 +41,7 @@ function parseServerEnv(): ServerEnv {
       EMAIL_FROM: process.env.EMAIL_FROM,
       BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
       NODE_ENV: process.env.NODE_ENV,
+      OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     })
   } catch (error) {
     if (error instanceof z.ZodError) {

@@ -7,7 +7,7 @@ export default function SupportersLayout({ children }: { children: React.ReactNo
       <AppSidebar userRole="supporter" />
       <SidebarInset>
         <main className="flex-1">
-          <div className="container mx-auto px-8 py-8">{children}</div>
+          <div className="w-full py-6 lg:py-8">{children}</div>
         </main>
       </SidebarInset>
     </SidebarProvider>
