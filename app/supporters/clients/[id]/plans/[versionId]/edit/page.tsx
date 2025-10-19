@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation'
 import { getHearingMemosByClient } from '@/infra/query/hearing-memo'
-import { getPlanWithVersions } from '@/infra/query/plan-query'
 import { requireRealm } from '@/lib/auth/helpers'
 import { prisma } from '@/lib/prisma'
 import { PlanUpdateForm } from './plan-update-form'
@@ -8,12 +7,12 @@ import { PlanUpdateForm } from './plan-update-form'
 type Props = {
   params: Promise<{
     id: string
-    planId: string
+    versionId: string
   }>
 }
 
 export default async function EditPlanPage({ params }: Props) {
-  const { id: clientId, planId } = await params
+  const { id: clientId, versionId } = await params
   const session = await requireRealm('supporter')
 
   // サポーター情報を取得
@@ -27,19 +26,41 @@ export default async function EditPlanPage({ params }: Props) {
     notFound()
   }
 
-  // 計画書を取得
-  const plan = await getPlanWithVersions(planId)
+  // バージョンから計画書を取得
+  const planVersion = await prisma.planVersion.findUnique({
+    where: { id: versionId },
+    include: {
+      plan: {
+        include: {
+          client: {
+            include: {
+              profile: true,
+            },
+          },
+          versions: {
+            orderBy: { versionNumber: 'desc' },
+            include: {
+              services: true,
+            },
+          },
+          consents: {
+            include: {
+              grants: true,
+            },
+            orderBy: { createdAt: 'desc' },
+          },
+        },
+      },
+      services: true,
+    },
+  })
 
-  if (!plan || plan.clientId !== clientId) {
+  if (!planVersion || planVersion.plan.clientId !== clientId) {
     notFound()
   }
 
-  // 最新バージョンを取得
-  const latestVersion = plan.versions[0]
-
-  if (!latestVersion) {
-    notFound()
-  }
+  const plan = planVersion.plan
+  const latestVersion = planVersion
 
   // ヒアリングメモを取得
   const hearingMemos = await getHearingMemosByClient(clientId)
@@ -68,7 +89,7 @@ export default async function EditPlanPage({ params }: Props) {
       </div>
 
       <PlanUpdateForm
-        planId={planId}
+        planId={plan.id}
         versionId={latestVersion.id}
         clientId={clientId}
         initialData={{

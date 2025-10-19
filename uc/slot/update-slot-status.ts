@@ -6,7 +6,7 @@ export type UpdateSlotStatusInput = {
   facilityId: string
   status: SlotStatus
   comment?: string
-  updatedBy: string
+  updatedBy: string | null
 }
 
 export type UpdateSlotStatusError =
@@ -41,7 +41,10 @@ export async function updateSlotStatus(
 
     if (slot) {
       // 既存スロットを更新
-      slot = slot.updateStatus(input.status, input.comment)
+      slot = slot.updateStatus(input.status, {
+        comment: input.comment,
+        updatedBy: input.updatedBy,
+      })
     } else {
       // 新規スロット作成
       slot = Slot.create(input.facilityId, input.status, input.updatedBy, input.comment)

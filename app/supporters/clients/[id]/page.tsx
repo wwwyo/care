@@ -79,9 +79,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                 ヒアリングメモ
               </span>
               <Button asChild size="sm">
-                <Link href={`/supporters/clients/${id}/hearing`}>
-                  <Mic className="mr-2 h-4 w-4" />
-                  メモ一覧へ
+                <Link href={`/supporters/clients/${id}/hearing/new`}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  新規メモ
                 </Link>
               </Button>
             </CardTitle>

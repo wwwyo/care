@@ -1,17 +1,106 @@
-import { ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { z } from 'zod'
 import { getClientById } from '@/infra/query/client-query'
 import { getSupporterByUserId } from '@/infra/query/supporter-query'
 import { requireRealm } from '@/lib/auth/helpers'
 import { createHearingMemo } from '@/uc/hearing/create-memo'
+import { updateHearingMemoContent } from '@/uc/hearing/update-memo'
+import { updateHearingTranscripts } from '@/uc/hearing/update-transcription'
+import {
+  type ClientSnapshot,
+  type CreateHearingFormState,
+  HearingNewShell,
+  type SummarySection,
+} from './hearing-new-shell'
 
 interface NewHearingMemoPageProps {
   params: Promise<{ id: string }>
+}
+
+const SUMMARY_TEMPLATES: Array<{ slug: string; title: string }> = [
+  { slug: 'support-history', title: '支援経過' },
+  { slug: 'current-status', title: '現状' },
+  { slug: 'challenges', title: '課題' },
+  { slug: 'family-tree', title: '家系図' },
+  { slug: 'family-names', title: '家族の名前' },
+  { slug: 'eco-map', title: 'エコマップ' },
+  { slug: 'medical-status', title: '医療の状況' },
+  { slug: 'care', title: '介護' },
+  { slug: 'medicine', title: '薬' },
+  { slug: 'life-history', title: '生活歴' },
+]
+
+const INITIAL_FORM_STATE: CreateHearingFormState = { status: 'idle' }
+
+const CreateFormSchema = z.object({
+  title: z.string().min(1, 'タイトルは必須です'),
+  date: z.string().min(1, '実施日は必須です'),
+  summary: z.string().optional(),
+  transcriptions: z.string().optional(),
+})
+
+const SummarySectionPayloadSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  content: z.string().optional().default(''),
+  slug: z.string().nullable().optional(),
+})
+
+const TranscriptionPayloadSchema = z.object({
+  text: z.string().min(1),
+  timestamp: z.string().min(1),
+})
+
+function createDefaultSummarySections(): SummarySection[] {
+  return SUMMARY_TEMPLATES.map(({ slug, title }) => ({
+    id: crypto.randomUUID(),
+    title,
+    content: '',
+    slug,
+  }))
+}
+
+function calculateAge(birthDate: Date | null): number | null {
+  if (!birthDate) return null
+  const today = new Date()
+  let age = today.getFullYear() - birthDate.getFullYear()
+  const monthDiff = today.getMonth() - birthDate.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age -= 1
+  }
+  return age
+}
+
+function toClientSnapshot(
+  client: NonNullable<Awaited<ReturnType<typeof getClientById>>>,
+): ClientSnapshot {
+  const profile = client.profile
+  const primaryAddress = client.addresses?.[0]
+
+  return {
+    id: client.id,
+    name: profile?.name ?? '利用者',
+    nameKana: profile?.nameKana ?? null,
+    gender: profile?.gender ?? null,
+    birthDate: profile?.birthDate ? profile.birthDate.toISOString() : null,
+    age: calculateAge(profile?.birthDate ?? null),
+    disability: profile?.disability ?? null,
+    careLevel: profile?.careLevel ?? null,
+    phone: profile?.phone ?? null,
+    notes: profile?.notes ?? null,
+    emergencyContactName: profile?.emergencyContactName ?? null,
+    emergencyContactRelation: profile?.emergencyContactRelation ?? null,
+    emergencyContactPhone: profile?.emergencyContactPhone ?? null,
+    address: primaryAddress
+      ? {
+          postalCode: primaryAddress.postalCode ?? null,
+          prefecture: primaryAddress.prefecture ?? null,
+          city: primaryAddress.city ?? null,
+          street: primaryAddress.street ?? null,
+          building: primaryAddress.building ?? null,
+        }
+      : null,
+  }
 }
 
 export default async function NewHearingMemoPage({ params }: NewHearingMemoPageProps) {
@@ -28,85 +117,138 @@ export default async function NewHearingMemoPage({ params }: NewHearingMemoPageP
     notFound()
   }
 
-  async function createMemo(formData: FormData) {
+  const defaultDate = new Date().toISOString().split('T')[0]!
+  const summarySections = createDefaultSummarySections()
+  const clientSnapshot = toClientSnapshot(client)
+  const backHref = `/supporters/clients/${id}/hearing`
+
+  async function createHearingMemoAction(
+    _prevState: CreateHearingFormState,
+    formData: FormData,
+  ): Promise<CreateHearingFormState> {
     'use server'
     const session = await requireRealm('supporter')
-    const supporter = await getSupporterByUserId(session.user.id)
-
-    if (!supporter) {
-      throw new Error('サポーター情報が見つかりません')
+    const currentSupporter = await getSupporterByUserId(session.user.id)
+    if (!currentSupporter) {
+      return { status: 'error', message: 'サポーター情報が見つかりません' }
     }
 
-    const title = formData.get('title') as string
-    const dateStr = formData.get('date') as string
+    const formInput = CreateFormSchema.safeParse({
+      title: formData.get('title'),
+      date: formData.get('date'),
+      summary: formData.get('summary'),
+      transcriptions: formData.get('transcriptions'),
+    })
 
-    if (!title || !dateStr) {
-      throw new Error('必須項目を入力してください')
+    if (!formInput.success) {
+      const message =
+        formInput.error.issues[0]?.message ?? '入力内容の検証に失敗しました。再度お試しください。'
+      return { status: 'error', message }
     }
 
-    const result = await createHearingMemo({
+    const { title, date, summary, transcriptions } = formInput.data
+
+    const hearingDate = new Date(date)
+    if (Number.isNaN(hearingDate.getTime())) {
+      return { status: 'error', message: '実施日の形式が不正です' }
+    }
+
+    let summaryItems: Array<z.infer<typeof SummarySectionPayloadSchema>> = []
+    if (summary) {
+      let parsedSummary: unknown
+      try {
+        parsedSummary = JSON.parse(summary)
+      } catch {
+        return { status: 'error', message: '要約データの読み込みに失敗しました' }
+      }
+      const summaryResult = SummarySectionPayloadSchema.array().safeParse(parsedSummary)
+      if (!summaryResult.success) {
+        return { status: 'error', message: '要約データの形式が不正です' }
+      }
+      summaryItems = summaryResult.data
+    }
+
+    let transcriptionItems: Array<{ text: string; timestamp: Date }> = []
+    if (transcriptions) {
+      let parsedTranscriptions: unknown
+      try {
+        parsedTranscriptions = JSON.parse(transcriptions)
+      } catch {
+        return { status: 'error', message: '文字起こしデータの読み込みに失敗しました' }
+      }
+
+      const transcriptionsResult =
+        TranscriptionPayloadSchema.array().safeParse(parsedTranscriptions)
+      if (!transcriptionsResult.success) {
+        return { status: 'error', message: '文字起こしデータの形式が不正です' }
+      }
+
+      try {
+        transcriptionItems = transcriptionsResult.data.map((item) => {
+          const timestamp = new Date(item.timestamp)
+          if (Number.isNaN(timestamp.getTime())) {
+            throw new Error('INVALID_TIMESTAMP')
+          }
+          return { text: item.text, timestamp }
+        })
+      } catch {
+        return { status: 'error', message: '文字起こしの時刻が不正です' }
+      }
+    }
+
+    const structuredContent = summaryItems
+      .map((section) => {
+        const heading = section.title.trim()
+        const body = (section.content ?? '').trim()
+        if (!heading && !body) {
+          return null
+        }
+        if (!body) {
+          return heading
+        }
+        return `${heading}\n${body}`
+      })
+      .filter(Boolean)
+      .join('\n\n')
+
+    const creationResult = await createHearingMemo({
       clientId: id,
-      supporterId: supporter.id,
-      date: new Date(dateStr),
+      supporterId: currentSupporter.id,
+      date: hearingDate,
       title,
     })
 
-    if ('type' in result) {
-      throw new Error(result.message)
+    if ('type' in creationResult) {
+      return { status: 'error', message: creationResult.message }
     }
 
-    redirect(`/supporters/clients/${id}/hearing/${result.id}`)
+    if (structuredContent) {
+      const contentResult = await updateHearingMemoContent(creationResult.id, structuredContent)
+      if ('type' in contentResult) {
+        return { status: 'error', message: contentResult.message }
+      }
+    }
+
+    if (transcriptionItems.length > 0) {
+      const transcriptResult = await updateHearingTranscripts(creationResult.id, transcriptionItems)
+      if ('type' in transcriptResult) {
+        return { status: 'error', message: transcriptResult.message }
+      }
+    }
+
+    redirect(`/supporters/clients/${id}/hearing/${creationResult.id}`)
   }
 
-  const today = new Date().toISOString().split('T')[0]
-
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <div className="flex items-center gap-4 mb-6">
-        <Button asChild variant="ghost" size="icon">
-          <Link href={`/supporters/clients/${id}/hearing`}>
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold">新規ヒアリングメモ</h1>
-          <p className="text-muted-foreground">対象: {client.profile.name}さん</p>
-        </div>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>基本情報</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form action={createMemo} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">タイトル *</Label>
-              <Input
-                id="title"
-                name="title"
-                type="text"
-                placeholder="例: 初回面談、定期面談など"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="date">実施日 *</Label>
-              <Input id="date" name="date" type="date" defaultValue={today} required />
-            </div>
-
-            <div className="flex gap-4 pt-4">
-              <Button type="submit" className="flex-1">
-                作成してメモを開始
-              </Button>
-              <Button asChild variant="outline">
-                <Link href={`/supporters/clients/${id}/hearing`}>キャンセル</Link>
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+    <HearingNewShell
+      client={clientSnapshot}
+      supporterName={supporter.profile?.name ?? null}
+      defaultDate={defaultDate}
+      initialTitle={`${defaultDate} ${client.profile?.name ?? ''}`}
+      initialSummary={summarySections}
+      createAction={createHearingMemoAction}
+      initialFormState={INITIAL_FORM_STATE}
+      backHref={backHref}
+    />
   )
 }

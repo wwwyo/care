@@ -18,7 +18,7 @@ export default async function ClientsPage() {
   const clientRecords = await getAllClients(supporter.tenantId)
 
   return (
-    <div>
+    <div className="max-w-7xl  lg:px-8 px-6 mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold">利用者一覧</h1>
@@ -52,10 +52,14 @@ export default async function ClientsPage() {
               <Card key={record.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
-                    <span>{profile.name}</span>
-                    <span className="text-sm font-normal bg-primary/10 text-primary px-2 py-1 rounded">
-                      {profile.careLevel || '未記入'}
-                    </span>
+                    <div className="flex flex-col gap-1">
+                      {profile.nameKana && (
+                        <span className="text-sm font-normal text-muted-foreground">
+                          {profile.nameKana}
+                        </span>
+                      )}
+                      <span>{profile.name}</span>
+                    </div>
                   </CardTitle>
                   <CardDescription>
                     {profile.gender === 'male'
@@ -69,7 +73,7 @@ export default async function ClientsPage() {
                 <CardContent>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-start">
-                      <span className="font-medium w-20">住所:</span>
+                      <span className="font-medium w-24">住所:</span>
                       <span className="flex-1">
                         {address.prefecture || ''}
                         {address.city || ''}
@@ -77,20 +81,20 @@ export default async function ClientsPage() {
                       </span>
                     </div>
                     <div className="flex items-start">
-                      <span className="font-medium w-20">電話番号:</span>
-                      <span className="flex-1">{profile.phone || '未登録'}</span>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="font-medium w-20">障害:</span>
-                      <span className="flex-1">{profile.disability || '未記入'}</span>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="font-medium w-20">緊急連絡先:</span>
+                      <span className="font-medium w-24">生年月日:</span>
                       <span className="flex-1">
-                        {profile.emergencyContactName || '未登録'}
-                        {profile.emergencyContactRelation &&
-                          ` (${profile.emergencyContactRelation})`}
+                        {profile.birthDate
+                          ? new Date(profile.birthDate).toLocaleDateString('ja-JP', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })
+                          : '未登録'}
                       </span>
+                    </div>
+                    <div className="flex items-start">
+                      <span className="font-medium w-24">電話番号:</span>
+                      <span className="flex-1">{profile.phone || '未登録'}</span>
                     </div>
                   </div>
                   <div className="mt-4">

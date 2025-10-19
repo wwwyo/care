@@ -410,15 +410,15 @@ model PlanService {
 // hearing_transcripts: 文字起こしデータ
 
 model HearingTranscript {
-  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  hearingMemoId    String   @map("hearing_memo_id") @db.Uuid
-  transcriptType   String   @map("transcript_type") @db.VarChar(20) // partial | final
-  content          String   @db.Text
-  timestamp        Decimal  @db.Decimal(10, 3) // 開始時刻（秒）
-  endTimestamp     Decimal? @map("end_timestamp") @db.Decimal(10, 3) // 終了時刻（秒）
-  speaker          String?  @db.VarChar(50) // supporter | client | unknown
-  confidence       Decimal? @db.Decimal(3, 2) // 信頼度スコア（0-1）
-  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  hearingMemoId  String   @map("hearing_memo_id") @db.Uuid
+  transcriptType String   @map("transcript_type") @db.VarChar(20) // partial | final
+  content        String   @db.Text
+  timestamp      Decimal  @db.Decimal(13, 3) // 開始時刻（秒）
+  endTimestamp   Decimal? @map("end_timestamp") @db.Decimal(13, 3) // 終了時刻（秒）
+  speaker        String?  @db.VarChar(50) // supporter | client | unknown
+  confidence     Decimal? @db.Decimal(3, 2) // 信頼度スコア（0-1）
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   hearingMemo HearingMemo @relation(fields: [hearingMemoId], references: [id], onDelete: Cascade)
 
@@ -439,10 +439,10 @@ model HearingMemo {
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  client        Client              @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  supporter     Supporter           @relation(fields: [supporterId], references: [id], onDelete: Cascade)
-  transcripts   HearingTranscript[] // 文字起こし
-  audioFiles    HearingAudio[]      // 音声ファイル
+  client      Client              @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  supporter   Supporter           @relation(fields: [supporterId], references: [id], onDelete: Cascade)
+  transcripts HearingTranscript[] // 文字起こし
+  audioFiles  HearingAudio[] // 音声ファイル
 
   @@index([clientId])
   @@index([supporterId])
@@ -456,7 +456,7 @@ model HearingAudio {
   id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   hearingMemoId String   @map("hearing_memo_id") @db.Uuid
   audioFileUrl  String   @map("audio_file_url") @db.Text
-  duration      Int?     // 録音時間（秒）
+  duration      Int? // 録音時間（秒）
   status        String   @default("completed") @db.VarChar(20) // recording | processing | completed | error
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
 
@@ -474,12 +474,12 @@ model Slot {
   status     String    @db.VarChar(20)
   comment    String?   @db.VarChar(100)
   expiresAt  DateTime? @map("expires_at") @db.Timestamptz
-  updatedBy  String    @map("updated_by") @db.Uuid
+  updatedBy  String?   @map("updated_by") @db.Uuid
   createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  facility Facility      @relation(fields: [facilityId], references: [id])
-  updater  FacilityStaff @relation(fields: [updatedBy], references: [id])
+  facility Facility       @relation(fields: [facilityId], references: [id])
+  updater  FacilityStaff? @relation(fields: [updatedBy], references: [id])
   details  SlotDetail[]
 
   @@index([status])

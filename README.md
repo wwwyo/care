@@ -43,6 +43,7 @@ cp .env.example .env
 brew install supabase/tap/supabase
 
 # ローカルでSupabaseを起動
+supabase login
 supabase start
 
 # Prismaスキーマをデータベースに反映

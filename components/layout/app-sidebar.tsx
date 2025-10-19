@@ -1,10 +1,9 @@
 'use client'
 
-import { Building2, ChevronLeft, ClipboardList, FileText, Home, Users } from 'lucide-react'
+import { Building2, ClipboardList, FileText, Home, Users } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import {
   Sidebar,
   SidebarContent,
@@ -62,34 +61,22 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
       : userRole === 'facility_staff'
         ? facilityMenuItems
         : []
-  const logoHref =
-    userRole === 'supporter'
-      ? '/supporters/clients'
-      : userRole === 'facility_staff'
-        ? '/facility'
-        : '/'
 
   return (
     <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader className="h-14 px-2">
         {state === 'expanded' ? (
-          <div className="flex items-center justify-between h-full">
-            <Link href={logoHref} className="flex items-center">
-              <Image src="/logo.svg" alt="CareHub" width={160} height={40} priority />
-            </Link>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0"
-              onClick={toggleSidebar}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-          </div>
+          <button
+            type="button"
+            className="flex items-center justify-center w-full h-full hover:bg-accent hover:text-accent-foreground rounded-md px-2 transition-colors"
+            onClick={toggleSidebar}
+          >
+            <Image src="/logo.svg" alt="CareHub" width={160} height={40} priority />
+          </button>
         ) : (
           <button
             type="button"
-            className="flex items-center justify-center w-full h-full hover:opacity-80"
+            className="flex items-center justify-center w-full h-full hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
             onClick={toggleSidebar}
           >
             <Image src="/icon.svg" alt="CareHub" width={32} height={32} priority />

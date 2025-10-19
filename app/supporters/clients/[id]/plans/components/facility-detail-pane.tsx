@@ -1,10 +1,20 @@
 'use client'
 
-import { Building2, Clock, Mail, MapPin, Phone, Users, Wifi, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Building2, Clock, Edit, Mail, MapPin, Phone, Users, Wifi, X } from 'lucide-react'
+import Form from 'next/form'
+import { useActionState, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { getFacilityDetail } from '../actions/facility-actions'
+import { Textarea } from '@/components/ui/textarea'
+import { getFacilityDetail, updateFacilitySlotAction } from '../actions/facility-actions'
 
 type FacilityDetail = {
   id: string
@@ -52,9 +62,90 @@ function getStatusBadge(status: string | null) {
   )
 }
 
+function SlotStatusEditForm({
+  facility,
+  onCancel,
+  onSuccess,
+}: {
+  facility: FacilityDetail
+  onCancel: () => void
+  onSuccess: (newFacility: FacilityDetail) => void
+}) {
+  const [state, formAction, isPending] = useActionState(updateFacilitySlotAction, undefined)
+
+  useEffect(() => {
+    if (state?.success) {
+      // 更新成功時に施設データを再取得
+      getFacilityDetail(facility.id)
+        .then((result) => {
+          if (!('error' in result)) {
+            onSuccess(result.facility)
+          }
+        })
+        .catch(console.error)
+    }
+  }, [state?.success, facility.id, onSuccess])
+
+  return (
+    <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
+      <div className="flex items-center justify-between">
+        <h4 className="text-sm font-semibold">空き状況を編集</h4>
+        <Button variant="ghost" size="sm" onClick={onCancel}>
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <Form action={formAction} className="space-y-4">
+        <input type="hidden" name="facilityId" value={facility.id} />
+
+        <div className="space-y-2">
+          <Label htmlFor="status">状態</Label>
+          <Select
+            name="status"
+            defaultValue={state?.status || facility.slotStatus || 'unavailable'}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="状態を選択" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="available">○ 空きあり</SelectItem>
+              <SelectItem value="limited">△ 要相談</SelectItem>
+              <SelectItem value="unavailable">× 満床</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="comment">コメント（任意）</Label>
+          <Textarea
+            name="comment"
+            placeholder="空き状況に関するコメントを入力"
+            defaultValue={state?.comment || facility.slotComment || ''}
+            className="min-h-[60px]"
+            maxLength={100}
+          />
+          <p className="text-xs text-muted-foreground">100文字以内</p>
+        </div>
+
+        {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+
+        <div className="flex gap-2">
+          <Button type="submit" size="sm" disabled={isPending}>
+            {isPending ? '更新中...' : '更新'}
+          </Button>
+          <Button type="button" variant="outline" size="sm" onClick={onCancel}>
+            キャンセル
+          </Button>
+        </div>
+      </Form>
+    </div>
+  )
+}
+
 export function FacilityDetailPane({ facilityId, onClose }: Props) {
   const [facility, setFacility] = useState<FacilityDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isEditing, setIsEditing] = useState(false)
 
   useEffect(() => {
     const loadFacility = async () => {
@@ -127,13 +218,33 @@ export function FacilityDetailPane({ facilityId, onClose }: Props) {
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
         {/* 空き状況 */}
         <div>
-          <h3 className="text-sm font-semibold mb-3">空き状況</h3>
-          <div className="flex items-center gap-3">
-            {getStatusBadge(facility.slotStatus)}
-            {facility.slotComment && (
-              <p className="text-sm text-muted-foreground">{facility.slotComment}</p>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold">空き状況</h3>
+            {!isEditing && (
+              <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
+                <Edit className="h-4 w-4 mr-1" />
+                編集
+              </Button>
             )}
           </div>
+
+          {isEditing ? (
+            <SlotStatusEditForm
+              facility={facility}
+              onCancel={() => setIsEditing(false)}
+              onSuccess={(updatedFacility) => {
+                setFacility(updatedFacility)
+                setIsEditing(false)
+              }}
+            />
+          ) : (
+            <div className="flex items-center gap-3">
+              {getStatusBadge(facility.slotStatus)}
+              {facility.slotComment && (
+                <p className="text-sm text-muted-foreground">{facility.slotComment}</p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* 所在地 */}
