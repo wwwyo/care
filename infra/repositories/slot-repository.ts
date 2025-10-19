@@ -26,27 +26,15 @@ async function save(slot: Slot): Promise<void> {
     updatedAt: slot.getUpdatedAt(),
   }
 
-  // 既存のスロットを確認
-  const existingSlot = await prisma.slot.findFirst({
+  await prisma.slot.upsert({
     where: { facilityId },
+    update: slotData,
+    create: {
+      id: slot.getId(),
+      facilityId,
+      ...slotData,
+    },
   })
-
-  if (existingSlot) {
-    // 既存のスロットを更新
-    await prisma.slot.update({
-      where: { id: existingSlot.id },
-      data: slotData,
-    })
-  } else {
-    // 新規スロットを作成
-    await prisma.slot.create({
-      data: {
-        id: slot.getId(),
-        facilityId,
-        ...slotData,
-      },
-    })
-  }
 }
 
 async function deleteById(id: string): Promise<void> {

@@ -60,5 +60,3 @@ export const serverEnv = parseServerEnv()
 export const isDevelopment = serverEnv.NODE_ENV === 'development'
 export const isProduction = serverEnv.NODE_ENV === 'production'
 export const isTest = serverEnv.NODE_ENV === 'test'
-
-console.log('serverEnv:', serverEnv.OPENAI_API_KEY)

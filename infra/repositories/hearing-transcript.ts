@@ -142,9 +142,47 @@ const findByHearingMemoId = async (
   }
 }
 
+const replaceForHearingMemo = async (
+  hearingMemoId: string,
+  transcripts: HearingTranscriptModel[],
+): Promise<{ success: true } | HearingTranscriptRepositoryError> => {
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.hearingTranscript.deleteMany({ where: { hearingMemoId } })
+
+      if (transcripts.length === 0) {
+        return
+      }
+
+      for (const transcript of transcripts) {
+        const data = transcript.toJSON()
+        await tx.hearingTranscript.create({
+          data: {
+            id: data.id,
+            hearingMemoId: data.hearingMemoId,
+            transcriptType: data.transcriptType,
+            content: data.content,
+            timestamp: new Decimal(data.timestamp),
+            endTimestamp: data.endTimestamp ? new Decimal(data.endTimestamp) : null,
+            speaker: data.speaker,
+            confidence: data.confidence ? new Decimal(data.confidence) : null,
+            createdAt: data.createdAt,
+          },
+        })
+      }
+    })
+
+    return { success: true }
+  } catch (error) {
+    console.error('Failed to replace hearing transcripts:', error)
+    return { type: 'SaveFailed', message: '文字起こしの更新に失敗しました' }
+  }
+}
+
 export const hearingTranscriptRepository: HearingTranscriptRepository = {
   save,
   delete: deleteById,
   findById,
   findByHearingMemoId,
+  replaceForHearingMemo,
 }
