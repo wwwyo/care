@@ -149,4 +149,22 @@ export class SupporterAvailabilityNote {
   getUpdatedAt(): Date {
     return this.updatedAt
   }
+
+  toPersistence(): SupporterAvailabilityNoteData {
+    return {
+      id: this.id,
+      facilityId: this.facilityId,
+      supporterId: this.supporterId,
+      planId: this.planId,
+      clientId: this.clientId,
+      status: this.status,
+      intent: this.intent,
+      note: this.note,
+      contextSummary: this.contextSummary,
+      contextDetails: this.context.toJSON(),
+      expiresAt: this.expiresAt,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    }
+  }
 }

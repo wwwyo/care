@@ -171,14 +171,6 @@ const SpeechRecognitionComponent = (
     if (!isSupported) return
     if (typeof window === 'undefined') return
 
-    const isLocalhost =
-      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    if (window.location.protocol !== 'https:' && !isLocalhost) {
-      setErrorMessage('音声認識はHTTPS環境でのみ利用できます')
-      setIsSupported(false)
-      return
-    }
-
     const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SpeechRecognitionClass) return
 

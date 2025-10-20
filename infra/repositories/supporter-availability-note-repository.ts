@@ -34,38 +34,10 @@ function toDomain(
 }
 
 async function save(note: SupporterAvailabilityNote): Promise<void> {
-  const data = {
-    id: note.getId(),
-    facilityId: note.getFacilityId(),
-    supporterId: note.getSupporterId(),
-    planId: note.getPlanId(),
-    clientId: note.getClientId(),
-    status: note.getStatus(),
-    intent: note.getIntent(),
-    note: note.getNote(),
-    contextSummary: note.getContextSummary(),
-    contextDetails: note.getContext().toJSON(),
-    expiresAt: note.getExpiresAt(),
-    createdAt: note.getCreatedAt(),
-    updatedAt: note.getUpdatedAt(),
-  }
+  const data = note.toPersistence()
 
   await prisma.supporterAvailabilityNote.create({
-    data: {
-      id: data.id,
-      facilityId: data.facilityId,
-      supporterId: data.supporterId,
-      planId: data.planId,
-      clientId: data.clientId,
-      status: data.status,
-      intent: data.intent,
-      note: data.note,
-      contextSummary: data.contextSummary,
-      contextDetails: data.contextDetails,
-      expiresAt: data.expiresAt,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-    },
+    data,
   })
 }
 

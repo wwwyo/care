@@ -164,10 +164,7 @@ function SupporterAvailabilityForm({
 
         <div className="space-y-2">
           <Label htmlFor="status">状態</Label>
-          <Select
-            name="status"
-            defaultValue={errorState?.status ?? facility.facilityReport?.status ?? 'unavailable'}
-          >
+          <Select name="status" defaultValue={errorState?.status ?? 'limited'}>
             <SelectTrigger>
               <SelectValue placeholder="状態を選択" />
             </SelectTrigger>

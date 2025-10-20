@@ -36,20 +36,7 @@ async function save(report: FacilityAvailabilityReport): Promise<void> {
   const data = report.toPersistence()
 
   await prisma.facilityAvailabilityReport.create({
-    data: {
-      id: data.id,
-      facilityId: data.facilityId,
-      status: data.status,
-      validFrom: data.validFrom,
-      validUntil: data.validUntil,
-      note: data.note,
-      contextSummary: data.contextSummary,
-      contextDetails: data.contextDetails,
-      confidence: data.confidence,
-      reportedById: data.reportedById,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-    },
+    data,
   })
 }
 

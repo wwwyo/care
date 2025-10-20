@@ -141,4 +141,21 @@ export class FacilityAvailabilityReport {
   getUpdatedAt(): Date {
     return this.updatedAt
   }
+
+  toPersistence(): FacilityAvailabilityReportData {
+    return {
+      id: this.id,
+      facilityId: this.facilityId,
+      status: this.status,
+      validFrom: this.validFrom,
+      validUntil: this.validUntil,
+      note: this.note,
+      contextSummary: this.contextSummary,
+      contextDetails: this.context.toJSON(),
+      confidence: this.confidence,
+      reportedById: this.reportedById,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    }
+  }
 }
