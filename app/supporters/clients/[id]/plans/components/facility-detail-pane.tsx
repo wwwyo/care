@@ -359,10 +359,10 @@ export function FacilityDetailPane({ facilityId, supporterId, clientId, planId, 
         {availability.status && getStatusBadge(availability.status, availability.percent)}
 
         <div className="grid grid-cols-1 gap-3 text-sm text-muted-foreground">
-          {facility.city && (
+          {facility.addressCity && (
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
-              {facility.city}
+              {facility.addressCity}
             </div>
           )}
           {facility.accessInfo && (

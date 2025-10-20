@@ -102,6 +102,7 @@ model Facility {
   contacts                   FacilityContact[]
   services                   FacilityService[]
   conditions                 FacilityCondition[]
+  businessHours              FacilityBusinessHour[]
   staff                      FacilityStaffFacility[]
   availabilityReports        FacilityAvailabilityReport[]
   supporterAvailabilityNotes SupporterAvailabilityNote[]
@@ -213,36 +214,41 @@ model ClientAddress {
 // facility_profiles: 施設プロファイル
 
 model FacilityProfile {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  facilityId  String   @unique @map("facility_id") @db.Uuid
-  name        String   @db.VarChar(255)
-  nameKana    String?  @map("name_kana") @db.VarChar(255)
-  description String?  @db.Text
-  capacity    Int?
-  serviceType String?  @map("service_type") @db.VarChar(50)
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  facilityId    String   @unique @map("facility_id") @db.Uuid
+  name          String   @db.VarChar(255)
+  nameKana      String?  @map("name_kana") @db.VarChar(255)
+  description   String?  @db.Text
+  capacity      Int?
+  wamId         String?  @map("wam_id") @db.VarChar(50)
+  officialId    String?  @map("official_id") @db.VarChar(20)
+  corporationId String?  @map("corporation_id") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  facility    Facility             @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  corporation FacilityCorporation? @relation(fields: [corporationId], references: [id])
 
+  @@index([wamId])
+  @@index([officialId])
+  @@index([corporationId])
   @@map("facility_profiles")
 }
 
 // facility_locations: 施設所在地
 
 model FacilityLocation {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  facilityId String   @unique @map("facility_id") @db.Uuid
-  postalCode String?  @map("postal_code") @db.VarChar(10)
-  prefecture String?  @db.VarChar(10)
-  city       String?  @db.VarChar(100)
-  street     String?  @db.VarChar(255)
-  building   String?  @db.VarChar(255)
-  latitude   Decimal? @db.Decimal(10, 8)
-  longitude  Decimal? @db.Decimal(11, 8)
-  accessInfo String?  @map("access_info") @db.Text
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  facilityId    String   @unique @map("facility_id") @db.Uuid
+  postalCode    String?  @map("postal_code") @db.VarChar(10)
+  addressCity   String?  @map("address_city") @db.VarChar(200)
+  addressDetail String?  @map("address_detail") @db.VarChar(500)
+  building      String?  @db.VarChar(255)
+  latitude      Decimal? @db.Decimal(10, 8)
+  longitude     Decimal? @db.Decimal(11, 8)
+  accessInfo    String?  @map("access_info") @db.Text
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
 
@@ -274,7 +280,7 @@ model FacilityContact {
 model FacilityService {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   facilityId  String   @map("facility_id") @db.Uuid
-  serviceType String   @map("service_type") @db.VarChar(50)
+  serviceType String   @map("service_type") @db.VarChar(100)
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
@@ -298,6 +304,47 @@ model FacilityCondition {
   @@index([facilityId])
   @@index([conditionType])
   @@map("facility_conditions")
+}
+
+// facility_corporations: 法人
+
+model FacilityCorporation {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String   @db.VarChar(255)
+  nameKana        String?  @map("name_kana") @db.VarChar(255)
+  corporateNumber String?  @unique @map("corporate_number") @db.VarChar(13)
+  postalCode      String?  @map("postal_code") @db.VarChar(10)
+  addressCity     String?  @map("address_city") @db.VarChar(200)
+  addressDetail   String?  @map("address_detail") @db.VarChar(500)
+  phone           String?  @db.VarChar(20)
+  fax             String?  @db.VarChar(20)
+  url             String?  @db.VarChar(255)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  facilities FacilityProfile[]
+
+  @@index([corporateNumber])
+  @@map("facility_corporations")
+}
+
+// facility_business_hours: 施設営業時間
+
+model FacilityBusinessHour {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  facilityId      String   @unique @map("facility_id") @db.Uuid
+  weekdayHours    String?  @map("weekday_hours") @db.Text
+  saturdayHours   String?  @map("saturday_hours") @db.Text
+  sundayHours     String?  @map("sunday_hours") @db.Text
+  holidayHours    String?  @map("holiday_hours") @db.Text
+  regularHolidays String?  @map("regular_holidays") @db.Text
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@map("facility_business_hours")
 }
 
 // =====================================================

@@ -30,12 +30,7 @@ export default async function FacilityDashboard() {
   const mainContact = facility.contacts[0]
   const latestReport = facility.availabilityReports[0]
   const address = facility.location
-    ? [
-        facility.location.prefecture,
-        facility.location.city,
-        facility.location.street,
-        facility.location.building,
-      ]
+    ? [facility.location.addressCity, facility.location.addressDetail, facility.location.building]
         .filter(Boolean)
         .join('')
     : null
@@ -78,7 +73,7 @@ export default async function FacilityDashboard() {
             <dl className="space-y-2 text-sm">
               <div>
                 <dt className="text-muted-foreground">サービス種別</dt>
-                <dd className="font-medium">{facility.profile?.serviceType || '未設定'}</dd>
+                <dd className="font-medium">{facility.services[0]?.serviceType || '未設定'}</dd>
               </div>
               <div>
                 <dt className="text-muted-foreground">電話番号</dt>

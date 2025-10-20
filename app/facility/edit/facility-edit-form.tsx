@@ -47,16 +47,8 @@ export function FacilityEditForm({ facility }: Props) {
 
   // Prismaのデータ構造から必要な情報を取得
   const mainContact = facility.contacts[0]
-  const address = facility.location
-    ? [
-        facility.location.prefecture,
-        facility.location.city,
-        facility.location.street,
-        facility.location.building,
-      ]
-        .filter(Boolean)
-        .join('')
-    : null
+  const addressCity = facility.location?.addressCity ?? ''
+  const addressDetail = facility.location?.addressDetail ?? ''
 
   return (
     <Form action={formAction} className="space-y-6">
@@ -98,7 +90,7 @@ export function FacilityEditForm({ facility }: Props) {
               <Label htmlFor="serviceType">サービス種別</Label>
               <Select
                 name="serviceType"
-                defaultValue={state?.values?.serviceType ?? facility.profile?.serviceType ?? ''}
+                defaultValue={state?.values?.serviceType ?? facility.services[0]?.serviceType ?? ''}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="選択してください" />
@@ -186,15 +178,29 @@ export function FacilityEditForm({ facility }: Props) {
         <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="address">住所</Label>
+              <Label htmlFor="addressCity">市区町村</Label>
               <Input
                 type="text"
-                id="address"
-                name="address"
-                defaultValue={state?.values?.address ?? address ?? ''}
+                id="addressCity"
+                name="addressCity"
+                defaultValue={state?.values?.addressCity ?? addressCity}
+                placeholder="東京都千代田区"
               />
-              {state?.fieldErrors?.address && (
-                <p className="text-sm text-red-500">{state.fieldErrors.address}</p>
+              {state?.fieldErrors?.addressCity && (
+                <p className="text-sm text-red-500">{state.fieldErrors.addressCity}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="addressDetail">番地以降</Label>
+              <Input
+                type="text"
+                id="addressDetail"
+                name="addressDetail"
+                defaultValue={state?.values?.addressDetail ?? addressDetail}
+                placeholder="霞が関1-2-3"
+              />
+              {state?.fieldErrors?.addressDetail && (
+                <p className="text-sm text-red-500">{state.fieldErrors.addressDetail}</p>
               )}
             </div>
             <div className="grid gap-4 md:grid-cols-2">

@@ -222,9 +222,8 @@ async function main() {
       location: {
         create: {
           postalCode: '100-0001',
-          prefecture: '東京都',
-          city: '千代田区',
-          street: '千代田1-1',
+          addressCity: '東京都千代田区',
+          addressDetail: '千代田1-1',
           latitude: 35.6762,
           longitude: 139.6503,
         },
@@ -245,7 +244,7 @@ async function main() {
         ],
       },
       services: {
-        create: [{ serviceType: '生活介護' }, { serviceType: '就労継続支援B型' }],
+        create: [{ serviceType: 'DAILY_LIFE_SUPPORT' }, { serviceType: 'EMPLOYMENT_SUPPORT_B' }],
       },
       conditions: {
         create: [
@@ -269,9 +268,8 @@ async function main() {
       location: {
         create: {
           postalCode: '231-0001',
-          prefecture: '神奈川県',
-          city: '横浜市中区',
-          street: '本町3-3',
+          addressCity: '神奈川県横浜市中区',
+          addressDetail: '本町3-3',
           latitude: 35.4437,
           longitude: 139.638,
         },
@@ -285,7 +283,7 @@ async function main() {
         },
       },
       services: {
-        create: [{ serviceType: '就労継続支援A型' }, { serviceType: '就労継続支援B型' }],
+        create: [{ serviceType: 'EMPLOYMENT_SUPPORT_A' }, { serviceType: 'EMPLOYMENT_SUPPORT_B' }],
       },
       conditions: {
         create: [
