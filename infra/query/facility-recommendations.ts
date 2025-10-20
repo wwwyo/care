@@ -41,17 +41,22 @@ const facilityStatusWeight = 0.7
 const supporterStatusWeight = 0.4
 const maxScore = facilityStatusWeight + supporterStatusWeight
 
-const facilityRecommendationSelectBase = {
+const facilitySelect = {
   id: true,
   profile: {
     select: {
       name: true,
+    },
+  },
+  services: {
+    select: {
       serviceType: true,
     },
+    take: 1,
   },
   location: {
     select: {
-      city: true,
+      addressCity: true,
       accessInfo: true,
     },
   },
@@ -79,9 +84,9 @@ const facilityRecommendationSelectBase = {
       createdAt: true,
     },
   },
-} as const
+} satisfies Prisma.FacilitySelect
 
-type FacilityRecord = Prisma.FacilityGetPayload<{ select: typeof facilityRecommendationSelectBase }>
+type FacilityRecord = Prisma.FacilityGetPayload<{ select: typeof facilitySelect }>
 
 function statusToNumeric(status: AvailabilityStatus): number {
   switch (status) {
@@ -159,8 +164,8 @@ function mapFacility(facility: FacilityRecord): FacilityRecommendation {
   return {
     id: facility.id,
     name: facility.profile?.name ?? '施設名未設定',
-    serviceType: facility.profile?.serviceType ?? null,
-    city: facility.location?.city ?? null,
+    serviceType: facility.services?.[0]?.serviceType ?? null,
+    city: facility.location?.addressCity ?? null,
     accessInfo: facility.location?.accessInfo ?? null,
     availability: buildAvailabilityScore(report, supporterNotes),
     facilityReport: report,
@@ -173,26 +178,26 @@ export async function getFacilityRecommendations(
   limit = 4,
 ): Promise<FacilityRecommendation[]> {
   const now = new Date()
-  const availabilityValidityFilter = {
+  const availabilityValidityFilter: Prisma.FacilityAvailabilityReportWhereInput = {
     OR: [{ validUntil: null }, { validUntil: { gte: now } }],
-  } as const
+  }
 
   const facilities = await prisma.facility.findMany({
     where: {
       services: {
         some: {
-          serviceType,
+          serviceType: serviceType as never,
         },
       },
     },
     select: {
-      ...facilityRecommendationSelectBase,
+      ...facilitySelect,
       availabilityReports: {
-        ...facilityRecommendationSelectBase.availabilityReports,
+        ...facilitySelect.availabilityReports,
         where: availabilityValidityFilter,
       },
       supporterAvailabilityNotes: {
-        ...facilityRecommendationSelectBase.supporterAvailabilityNotes,
+        ...facilitySelect.supporterAvailabilityNotes,
         where: {
           expiresAt: { gte: now },
         },
@@ -213,28 +218,28 @@ export async function searchFacilitiesWithSlots(
   }
 
   const now = new Date()
-  const availabilityValidityFilter = {
+  const availabilityValidityFilter: Prisma.FacilityAvailabilityReportWhereInput = {
     OR: [{ validUntil: null }, { validUntil: { gte: now } }],
-  } as const
+  }
 
   const facilities = await prisma.facility.findMany({
     where: {
       services: {
         some: {
           serviceType: {
-            in: serviceTypes,
+            in: serviceTypes as never[],
           },
         },
       },
     },
     select: {
-      ...facilityRecommendationSelectBase,
+      ...facilitySelect,
       availabilityReports: {
-        ...facilityRecommendationSelectBase.availabilityReports,
+        ...facilitySelect.availabilityReports,
         where: availabilityValidityFilter,
       },
       supporterAvailabilityNotes: {
-        ...facilityRecommendationSelectBase.supporterAvailabilityNotes,
+        ...facilitySelect.supporterAvailabilityNotes,
         where: {
           expiresAt: { gte: now },
         },

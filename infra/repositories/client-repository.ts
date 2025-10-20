@@ -120,7 +120,7 @@ async function findById(id: string): Promise<Client | null> {
 
   const primaryAddress = clientRecord.addresses[0]
   const addressData =
-    primaryAddress && primaryAddress.prefecture && primaryAddress.city
+    primaryAddress?.prefecture && primaryAddress.city
       ? {
           postalCode: primaryAddress.postalCode ?? undefined,
           prefecture: primaryAddress.prefecture,
@@ -189,7 +189,7 @@ async function _findAll(
 
     const primaryAddress = record.addresses[0]
     const addressData =
-      primaryAddress && primaryAddress.prefecture && primaryAddress.city
+      primaryAddress?.prefecture && primaryAddress.city
         ? {
             postalCode: primaryAddress.postalCode ?? undefined,
             prefecture: primaryAddress.prefecture,

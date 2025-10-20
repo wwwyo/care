@@ -9,6 +9,7 @@ async function findById(id: string): Promise<Facility | null> {
       profile: true,
       location: true,
       contacts: true,
+      services: true,
     },
   })
 
@@ -32,6 +33,7 @@ async function findByStaffUserId(userId: string): Promise<Facility | null> {
           profile: true,
           location: true,
           contacts: true,
+          services: true,
         },
       },
     },
@@ -52,10 +54,15 @@ async function save(facility: Facility): Promise<void> {
     name: facility.getName(),
     nameKana: facility.getNameKana(),
     description: facility.getDescription(),
-    serviceType: facility.getServiceType(),
+    capacity: facility.getCapacity(),
+    wamId: facility.getWamId(),
+    officialId: facility.getOfficialId(),
+    corporationId: facility.getCorporationId(),
   }
 
   const locationData = {
+    addressCity: facility.getAddressCity(),
+    addressDetail: facility.getAddressDetail(),
     postalCode: facility.getPostalCode(),
     accessInfo: facility.getAccessInfo(),
     latitude: facility.getLatitude(),

@@ -1,6 +1,12 @@
-import type { FacilityContact, FacilityLocation, FacilityProfile } from '@/lib/generated/prisma'
+import type {
+  FacilityContact,
+  FacilityLocation,
+  FacilityProfile,
+  FacilityService,
+} from '@/lib/generated/prisma'
 import { FacilityDescription } from './facility-description'
 import { FacilityName, FacilityNameKana } from './facility-name'
+import { OfficialFacilityId } from './official-facility-id'
 import { ServiceType } from './service-type'
 
 export type FacilityData = {
@@ -8,6 +14,7 @@ export type FacilityData = {
   profile: FacilityProfile | null
   location: FacilityLocation | null
   contacts: FacilityContact[]
+  services: FacilityService[]
 }
 
 export type FacilityError =
@@ -23,7 +30,8 @@ export class Facility {
     private readonly nameKana: FacilityNameKana | null,
     private readonly description: FacilityDescription | null,
     private readonly serviceType: ServiceType | null,
-    private readonly address: string | null,
+    private readonly addressCity: string | null,
+    private readonly addressDetail: string | null,
     private readonly postalCode: string | null,
     private readonly phone: string | null,
     private readonly fax: string | null,
@@ -32,15 +40,15 @@ export class Facility {
     private readonly accessInfo: string | null,
     private readonly latitude: number | null,
     private readonly longitude: number | null,
+    private readonly capacity: number | null,
+    private readonly wamId: string | null,
+    private readonly officialId: OfficialFacilityId | null,
+    private readonly corporationId: string | null,
   ) {}
 
   static create(data: FacilityData): Facility | null {
     const mainContact = data.contacts.find((c) => c.contactType === 'main')
-    const address = data.location
-      ? [data.location.prefecture, data.location.city, data.location.street, data.location.building]
-          .filter(Boolean)
-          .join('')
-      : null
+    const primaryService = data.services[0]
 
     // 必須項目のバリデーション
     const name = FacilityName.create(data.profile?.name)
@@ -51,8 +59,9 @@ export class Facility {
       name,
       FacilityNameKana.create(data.profile?.nameKana),
       FacilityDescription.create(data.profile?.description),
-      ServiceType.create(data.profile?.serviceType),
-      address,
+      ServiceType.create(primaryService?.serviceType),
+      data.location?.addressCity ?? null,
+      data.location?.addressDetail ?? null,
       data.location?.postalCode ?? null,
       mainContact?.phone ?? null,
       mainContact?.fax ?? null,
@@ -61,6 +70,10 @@ export class Facility {
       data.location?.accessInfo ?? null,
       data.location?.latitude ? Number(data.location.latitude) : null,
       data.location?.longitude ? Number(data.location.longitude) : null,
+      data.profile?.capacity ?? null,
+      data.profile?.wamId ?? null,
+      OfficialFacilityId.create(data.profile?.officialId),
+      data.profile?.corporationId ?? null,
     )
   }
 
@@ -85,7 +98,16 @@ export class Facility {
   }
 
   getAddress(): string | null {
-    return this.address
+    if (!this.addressCity && !this.addressDetail) return null
+    return [this.addressCity, this.addressDetail].filter(Boolean).join('')
+  }
+
+  getAddressCity(): string | null {
+    return this.addressCity
+  }
+
+  getAddressDetail(): string | null {
+    return this.addressDetail
   }
 
   getPhone(): string | null {
@@ -116,6 +138,8 @@ export class Facility {
     nameKana?: string | null
     description?: string | null
     serviceType?: string | null
+    capacity?: number | null
+    officialId?: string | null
   }): Facility | FacilityError {
     const newName = FacilityName.create(params.name)
     if (!newName) {
@@ -130,6 +154,11 @@ export class Facility {
         : this.description
     const newServiceType =
       params.serviceType !== undefined ? ServiceType.create(params.serviceType) : this.serviceType
+    const newCapacity = params.capacity !== undefined ? params.capacity : this.capacity
+    const newOfficialId =
+      params.officialId !== undefined
+        ? OfficialFacilityId.create(params.officialId)
+        : this.officialId
 
     return new Facility(
       this.id,
@@ -137,7 +166,8 @@ export class Facility {
       newNameKana,
       newDescription,
       newServiceType,
-      this.address,
+      this.addressCity,
+      this.addressDetail,
       this.postalCode,
       this.phone,
       this.fax,
@@ -146,6 +176,10 @@ export class Facility {
       this.accessInfo,
       this.latitude,
       this.longitude,
+      newCapacity,
+      this.wamId,
+      newOfficialId,
+      this.corporationId,
     )
   }
 
@@ -161,7 +195,8 @@ export class Facility {
       this.nameKana,
       this.description,
       this.serviceType,
-      this.address,
+      this.addressCity,
+      this.addressDetail,
       this.postalCode,
       params.phone !== undefined ? params.phone : this.phone,
       params.fax !== undefined ? params.fax : this.fax,
@@ -170,11 +205,16 @@ export class Facility {
       this.accessInfo,
       this.latitude,
       this.longitude,
+      this.capacity,
+      this.wamId,
+      this.officialId,
+      this.corporationId,
     )
   }
 
   updateLocation(params: {
-    address?: string | null
+    addressCity?: string | null
+    addressDetail?: string | null
     postalCode?: string | null
     accessInfo?: string | null
     latitude?: number | null
@@ -186,7 +226,8 @@ export class Facility {
       this.nameKana,
       this.description,
       this.serviceType,
-      params.address !== undefined ? params.address : this.address,
+      params.addressCity !== undefined ? params.addressCity : this.addressCity,
+      params.addressDetail !== undefined ? params.addressDetail : this.addressDetail,
       params.postalCode !== undefined ? params.postalCode : this.postalCode,
       this.phone,
       this.fax,
@@ -195,6 +236,10 @@ export class Facility {
       params.accessInfo !== undefined ? params.accessInfo : this.accessInfo,
       params.latitude !== undefined ? params.latitude : this.latitude,
       params.longitude !== undefined ? params.longitude : this.longitude,
+      this.capacity,
+      this.wamId,
+      this.officialId,
+      this.corporationId,
     )
   }
 
@@ -215,6 +260,22 @@ export class Facility {
     return this.longitude
   }
 
+  getCapacity(): number | null {
+    return this.capacity
+  }
+
+  getWamId(): string | null {
+    return this.wamId
+  }
+
+  getOfficialId(): string | null {
+    return this.officialId?.getValue() ?? null
+  }
+
+  getCorporationId(): string | null {
+    return this.corporationId
+  }
+
   // ビジネスロジック
   isEmploymentFacility(): boolean {
     return this.serviceType?.isEmploymentService() ?? false
@@ -225,7 +286,13 @@ export class Facility {
   }
 
   hasCompleteProfile(): boolean {
-    return !!(this.name && this.serviceType && this.address && this.phone && this.description)
+    return !!(
+      this.name &&
+      this.serviceType &&
+      (this.addressCity || this.addressDetail) &&
+      this.phone &&
+      this.description
+    )
   }
 }
 

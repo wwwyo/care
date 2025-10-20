@@ -39,7 +39,7 @@ export type FacilityDetailData = {
     expiresAt: string
     createdAt: string
   }>
-  city: string | null
+  addressCity: string | null
   accessInfo: string | null
 }
 
@@ -54,12 +54,17 @@ export async function getFacilityDetail(facilityId: string): Promise<FacilityDet
         profile: {
           select: {
             name: true,
+          },
+        },
+        services: {
+          select: {
             serviceType: true,
           },
+          take: 1,
         },
         location: {
           select: {
-            city: true,
+            addressCity: true,
             accessInfo: true,
           },
         },
@@ -85,7 +90,7 @@ export async function getFacilityDetail(facilityId: string): Promise<FacilityDet
       facility: {
         id: facility.id,
         name: facility.profile?.name ?? '施設名未設定',
-        serviceType: facility.profile?.serviceType ?? null,
+        serviceType: facility.services[0]?.serviceType ?? null,
         facilityReport: facility.availabilityReports[0]
           ? {
               status: availabilityStatusSchema.parse(facility.availabilityReports[0].status),
@@ -102,7 +107,7 @@ export async function getFacilityDetail(facilityId: string): Promise<FacilityDet
           expiresAt: note.expiresAt.toISOString(),
           createdAt: note.createdAt.toISOString(),
         })),
-        city: facility.location?.city ?? null,
+        addressCity: facility.location?.addressCity ?? null,
         accessInfo: facility.location?.accessInfo ?? null,
       },
     }

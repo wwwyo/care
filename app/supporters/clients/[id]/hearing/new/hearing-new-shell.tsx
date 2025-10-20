@@ -833,9 +833,7 @@ function ClientFactPanel({ facts, autoFilledKeys, onChange }: ClientFactPanelPro
               {options ? (
                 <Select
                   value={value ? value : UNSET_OPTION_VALUE}
-                  onValueChange={(next) =>
-                    onChange(key, next === UNSET_OPTION_VALUE ? '' : next)
-                  }
+                  onValueChange={(next) => onChange(key, next === UNSET_OPTION_VALUE ? '' : next)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder={placeholder ?? '選択してください'} />
