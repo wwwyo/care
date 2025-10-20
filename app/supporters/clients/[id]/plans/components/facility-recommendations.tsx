@@ -17,8 +17,15 @@ type FacilityRecommendationsProps = {
   maxSelection?: number
 }
 
-function SlotStatusBadge({ status, comment }: { status: string | null; comment: string | null }) {
-  // スロット情報がない場合は「空き情報不明」と表示
+function AvailabilityBadge({
+  status,
+  percent,
+  facilityNote,
+}: {
+  status: string | null
+  percent: number | null
+  facilityNote: string | null | undefined
+}) {
   if (!status) {
     return (
       <div className="flex items-center gap-2">
@@ -49,7 +56,6 @@ function SlotStatusBadge({ status, comment }: { status: string | null; comment: 
 
   const config = statusConfig[status as keyof typeof statusConfig]
   if (!config) {
-    // 未知のステータスの場合も「空き情報不明」と表示
     return (
       <div className="flex items-center gap-2">
         <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
@@ -63,11 +69,12 @@ function SlotStatusBadge({ status, comment }: { status: string | null; comment: 
     <div className="flex items-center gap-2">
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.className}`}>
         {config.icon} {config.label}
+        {percent !== null && <span className="ml-1 text-[10px]">{percent}%</span>}
       </span>
-      {comment && (
+      {facilityNote && (
         <span className="text-xs text-muted-foreground flex items-center gap-1">
           <MessageSquare className="h-3 w-3" />
-          {comment}
+          {facilityNote}
         </span>
       )}
     </div>
@@ -116,7 +123,22 @@ function FacilityCard({
           )}
         </div>
 
-        <SlotStatusBadge status={facility.slotStatus} comment={facility.slotComment} />
+        <AvailabilityBadge
+          status={facility.availability.status}
+          percent={facility.availability.percent}
+          facilityNote={
+            facility.facilityReport?.contextSummary ?? facility.facilityReport?.note ?? undefined
+          }
+        />
+
+        {facility.supporterNotes[0] && (
+          <p className="text-[13px] text-muted-foreground line-clamp-2">
+            <span className="font-medium mr-1">相談員メモ:</span>
+            {facility.supporterNotes[0]?.contextSummary ??
+              facility.supporterNotes[0]?.note ??
+              '共有内容なし'}
+          </p>
+        )}
 
         {facility.accessInfo && (
           <p className="text-xs text-muted-foreground line-clamp-2">{facility.accessInfo}</p>

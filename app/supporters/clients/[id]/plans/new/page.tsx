@@ -49,7 +49,7 @@ export default async function NewPlanPage({ params }: Props) {
         <p className="text-muted-foreground mt-1">{client.profile?.name} 様</p>
       </div>
 
-      <PlanEditForm clientId={clientId} hearingMemos={hearingMemos} />
+      <PlanEditForm clientId={clientId} supporterId={supporter.id} hearingMemos={hearingMemos} />
     </div>
   )
 }

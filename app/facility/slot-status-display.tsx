@@ -1,12 +1,12 @@
-import type { SlotStatus } from '@/domain/slot/model'
+import type { AvailabilityStatus } from '@/domain/availability/status'
 
 type SlotStatusDisplayProps = {
-  status: SlotStatus | string | null
-  comment?: string | null
+  status: AvailabilityStatus | string | null
+  note?: string | null
   updatedAt?: Date | null
 }
 
-function normalizeStatus(status: string | null): SlotStatus | null {
+function normalizeStatus(status: string | null): AvailabilityStatus | null {
   if (!status) return null
 
   switch (status) {
@@ -23,7 +23,10 @@ function normalizeStatus(status: string | null): SlotStatus | null {
   }
 }
 
-const statusConfig: Record<SlotStatus, { emoji: string; label: string; className: string }> = {
+const statusConfig: Record<
+  AvailabilityStatus,
+  { emoji: string; label: string; className: string }
+> = {
   available: {
     emoji: '🟢',
     label: '空きあり',
@@ -41,7 +44,7 @@ const statusConfig: Record<SlotStatus, { emoji: string; label: string; className
   },
 }
 
-export function SlotStatusDisplay({ status, comment, updatedAt }: SlotStatusDisplayProps) {
+export function SlotStatusDisplay({ status, note, updatedAt }: SlotStatusDisplayProps) {
   const normalizedStatus = normalizeStatus(status)
 
   if (!normalizedStatus || !(normalizedStatus in statusConfig)) {
@@ -71,7 +74,7 @@ export function SlotStatusDisplay({ status, comment, updatedAt }: SlotStatusDisp
         </span>
         <span className="font-semibold text-lg">{config.label}</span>
       </div>
-      {comment && <p className="text-sm mt-2 opacity-80">{comment}</p>}
+      {note && <p className="text-sm mt-2 opacity-80 whitespace-pre-wrap">{note}</p>}
       {formattedDate && <p className="text-xs mt-2 opacity-60">最終更新: {formattedDate}</p>}
     </div>
   )

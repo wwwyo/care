@@ -18,10 +18,11 @@ import { createPlanAction } from './actions'
 
 type Props = {
   clientId: string
+  supporterId: string
   hearingMemos: Awaited<ReturnType<typeof getHearingMemosByClient>>
 }
 
-export function PlanEditForm({ clientId, hearingMemos }: Props) {
+export function PlanEditForm({ clientId, supporterId, hearingMemos }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [state, formAction, isPending] = useActionState(createPlanAction, {
@@ -175,6 +176,9 @@ export function PlanEditForm({ clientId, hearingMemos }: Props) {
         <div className="w-[500px]">
           <FacilityDetailPane
             facilityId={facilityId}
+            supporterId={supporterId}
+            clientId={clientId}
+            planId={null}
             onClose={() => handleShowFacilityDetail(null)}
           />
         </div>

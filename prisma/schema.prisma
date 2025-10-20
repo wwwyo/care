@@ -40,12 +40,13 @@ model Supporter {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  tenant              Tenant            @relation(fields: [tenantId], references: [id])
-  user                User              @relation(fields: [userId], references: [id])
+  tenant              Tenant                      @relation(fields: [tenantId], references: [id])
+  user                User                        @relation(fields: [userId], references: [id])
   profile             SupporterProfile?
   clientSupporters    ClientSupporter[]
-  planVersionsCreated PlanVersion[]     @relation("PlanVersionCreatedBy")
+  planVersionsCreated PlanVersion[]               @relation("PlanVersionCreatedBy")
   hearingMemos        HearingMemo[]
+  availabilityNotes   SupporterAvailabilityNote[]
 
   @@index([tenantId])
   @@index([userId])
@@ -60,12 +61,13 @@ model Client {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  tenant           Tenant            @relation(fields: [tenantId], references: [id])
-  profile          ClientProfile?
-  addresses        ClientAddress[]
-  clientSupporters ClientSupporter[]
-  plans            Plan[]
-  hearingMemos     HearingMemo[]
+  tenant                    Tenant                      @relation(fields: [tenantId], references: [id])
+  profile                   ClientProfile?
+  addresses                 ClientAddress[]
+  clientSupporters          ClientSupporter[]
+  plans                     Plan[]
+  hearingMemos              HearingMemo[]
+  SupporterAvailabilityNote SupporterAvailabilityNote[]
 
   @@index([tenantId])
   @@map("clients")
@@ -95,14 +97,15 @@ model Facility {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  profile    FacilityProfile?
-  location   FacilityLocation?
-  contacts   FacilityContact[]
-  services   FacilityService[]
-  conditions FacilityCondition[]
-  staff      FacilityStaffFacility[]
-  slots      Slot[]
-  inquiries  Inquiry[]
+  profile                    FacilityProfile?
+  location                   FacilityLocation?
+  contacts                   FacilityContact[]
+  services                   FacilityService[]
+  conditions                 FacilityCondition[]
+  staff                      FacilityStaffFacility[]
+  availabilityReports        FacilityAvailabilityReport[]
+  supporterAvailabilityNotes SupporterAvailabilityNote[]
+  inquiries                  Inquiry[]
 
   @@map("facilities")
 }
@@ -115,9 +118,9 @@ model FacilityStaff {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  user         User                    @relation(fields: [userId], references: [id])
-  facilities   FacilityStaffFacility[]
-  slotsUpdated Slot[]
+  user                User                         @relation(fields: [userId], references: [id])
+  facilities          FacilityStaffFacility[]
+  availabilityReports FacilityAvailabilityReport[]
 
   @@index([userId])
   @@map("facility_staff")
@@ -312,11 +315,12 @@ model Plan {
   createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt        DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  tenant    Tenant        @relation(fields: [tenantId], references: [id])
-  client    Client        @relation(fields: [clientId], references: [id])
-  versions  PlanVersion[]
-  consents  Consent[]
-  inquiries Inquiry[]
+  tenant                    Tenant                      @relation(fields: [tenantId], references: [id])
+  client                    Client                      @relation(fields: [clientId], references: [id])
+  versions                  PlanVersion[]
+  consents                  Consent[]
+  inquiries                 Inquiry[]
+  SupporterAvailabilityNote SupporterAvailabilityNote[]
 
   @@unique([clientId])
   @@index([tenantId])
@@ -466,40 +470,56 @@ model HearingAudio {
   @@map("hearing_audios")
 }
 
-// slots: 空き状況
+// facility_availability_reports: 施設側空き状況レポート
 
-model Slot {
-  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  facilityId String    @unique @map("facility_id") @db.Uuid
-  status     String    @db.VarChar(20)
-  comment    String?   @db.VarChar(100)
-  expiresAt  DateTime? @map("expires_at") @db.Timestamptz
-  updatedBy  String?   @map("updated_by") @db.Uuid
-  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+model FacilityAvailabilityReport {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  facilityId     String    @map("facility_id") @db.Uuid
+  status         String    @db.VarChar(20)
+  validFrom      DateTime  @map("valid_from") @db.Timestamptz
+  validUntil     DateTime? @map("valid_until") @db.Timestamptz
+  note           String?   @db.Text
+  contextSummary String?   @map("context_summary") @db.VarChar(200)
+  contextDetails Json      @map("context_details")
+  confidence     Int?      @db.SmallInt
+  reportedById   String    @map("reported_by_id") @db.Uuid
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  facility Facility       @relation(fields: [facilityId], references: [id])
-  updater  FacilityStaff? @relation(fields: [updatedBy], references: [id])
-  details  SlotDetail[]
+  facility Facility      @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  reporter FacilityStaff @relation(fields: [reportedById], references: [id], onDelete: Cascade)
 
+  @@index([facilityId, validUntil])
   @@index([status])
-  @@index([expiresAt])
-  @@map("slots")
+  @@map("facility_availability_reports")
 }
 
-// slot_details: 空き状況詳細
+// supporter_availability_notes: 相談員側空き状況メモ
 
-model SlotDetail {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  slotId      String   @map("slot_id") @db.Uuid
-  detailType  String   @map("detail_type") @db.VarChar(50)
-  detailValue String?  @map("detail_value") @db.Text
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+model SupporterAvailabilityNote {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  facilityId     String   @map("facility_id") @db.Uuid
+  supporterId    String   @map("supporter_id") @db.Uuid
+  planId         String?  @map("plan_id") @db.Uuid
+  clientId       String?  @map("client_id") @db.Uuid
+  status         String   @db.VarChar(20)
+  intent         String?  @db.VarChar(30)
+  note           String?  @db.Text
+  contextSummary String?  @map("context_summary") @db.VarChar(200)
+  contextDetails Json     @map("context_details")
+  expiresAt      DateTime @map("expires_at") @db.Timestamptz
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  slot Slot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  facility  Facility  @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  supporter Supporter @relation(fields: [supporterId], references: [id], onDelete: Cascade)
+  plan      Plan?     @relation(fields: [planId], references: [id], onDelete: SetNull)
+  client    Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
-  @@index([slotId])
-  @@map("slot_details")
+  @@index([facilityId, supporterId])
+  @@index([planId])
+  @@index([clientId])
+  @@map("supporter_availability_notes")
 }
 
 // =====================================================

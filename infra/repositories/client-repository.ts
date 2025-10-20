@@ -29,27 +29,29 @@ async function save(client: Client): Promise<{ type: 'success' } | SaveError> {
         create: {
           clientId: data.id,
           name: data.name,
-          gender: data.gender,
-          birthDate: data.birthDate,
-          phone: data.phoneNumber,
-          disability: data.disability,
-          careLevel: data.careLevel,
-          notes: data.notes,
-          emergencyContactName: data.emergencyContact.name,
-          emergencyContactRelation: data.emergencyContact.relationship,
-          emergencyContactPhone: data.emergencyContact.phoneNumber,
+          nameKana: data.nameKana ?? null,
+          gender: data.gender ?? null,
+          birthDate: data.birthDate ?? null,
+          phone: data.phoneNumber ?? null,
+          disability: data.disability ?? null,
+          careLevel: data.careLevel ?? null,
+          notes: data.notes ?? null,
+          emergencyContactName: data.emergencyContact?.name ?? null,
+          emergencyContactRelation: data.emergencyContact?.relationship ?? null,
+          emergencyContactPhone: data.emergencyContact?.phoneNumber ?? null,
         },
         update: {
           name: data.name,
-          gender: data.gender,
-          birthDate: data.birthDate,
-          phone: data.phoneNumber,
-          disability: data.disability,
-          careLevel: data.careLevel,
-          notes: data.notes,
-          emergencyContactName: data.emergencyContact.name,
-          emergencyContactRelation: data.emergencyContact.relationship,
-          emergencyContactPhone: data.emergencyContact.phoneNumber,
+          nameKana: data.nameKana ?? null,
+          gender: data.gender ?? null,
+          birthDate: data.birthDate ?? null,
+          phone: data.phoneNumber ?? null,
+          disability: data.disability ?? null,
+          careLevel: data.careLevel ?? null,
+          notes: data.notes ?? null,
+          emergencyContactName: data.emergencyContact?.name ?? null,
+          emergencyContactRelation: data.emergencyContact?.relationship ?? null,
+          emergencyContactPhone: data.emergencyContact?.phoneNumber ?? null,
         },
       })
 
@@ -58,27 +60,33 @@ async function save(client: Client): Promise<{ type: 'success' } | SaveError> {
         where: { clientId: data.id },
       })
 
-      if (existingAddress) {
-        await tx.clientAddress.update({
+      if (data.address) {
+        if (existingAddress) {
+          await tx.clientAddress.update({
+            where: { id: existingAddress.id },
+            data: {
+              postalCode: data.address.postalCode ?? null,
+              prefecture: data.address.prefecture ?? null,
+              city: data.address.city ?? null,
+              street: data.address.street ?? null,
+              building: data.address.building ?? null,
+            },
+          })
+        } else {
+          await tx.clientAddress.create({
+            data: {
+              clientId: data.id,
+              postalCode: data.address.postalCode ?? null,
+              prefecture: data.address.prefecture ?? null,
+              city: data.address.city ?? null,
+              street: data.address.street ?? null,
+              building: data.address.building ?? null,
+            },
+          })
+        }
+      } else if (existingAddress) {
+        await tx.clientAddress.delete({
           where: { id: existingAddress.id },
-          data: {
-            postalCode: data.address.postalCode,
-            prefecture: data.address.prefecture,
-            city: data.address.city,
-            street: data.address.street,
-            building: data.address.building,
-          },
-        })
-      } else {
-        await tx.clientAddress.create({
-          data: {
-            clientId: data.id,
-            postalCode: data.address.postalCode,
-            prefecture: data.address.prefecture,
-            city: data.address.city,
-            street: data.address.street,
-            building: data.address.building,
-          },
         })
       }
     })
@@ -110,30 +118,37 @@ async function findById(id: string): Promise<Client | null> {
     return null
   }
 
-  const address = clientRecord.addresses[0]
-  if (!address) {
-    return null
-  }
+  const primaryAddress = clientRecord.addresses[0]
+  const addressData =
+    primaryAddress && primaryAddress.prefecture && primaryAddress.city
+      ? {
+          postalCode: primaryAddress.postalCode ?? undefined,
+          prefecture: primaryAddress.prefecture,
+          city: primaryAddress.city,
+          street: primaryAddress.street ?? undefined,
+          building: primaryAddress.building ?? undefined,
+        }
+      : undefined
 
   const clientData: ClientData = {
     id: clientRecord.id,
     tenantId: clientRecord.tenantId,
     name: clientRecord.profile.name,
-    birthDate: clientRecord.profile.birthDate || new Date(),
-    gender: (clientRecord.profile.gender || 'other') as 'male' | 'female' | 'other',
-    address: {
-      postalCode: address.postalCode || undefined,
-      prefecture: address.prefecture || '',
-      city: address.city || '',
-      street: address.street || '',
-      building: address.building || undefined,
-    },
-    phoneNumber: clientRecord.profile.phone || '',
-    emergencyContact: {
-      name: clientRecord.profile.emergencyContactName || '',
-      relationship: clientRecord.profile.emergencyContactRelation || '',
-      phoneNumber: clientRecord.profile.emergencyContactPhone || '',
-    },
+    nameKana: clientRecord.profile.nameKana,
+    birthDate: clientRecord.profile.birthDate || undefined,
+    gender: (clientRecord.profile.gender || null) as 'male' | 'female' | 'other' | null,
+    address: addressData,
+    phoneNumber: clientRecord.profile.phone || undefined,
+    emergencyContact:
+      clientRecord.profile.emergencyContactName ||
+      clientRecord.profile.emergencyContactRelation ||
+      clientRecord.profile.emergencyContactPhone
+        ? {
+            name: clientRecord.profile.emergencyContactName || '',
+            relationship: clientRecord.profile.emergencyContactRelation || '',
+            phoneNumber: clientRecord.profile.emergencyContactPhone || '',
+          }
+        : undefined,
     disability: clientRecord.profile.disability || undefined,
     careLevel: clientRecord.profile.careLevel || undefined,
     notes: clientRecord.profile.notes || undefined,
@@ -168,30 +183,41 @@ async function _findAll(
   const clients: Client[] = []
 
   for (const record of clientRecords) {
-    if (!record.profile || record.addresses.length === 0) {
+    if (!record.profile) {
       continue
     }
 
-    const address = record.addresses[0]
+    const primaryAddress = record.addresses[0]
+    const addressData =
+      primaryAddress && primaryAddress.prefecture && primaryAddress.city
+        ? {
+            postalCode: primaryAddress.postalCode ?? undefined,
+            prefecture: primaryAddress.prefecture,
+            city: primaryAddress.city,
+            street: primaryAddress.street ?? undefined,
+            building: primaryAddress.building ?? undefined,
+          }
+        : undefined
+
     const clientData: ClientData = {
       id: record.id,
       tenantId: record.tenantId,
       name: record.profile.name,
-      birthDate: record.profile.birthDate || new Date(),
-      gender: (record.profile.gender || 'other') as 'male' | 'female' | 'other',
-      address: {
-        postalCode: address?.postalCode || undefined,
-        prefecture: address?.prefecture || '',
-        city: address?.city || '',
-        street: address?.street || '',
-        building: address?.building || undefined,
-      },
-      phoneNumber: record.profile.phone || '',
-      emergencyContact: {
-        name: record.profile.emergencyContactName || '',
-        relationship: record.profile.emergencyContactRelation || '',
-        phoneNumber: record.profile.emergencyContactPhone || '',
-      },
+      nameKana: record.profile.nameKana,
+      birthDate: record.profile.birthDate || undefined,
+      gender: (record.profile.gender || null) as 'male' | 'female' | 'other' | null,
+      address: addressData,
+      phoneNumber: record.profile.phone || undefined,
+      emergencyContact:
+        record.profile.emergencyContactName ||
+        record.profile.emergencyContactRelation ||
+        record.profile.emergencyContactPhone
+          ? {
+              name: record.profile.emergencyContactName || '',
+              relationship: record.profile.emergencyContactRelation || '',
+              phoneNumber: record.profile.emergencyContactPhone || '',
+            }
+          : undefined,
       disability: record.profile.disability || undefined,
       careLevel: record.profile.careLevel || undefined,
       notes: record.profile.notes || undefined,

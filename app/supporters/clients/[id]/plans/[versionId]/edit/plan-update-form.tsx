@@ -20,6 +20,7 @@ type Props = {
   planId: string
   versionId: string
   clientId: string
+  supporterId: string
   initialData: {
     desiredLife: string
     troubles: string
@@ -33,7 +34,8 @@ type Props = {
 export function PlanUpdateForm({
   planId,
   versionId,
-  clientId: _clientId,
+  clientId,
+  supporterId,
   initialData,
   isPublished,
   hearingMemos,
@@ -311,6 +313,9 @@ export function PlanUpdateForm({
         <div className="w-[500px]">
           <FacilityDetailPane
             facilityId={facilityId}
+            supporterId={supporterId}
+            clientId={clientId}
+            planId={planId}
             onClose={() => handleShowFacilityDetail(null)}
           />
         </div>

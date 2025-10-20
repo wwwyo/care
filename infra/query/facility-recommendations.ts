@@ -1,69 +1,207 @@
+import { type AvailabilityStatus, availabilityStatusSchema } from '@/domain/availability/status'
+import type { Prisma } from '@/lib/generated/prisma'
 import { prisma } from '@/lib/prisma'
+
+export type FacilityAvailabilityScore = {
+  status: AvailabilityStatus | null
+  score: number | null
+  percent: number | null
+}
+
+export type FacilityAvailabilityReportSummary = {
+  status: AvailabilityStatus
+  note: string | null
+  contextSummary: string | null
+  validFrom: string
+  validUntil: string | null
+  updatedAt: string
+}
+
+export type SupporterAvailabilityNoteSummary = {
+  id: string
+  status: AvailabilityStatus
+  note: string | null
+  contextSummary: string | null
+  expiresAt: string
+  createdAt: string
+}
 
 export type FacilityRecommendation = {
   id: string
   name: string
   serviceType: string | null
-  slotStatus: string | null
-  slotComment: string | null
   city: string | null
   accessInfo: string | null
+  availability: FacilityAvailabilityScore
+  facilityReport: FacilityAvailabilityReportSummary | null
+  supporterNotes: SupporterAvailabilityNoteSummary[]
+}
+
+const facilityStatusWeight = 0.7
+const supporterStatusWeight = 0.4
+const maxScore = facilityStatusWeight + supporterStatusWeight
+
+const facilityRecommendationSelectBase = {
+  id: true,
+  profile: {
+    select: {
+      name: true,
+      serviceType: true,
+    },
+  },
+  location: {
+    select: {
+      city: true,
+      accessInfo: true,
+    },
+  },
+  availabilityReports: {
+    orderBy: { validFrom: 'desc' } as const,
+    take: 1,
+    select: {
+      status: true,
+      note: true,
+      contextSummary: true,
+      validFrom: true,
+      validUntil: true,
+      updatedAt: true,
+    },
+  },
+  supporterAvailabilityNotes: {
+    orderBy: { createdAt: 'desc' } as const,
+    take: 5,
+    select: {
+      id: true,
+      status: true,
+      note: true,
+      contextSummary: true,
+      expiresAt: true,
+      createdAt: true,
+    },
+  },
+} as const
+
+type FacilityRecord = Prisma.FacilityGetPayload<{ select: typeof facilityRecommendationSelectBase }>
+
+function statusToNumeric(status: AvailabilityStatus): number {
+  switch (status) {
+    case 'available':
+      return 1
+    case 'limited':
+      return 0.5
+    default:
+      return 0
+  }
+}
+
+function scoreToStatus(score: number): AvailabilityStatus {
+  if (score >= 0.66) {
+    return 'available'
+  }
+  if (score >= 0.33) {
+    return 'limited'
+  }
+  return 'unavailable'
+}
+
+function buildAvailabilityScore(
+  report: FacilityAvailabilityReportSummary | null,
+  supporterNotes: SupporterAvailabilityNoteSummary[],
+): FacilityAvailabilityScore {
+  if (!report && supporterNotes.length === 0) {
+    return { status: null, score: null, percent: null }
+  }
+
+  const facilityScore = report ? facilityStatusWeight * statusToNumeric(report.status) : 0
+  const supporterNumericValues = supporterNotes.map((note) => statusToNumeric(note.status))
+  const supporterAverage =
+    supporterNumericValues.length > 0
+      ? supporterNumericValues.reduce((sum, value) => sum + value, 0) /
+        supporterNumericValues.length
+      : 0
+
+  const supporterScore = supporterAverage * supporterStatusWeight
+  const combinedScore = Math.min((facilityScore + supporterScore) / maxScore, 1)
+
+  const status = scoreToStatus(combinedScore)
+  const percent = Math.round(combinedScore * 100)
+
+  return {
+    status,
+    score: combinedScore,
+    percent,
+  }
+}
+
+function mapFacility(facility: FacilityRecord): FacilityRecommendation {
+  const reportRecord = facility.availabilityReports[0] ?? null
+  const report: FacilityAvailabilityReportSummary | null = reportRecord
+    ? {
+        status: availabilityStatusSchema.parse(reportRecord.status),
+        note: reportRecord.note,
+        contextSummary: reportRecord.contextSummary,
+        validFrom: reportRecord.validFrom.toISOString(),
+        validUntil: reportRecord.validUntil ? reportRecord.validUntil.toISOString() : null,
+        updatedAt: reportRecord.updatedAt.toISOString(),
+      }
+    : null
+
+  const supporterNotes: SupporterAvailabilityNoteSummary[] =
+    facility.supporterAvailabilityNotes.map((note) => ({
+      id: note.id,
+      status: availabilityStatusSchema.parse(note.status),
+      note: note.note,
+      contextSummary: note.contextSummary,
+      expiresAt: note.expiresAt.toISOString(),
+      createdAt: note.createdAt.toISOString(),
+    }))
+
+  return {
+    id: facility.id,
+    name: facility.profile?.name ?? '施設名未設定',
+    serviceType: facility.profile?.serviceType ?? null,
+    city: facility.location?.city ?? null,
+    accessInfo: facility.location?.accessInfo ?? null,
+    availability: buildAvailabilityScore(report, supporterNotes),
+    facilityReport: report,
+    supporterNotes,
+  }
 }
 
 export async function getFacilityRecommendations(
   serviceType: string,
   limit = 4,
 ): Promise<FacilityRecommendation[]> {
-  // スロットの有無に関わらず、サービス種別が一致する施設を取得
+  const now = new Date()
+  const availabilityValidityFilter = {
+    OR: [{ validUntil: null }, { validUntil: { gte: now } }],
+  } as const
+
   const facilities = await prisma.facility.findMany({
     where: {
       services: {
         some: {
-          serviceType: serviceType,
+          serviceType,
         },
       },
     },
     select: {
-      id: true,
-      profile: {
-        select: {
-          name: true,
-          serviceType: true,
-        },
+      ...facilityRecommendationSelectBase,
+      availabilityReports: {
+        ...facilityRecommendationSelectBase.availabilityReports,
+        where: availabilityValidityFilter,
       },
-      location: {
-        select: {
-          city: true,
-          accessInfo: true,
-        },
-      },
-      slots: {
-        select: {
-          status: true,
-          comment: true,
-          expiresAt: true,
-        },
+      supporterAvailabilityNotes: {
+        ...facilityRecommendationSelectBase.supporterAvailabilityNotes,
         where: {
-          OR: [{ expiresAt: null }, { expiresAt: { gte: new Date() } }],
+          expiresAt: { gte: now },
         },
-        orderBy: {
-          status: 'asc', // available -> limited -> unavailable の順
-        },
-        take: 1,
       },
     },
     take: limit,
   })
 
-  return facilities.map((facility) => ({
-    id: facility.id,
-    name: facility.profile?.name ?? '施設名未設定',
-    serviceType: facility.profile?.serviceType ?? null,
-    slotStatus: facility.slots[0]?.status ?? null,
-    slotComment: facility.slots[0]?.comment ?? null,
-    city: facility.location?.city ?? null,
-    accessInfo: facility.location?.accessInfo ?? null,
-  }))
+  return facilities.map(mapFacility)
 }
 
 export async function searchFacilitiesWithSlots(
@@ -74,7 +212,11 @@ export async function searchFacilitiesWithSlots(
     return []
   }
 
-  // スロットの有無に関わらず、サービス種別が一致する施設を取得
+  const now = new Date()
+  const availabilityValidityFilter = {
+    OR: [{ validUntil: null }, { validUntil: { gte: now } }],
+  } as const
+
   const facilities = await prisma.facility.findMany({
     where: {
       services: {
@@ -86,49 +228,20 @@ export async function searchFacilitiesWithSlots(
       },
     },
     select: {
-      id: true,
-      profile: {
-        select: {
-          name: true,
-          serviceType: true,
-        },
+      ...facilityRecommendationSelectBase,
+      availabilityReports: {
+        ...facilityRecommendationSelectBase.availabilityReports,
+        where: availabilityValidityFilter,
       },
-      location: {
-        select: {
-          city: true,
-          accessInfo: true,
-        },
-      },
-      slots: {
-        select: {
-          status: true,
-          comment: true,
-          expiresAt: true,
-        },
+      supporterAvailabilityNotes: {
+        ...facilityRecommendationSelectBase.supporterAvailabilityNotes,
         where: {
-          OR: [{ expiresAt: null }, { expiresAt: { gte: new Date() } }],
-        },
-        orderBy: {
-          status: 'asc', // available -> limited -> unavailable の順
-        },
-        take: 1,
-      },
-      services: {
-        select: {
-          serviceType: true,
+          expiresAt: { gte: now },
         },
       },
     },
     take: limit,
   })
 
-  return facilities.map((facility) => ({
-    id: facility.id,
-    name: facility.profile?.name ?? '施設名未設定',
-    serviceType: facility.profile?.serviceType ?? null,
-    slotStatus: facility.slots[0]?.status ?? null,
-    slotComment: facility.slots[0]?.comment ?? null,
-    city: facility.location?.city ?? null,
-    accessInfo: facility.location?.accessInfo ?? null,
-  }))
+  return facilities.map(mapFacility)
 }

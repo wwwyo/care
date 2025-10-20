@@ -45,9 +45,17 @@ export default async function ClientsPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {clientRecords.map((record) => {
-            if (!record.profile || !record.addresses[0]) return null
+            if (!record.profile) return null
             const profile = record.profile
             const address = record.addresses[0]
+            const genderLabel =
+              profile.gender === 'male'
+                ? '男性'
+                : profile.gender === 'female'
+                  ? '女性'
+                  : profile.gender === 'other'
+                    ? 'その他'
+                    : '未設定'
             return (
               <Card key={record.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
@@ -62,12 +70,8 @@ export default async function ClientsPage() {
                     </div>
                   </CardTitle>
                   <CardDescription>
-                    {profile.gender === 'male'
-                      ? '男性'
-                      : profile.gender === 'female'
-                        ? '女性'
-                        : 'その他'}{' '}
-                    ・ {profile.birthDate ? `${calculateAge(profile.birthDate)}歳` : '年齢未定義'}
+                    {genderLabel} ・{' '}
+                    {profile.birthDate ? `${calculateAge(profile.birthDate)}歳` : '年齢未定義'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -75,9 +79,9 @@ export default async function ClientsPage() {
                     <div className="flex items-start">
                       <span className="font-medium w-24">住所:</span>
                       <span className="flex-1">
-                        {address.prefecture || ''}
-                        {address.city || ''}
-                        {address.street || ''}
+                        {address
+                          ? `${address.prefecture || ''}${address.city || ''}${address.street || ''}`
+                          : '未登録'}
                       </span>
                     </div>
                     <div className="flex items-start">

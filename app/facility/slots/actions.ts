@@ -4,15 +4,15 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { getFacilityByStaffUserId, getFacilityStaffByUserId } from '@/infra/query/facility-query'
 import { requireRealm } from '@/lib/auth/helpers'
-import { updateSlotStatus } from '@/uc/slot/update-slot-status'
+import { recordFacilityAvailability } from '@/uc/availability/record-facility-availability'
 
 const updateSlotStatusSchema = z.object({
   status: z.enum(['available', 'limited', 'unavailable'], {
     error: '無効な空き状況が選択されました',
   }),
-  comment: z
+  note: z
     .string()
-    .max(100, 'コメントは100文字以内で入力してください')
+    .max(1000, '背景メモは1000文字以内で入力してください')
     .optional()
     .transform((val) => val || undefined),
 })
@@ -48,7 +48,7 @@ export async function updateSlotStatusAction(
   // FormDataから値を取得
   const rawData = {
     status: formData.get('status'),
-    comment: formData.get('comment') || undefined,
+    note: formData.get('note') || undefined,
   }
 
   // バリデーション
@@ -71,11 +71,11 @@ export async function updateSlotStatusAction(
     }
   }
 
-  const result = await updateSlotStatus({
+  const result = await recordFacilityAvailability({
     facilityId: facility.id,
     status: parsed.data.status,
-    comment: parsed.data.comment,
-    updatedBy: facilityStaff.id,
+    note: parsed.data.note,
+    reportedById: facilityStaff.id,
   })
 
   if ('success' in result) {

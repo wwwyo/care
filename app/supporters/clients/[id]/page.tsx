@@ -36,12 +36,12 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
   const clientRecord = await getClientById(id, supporter.tenantId)
 
-  if (!clientRecord || !clientRecord.profile || !clientRecord.addresses[0]) {
+  if (!clientRecord || !clientRecord.profile) {
     notFound()
   }
 
   const profile = clientRecord.profile
-  const address = clientRecord.addresses[0]
+  const address = clientRecord.addresses[0] ?? null
   const age = profile.birthDate ? calculateAge(profile.birthDate) : undefined
 
   // 計画書を取得
@@ -233,17 +233,21 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {address.postalCode && (
-                <p className="text-sm text-muted-foreground">〒{address.postalCode}</p>
-              )}
-              <p className="text-lg">
-                {address.prefecture || ''}
-                {address.city || ''}
-                {address.street || ''}
-              </p>
-              {address.building && <p className="text-lg">{address.building}</p>}
-            </div>
+            {address ? (
+              <div className="space-y-2">
+                {address.postalCode && (
+                  <p className="text-sm text-muted-foreground">〒{address.postalCode}</p>
+                )}
+                <p className="text-lg">
+                  {address.prefecture || ''}
+                  {address.city || ''}
+                  {address.street || ''}
+                </p>
+                {address.building && <p className="text-lg">{address.building}</p>}
+              </div>
+            ) : (
+              <p className="text-muted-foreground">住所情報は未登録です</p>
+            )}
           </CardContent>
         </Card>
 
