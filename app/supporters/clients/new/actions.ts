@@ -5,25 +5,21 @@ import { z } from 'zod'
 import { getSupporterByUserId } from '@/infra/query/supporter-query'
 import { clientRepository } from '@/infra/repositories/client-repository'
 import { requireRealm } from '@/lib/auth/helpers'
-import { phoneNumberSchema } from '@/lib/zod/phone-number'
 import { createClient } from '@/uc/client/create-client'
 
 const createClientSchema = z.object({
   name: z.string().min(1, '氏名は必須です'),
-  birthDate: z.string().optional(),
-  gender: z.enum(['male', 'female', 'other']),
-  prefecture: z.string().min(1, '都道府県は必須です'),
-  city: z.string().min(1, '市区町村は必須です'),
-  street: z.string().min(1, '番地は必須です'),
-  postalCode: z.string().optional(),
-  building: z.string().optional(),
-  phoneNumber: phoneNumberSchema,
-  disability: z.string().optional(),
-  careLevel: z.string().optional(),
-  emergencyContactName: z.string().min(1, '緊急連絡先の氏名は必須です'),
-  emergencyContactRelationship: z.string().min(1, '緊急連絡先の続柄は必須です'),
-  emergencyContactPhone: phoneNumberSchema,
-  notes: z.string().optional(),
+  nameKana: z.string().min(1, 'ふりがなは必須です'),
+  birthDate: z
+    .string()
+    .min(1, '生年月日は必須です')
+    .refine(
+      (value) => {
+        const date = new Date(value)
+        return !Number.isNaN(date.getTime())
+      },
+      { message: '有効な生年月日を入力してください' },
+    ),
 })
 
 type ActionState = {
@@ -55,20 +51,8 @@ export async function createClientAction(
   // フォームデータをオブジェクトに変換
   const rawData = {
     name: formData.get('name'),
+    nameKana: formData.get('nameKana'),
     birthDate: formData.get('birthDate'),
-    gender: formData.get('gender'),
-    prefecture: formData.get('prefecture'),
-    city: formData.get('city'),
-    street: formData.get('street'),
-    postalCode: formData.get('postalCode') || undefined,
-    building: formData.get('building') || undefined,
-    phoneNumber: formData.get('phoneNumber'),
-    disability: formData.get('disability') || undefined,
-    careLevel: formData.get('careLevel') || undefined,
-    emergencyContactName: formData.get('emergencyContactName'),
-    emergencyContactRelationship: formData.get('emergencyContactRelationship'),
-    emergencyContactPhone: formData.get('emergencyContactPhone'),
-    notes: formData.get('notes') || undefined,
   }
 
   // バリデーション
@@ -98,24 +82,8 @@ export async function createClientAction(
     {
       tenantId: supporter.tenantId,
       name: validatedData.name,
-      birthDate: validatedData.birthDate ? new Date(validatedData.birthDate) : undefined,
-      gender: validatedData.gender,
-      address: {
-        postalCode: validatedData.postalCode,
-        prefecture: validatedData.prefecture,
-        city: validatedData.city,
-        street: validatedData.street,
-        building: validatedData.building,
-      },
-      phoneNumber: validatedData.phoneNumber,
-      emergencyContact: {
-        name: validatedData.emergencyContactName,
-        relationship: validatedData.emergencyContactRelationship,
-        phoneNumber: validatedData.emergencyContactPhone,
-      },
-      disability: validatedData.disability,
-      careLevel: validatedData.careLevel,
-      notes: validatedData.notes,
+      nameKana: validatedData.nameKana,
+      birthDate: new Date(validatedData.birthDate),
     },
     clientRepository,
   )
@@ -138,5 +106,5 @@ export async function createClientAction(
 
   // 成功時はリダイレクト
   const clientId = result.client.toData().id
-  redirect(`/supporters/clients/${clientId}`)
+  redirect(`/supporters/clients/${clientId}/hearing/new`)
 }

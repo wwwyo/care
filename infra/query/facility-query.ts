@@ -9,9 +9,28 @@ const facilityWithDetailsInclude = {
     where: { contactType: 'main' },
     take: 1,
   },
-  slots: {
-    orderBy: { updatedAt: 'desc' } as const,
+  availabilityReports: {
+    where: {
+      OR: [{ validUntil: null }, { validUntil: { gte: new Date() } }],
+    },
+    orderBy: { validFrom: 'desc' } as const,
     take: 1,
+  },
+  supporterAvailabilityNotes: {
+    where: {
+      expiresAt: {
+        gte: new Date(),
+      },
+    },
+    orderBy: { createdAt: 'desc' } as const,
+    take: 5,
+    include: {
+      supporter: {
+        include: {
+          profile: true,
+        },
+      },
+    },
   },
 } satisfies Prisma.FacilityInclude
 

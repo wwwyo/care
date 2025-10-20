@@ -8,13 +8,13 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import type { SlotStatus } from '@/domain/slot/model'
+import type { AvailabilityStatus } from '@/domain/availability/status'
 import { updateSlotStatusAction } from './actions'
 import { SlotStatusButton } from './slot-status-button'
 
 export default function SlotManagementPage() {
   const [state, formAction, isPending] = useActionState(updateSlotStatusAction, null)
-  const [selectedStatus, setSelectedStatus] = useState<SlotStatus | null>(null)
+  const [selectedStatus, setSelectedStatus] = useState<AvailabilityStatus | null>(null)
 
   useEffect(() => {
     if (state?.message && !state?.fieldErrors) {
@@ -77,19 +77,19 @@ export default function SlotManagementPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <Label htmlFor="comment">コメント（任意）</Label>
+              <Label htmlFor="note">背景メモ（任意）</Label>
               <Textarea
-                id="comment"
-                name="comment"
-                defaultValue={state?.values?.comment ?? ''}
-                maxLength={100}
+                id="note"
+                name="note"
+                defaultValue={state?.values?.note ?? ''}
+                maxLength={1000}
                 rows={3}
-                placeholder="例：来月から1名受入可能"
+                placeholder="例：来月から1名受入可能／医療的ケア対応可"
               />
-              {state?.fieldErrors?.comment && (
-                <p className="text-sm text-red-500">{state.fieldErrors.comment}</p>
+              {state?.fieldErrors?.note && (
+                <p className="text-sm text-red-500">{state.fieldErrors.note}</p>
               )}
-              <p className="text-sm text-muted-foreground">100文字以内</p>
+              <p className="text-sm text-muted-foreground">1000文字以内</p>
             </div>
           </CardContent>
         </Card>

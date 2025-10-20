@@ -111,6 +111,51 @@ const SpeechRecognitionComponent = (
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const [isGeneratingMemo, setIsGeneratingMemo] = useState(false)
   const lastGeneratedCountRef = useRef(0)
+  const hasInitializedSupportCheck = useRef(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || hasInitializedSupportCheck.current) {
+      return
+    }
+
+    hasInitializedSupportCheck.current = true
+
+    const isLocalhost =
+      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    const isSecureContext = window.location.protocol === 'https:' || isLocalhost
+
+    if (!isSecureContext) {
+      setIsSupported(false)
+      setErrorMessage('音声認識はHTTPS環境でのみ利用できます')
+      return
+    }
+
+    const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SpeechRecognitionClass) {
+      setIsSupported(false)
+      setErrorMessage('お使いのブラウザは Web Speech API をサポートしていません。')
+      return
+    }
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setIsSupported(false)
+      setErrorMessage('マイクデバイスが利用できません。')
+      return
+    }
+
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then((stream) => {
+        stream.getTracks().forEach((track) => track.stop())
+        setIsSupported(true)
+        setErrorMessage('')
+      })
+      .catch((error: unknown) => {
+        console.error('Failed to get microphone permission', error)
+        setIsSupported(false)
+        setErrorMessage('マイクの使用許可が必要です')
+      })
+  }, [])
 
   const stopRecognition = useCallback(() => {
     if (recognitionRef.current) {
@@ -124,6 +169,7 @@ const SpeechRecognitionComponent = (
 
   const startRecognition = useCallback(() => {
     if (!isSupported) return
+    if (typeof window === 'undefined') return
 
     const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SpeechRecognitionClass) return
@@ -206,12 +252,24 @@ const SpeechRecognitionComponent = (
   }, [isSupported, onTranscriptionChange, onTranscriptionUpdate, stopRecognition])
 
   const toggleListening = useCallback(() => {
+    if (!isSupported) {
+      if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname
+        const protocol = window.location.protocol
+        const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1'
+        if (protocol !== 'https:' && !isLocalhost) {
+          setErrorMessage('音声認識はHTTPS環境でのみ利用できます')
+          setIsSupported(false)
+        }
+      }
+      return
+    }
     if (isListeningRef.current) {
       stopRecognition()
     } else {
       startRecognition()
     }
-  }, [startRecognition, stopRecognition])
+  }, [isSupported, startRecognition, stopRecognition])
 
   useImperativeHandle(
     ref,
@@ -299,7 +357,9 @@ const SpeechRecognitionComponent = (
         <div className="rounded-xl border border-border/60 p-4 text-sm text-warning-foreground">
           <p className="font-semibold text-warning">⚠️ 文字起こしを利用できません</p>
           <p className="mt-2 text-muted-foreground">
-            お使いのブラウザは Web Speech API をサポートしていません。
+            {errorMessage
+              ? errorMessage
+              : 'お使いのブラウザは Web Speech API をサポートしていません。'}
           </p>
           <ul className="mt-2 ml-4 list-disc space-y-1 text-muted-foreground">
             <li>Google Chrome（推奨）</li>

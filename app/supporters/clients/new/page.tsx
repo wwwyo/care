@@ -3,25 +3,21 @@
 import { ArrowLeft } from 'lucide-react'
 import Form from 'next/form'
 import Link from 'next/link'
-import { useActionState, useEffect } from 'react'
+import type { KeyboardEvent } from 'react'
+import { useActionState, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
+import { romajiToHiragana } from '@/lib/romaji-to-hiragana'
 import { createClientAction } from './actions'
 
 export default function NewClientPage() {
   const [state, formAction, isPending] = useActionState(createClientAction, null)
+  const [name, setName] = useState(state?.values?.name ?? '')
+  const [nameKana, setNameKana] = useState(state?.values?.nameKana ?? '')
+  const [birthDate, setBirthDate] = useState(state?.values?.birthDate ?? '')
 
   useEffect(() => {
     if (state?.message && !state?.fieldErrors) {
@@ -29,6 +25,30 @@ export default function NewClientPage() {
       console.error(state)
     }
   }, [state])
+
+  const handleNameKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.metaKey || event.ctrlKey || event.altKey) {
+      return
+    }
+
+    const { key } = event
+
+    if (key === 'Backspace' || key === 'Delete') {
+      setNameKana((prev) => {
+        const next = prev.slice(0, -1)
+        return romajiToHiragana(next)
+      })
+      return
+    }
+
+    if (key === ' ' || key === '-' || /^[a-zA-Z]$/.test(key)) {
+      setNameKana((prev) => {
+        const next = `${prev}${key.toLowerCase()}`
+        return romajiToHiragana(next)
+      })
+      return
+    }
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -55,8 +75,10 @@ export default function NewClientPage() {
                   id="name"
                   name="name"
                   required
+                  value={name}
+                  onKeyDown={handleNameKeyDown}
+                  onChange={(event) => setName(event.target.value)}
                   placeholder="山田太郎"
-                  defaultValue={state?.values?.name ?? ''}
                 />
                 {state?.fieldErrors?.name && (
                   <p className="text-sm text-red-500">{state.fieldErrors.name}</p>
@@ -64,221 +86,43 @@ export default function NewClientPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="birthDate">生年月日</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="nameKana">ふりがな *</Label>
+                  <p className="text-xs text-muted-foreground">
+                    氏名から自動入力されますが、必要に応じて編集できます
+                  </p>
+                </div>
+                <Input
+                  id="nameKana"
+                  name="nameKana"
+                  required
+                  value={nameKana}
+                  onChange={(event) => {
+                    setNameKana(event.target.value)
+                  }}
+                  inputMode="text"
+                  autoComplete="off"
+                  spellCheck={false}
+                  placeholder="やまだたろう"
+                />
+                {state?.fieldErrors?.nameKana && (
+                  <p className="text-sm text-red-500">{state.fieldErrors.nameKana}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="birthDate">生年月日 *</Label>
                 <Input
                   id="birthDate"
                   name="birthDate"
                   type="date"
-                  defaultValue={state?.values?.birthDate ?? ''}
+                  required
+                  value={birthDate}
+                  onChange={(event) => setBirthDate(event.target.value)}
                 />
                 {state?.fieldErrors?.birthDate && (
                   <p className="text-sm text-red-500">{state.fieldErrors.birthDate}</p>
                 )}
-              </div>
-
-              <div className="space-y-2">
-                <Label>性別 *</Label>
-                <RadioGroup name="gender" defaultValue={state?.values?.gender ?? 'male'}>
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="male" id="male" />
-                      <Label htmlFor="male">男性</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="female" id="female" />
-                      <Label htmlFor="female">女性</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="other" id="other" />
-                      <Label htmlFor="other">その他</Label>
-                    </div>
-                  </div>
-                </RadioGroup>
-                {state?.fieldErrors?.gender && (
-                  <p className="text-sm text-red-500">{state.fieldErrors.gender}</p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="postalCode">郵便番号</Label>
-                  <Input
-                    id="postalCode"
-                    name="postalCode"
-                    placeholder="123-4567"
-                    defaultValue={state?.values?.postalCode ?? ''}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="prefecture">都道府県 *</Label>
-                  <Select name="prefecture" required defaultValue={state?.values?.prefecture}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="選択してください" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="東京都">東京都</SelectItem>
-                      <SelectItem value="神奈川県">神奈川県</SelectItem>
-                      <SelectItem value="埼玉県">埼玉県</SelectItem>
-                      <SelectItem value="千葉県">千葉県</SelectItem>
-                      <SelectItem value="大阪府">大阪府</SelectItem>
-                      <SelectItem value="愛知県">愛知県</SelectItem>
-                      <SelectItem value="福岡県">福岡県</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {state?.fieldErrors?.prefecture && (
-                    <p className="text-sm text-red-500">{state.fieldErrors.prefecture}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="city">市区町村 *</Label>
-                  <Input
-                    id="city"
-                    name="city"
-                    required
-                    placeholder="世田谷区"
-                    defaultValue={state?.values?.city ?? ''}
-                  />
-                  {state?.fieldErrors?.city && (
-                    <p className="text-sm text-red-500">{state.fieldErrors.city}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="street">番地 *</Label>
-                  <Input
-                    id="street"
-                    name="street"
-                    required
-                    placeholder="1-2-3"
-                    defaultValue={state?.values?.street ?? ''}
-                  />
-                  {state?.fieldErrors?.street && (
-                    <p className="text-sm text-red-500">{state.fieldErrors.street}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="building">建物名・部屋番号</Label>
-                <Input
-                  id="building"
-                  name="building"
-                  placeholder="○○マンション 101号室"
-                  defaultValue={state?.values?.building ?? ''}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phoneNumber">電話番号 *</Label>
-                <Input
-                  id="phoneNumber"
-                  name="phoneNumber"
-                  type="tel"
-                  required
-                  placeholder="090-1234-5678"
-                  defaultValue={state?.values?.phoneNumber ?? ''}
-                />
-                {state?.fieldErrors?.phoneNumber && (
-                  <p className="text-sm text-red-500">{state.fieldErrors.phoneNumber}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="disability">障害種別</Label>
-                <Select name="disability" defaultValue={state?.values?.disability}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="選択してください" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="身体障害">身体障害</SelectItem>
-                    <SelectItem value="知的障害">知的障害</SelectItem>
-                    <SelectItem value="精神障害">精神障害</SelectItem>
-                    <SelectItem value="発達障害">発達障害</SelectItem>
-                    <SelectItem value="難病">難病</SelectItem>
-                    <SelectItem value="その他">その他</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="careLevel">障害支援区分</Label>
-                <Select name="careLevel" defaultValue={state?.values?.careLevel}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="選択してください" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="区分1">区分1</SelectItem>
-                    <SelectItem value="区分2">区分2</SelectItem>
-                    <SelectItem value="区分3">区分3</SelectItem>
-                    <SelectItem value="区分4">区分4</SelectItem>
-                    <SelectItem value="区分5">区分5</SelectItem>
-                    <SelectItem value="区分6">区分6</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-4 border-t pt-4">
-                <h3 className="font-medium">緊急連絡先</h3>
-
-                <div className="space-y-2">
-                  <Label htmlFor="emergencyContactName">氏名 *</Label>
-                  <Input
-                    id="emergencyContactName"
-                    name="emergencyContactName"
-                    required
-                    placeholder="山田花子"
-                    defaultValue={state?.values?.emergencyContactName ?? ''}
-                  />
-                  {state?.fieldErrors?.emergencyContactName && (
-                    <p className="text-sm text-red-500">{state.fieldErrors.emergencyContactName}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="emergencyContactRelationship">続柄 *</Label>
-                  <Input
-                    id="emergencyContactRelationship"
-                    name="emergencyContactRelationship"
-                    required
-                    placeholder="母"
-                    defaultValue={state?.values?.emergencyContactRelationship ?? ''}
-                  />
-                  {state?.fieldErrors?.emergencyContactRelationship && (
-                    <p className="text-sm text-red-500">
-                      {state.fieldErrors.emergencyContactRelationship}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="emergencyContactPhone">電話番号 *</Label>
-                  <Input
-                    id="emergencyContactPhone"
-                    name="emergencyContactPhone"
-                    type="tel"
-                    required
-                    placeholder="090-8765-4321"
-                    defaultValue={state?.values?.emergencyContactPhone ?? ''}
-                  />
-                  {state?.fieldErrors?.emergencyContactPhone && (
-                    <p className="text-sm text-red-500">
-                      {state.fieldErrors.emergencyContactPhone}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="notes">備考</Label>
-                <Textarea
-                  id="notes"
-                  name="notes"
-                  rows={4}
-                  placeholder="特記事項があれば入力してください"
-                  defaultValue={state?.values?.notes ?? ''}
-                />
               </div>
             </div>
 

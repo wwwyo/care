@@ -84,10 +84,11 @@ export function PlanServiceFormWithRecommendations({
             id: f.id,
             name: f.name,
             serviceType: null,
-            slotStatus: null,
-            slotComment: null,
             city: null,
             accessInfo: null,
+            availability: { status: null, score: null, percent: null },
+            facilityReport: null,
+            supporterNotes: [],
           }))
         }
       })

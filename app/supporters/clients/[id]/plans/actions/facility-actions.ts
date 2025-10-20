@@ -1,12 +1,13 @@
 'use server'
 
 import { z } from 'zod'
+import { availabilityStatusSchema } from '@/domain/availability/status'
 import {
   type FacilityRecommendation,
   getFacilityRecommendations,
 } from '@/infra/query/facility-recommendations'
 import { prisma } from '@/lib/prisma'
-import { updateSlotStatus } from '@/uc/slot/update-slot-status'
+import { recordSupporterAvailability } from '@/uc/availability/record-supporter-availability'
 
 export async function fetchFacilityRecommendations(
   serviceType: string,
@@ -20,7 +21,31 @@ export async function fetchFacilityRecommendations(
   }
 }
 
-export async function getFacilityDetail(facilityId: string) {
+export type FacilityDetailData = {
+  id: string
+  name: string
+  serviceType: string | null
+  facilityReport: {
+    status: ReturnType<typeof availabilityStatusSchema.parse>
+    note: string | null
+    contextSummary: string | null
+    updatedAt: string
+  } | null
+  supporterNotes: Array<{
+    id: string
+    status: ReturnType<typeof availabilityStatusSchema.parse>
+    note: string | null
+    contextSummary: string | null
+    expiresAt: string
+    createdAt: string
+  }>
+  city: string | null
+  accessInfo: string | null
+}
+
+export type FacilityDetailResponse = { facility: FacilityDetailData } | { error: string }
+
+export async function getFacilityDetail(facilityId: string): Promise<FacilityDetailResponse> {
   try {
     const facility = await prisma.facility.findUnique({
       where: { id: facilityId },
@@ -38,18 +63,16 @@ export async function getFacilityDetail(facilityId: string) {
             accessInfo: true,
           },
         },
-        slots: {
-          select: {
-            status: true,
-            comment: true,
-          },
-          where: {
-            OR: [{ expiresAt: null }, { expiresAt: { gte: new Date() } }],
-          },
-          orderBy: {
-            status: 'asc',
-          },
+        availabilityReports: {
+          orderBy: { validFrom: 'desc' },
           take: 1,
+        },
+        supporterAvailabilityNotes: {
+          where: {
+            expiresAt: { gte: new Date() },
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 5,
         },
       },
     })
@@ -63,8 +86,22 @@ export async function getFacilityDetail(facilityId: string) {
         id: facility.id,
         name: facility.profile?.name ?? '施設名未設定',
         serviceType: facility.profile?.serviceType ?? null,
-        slotStatus: facility.slots[0]?.status ?? null,
-        slotComment: facility.slots[0]?.comment ?? null,
+        facilityReport: facility.availabilityReports[0]
+          ? {
+              status: availabilityStatusSchema.parse(facility.availabilityReports[0].status),
+              note: facility.availabilityReports[0].note,
+              contextSummary: facility.availabilityReports[0].contextSummary,
+              updatedAt: facility.availabilityReports[0].updatedAt.toISOString(),
+            }
+          : null,
+        supporterNotes: facility.supporterAvailabilityNotes.map((note) => ({
+          id: note.id,
+          status: availabilityStatusSchema.parse(note.status),
+          note: note.note,
+          contextSummary: note.contextSummary,
+          expiresAt: note.expiresAt.toISOString(),
+          createdAt: note.createdAt.toISOString(),
+        })),
         city: facility.location?.city ?? null,
         accessInfo: facility.location?.accessInfo ?? null,
       },
@@ -75,26 +112,26 @@ export async function getFacilityDetail(facilityId: string) {
   }
 }
 
-const updateSlotSchema = z.object({
+const recordSupporterAvailabilitySchema = z.object({
   facilityId: z.string().min(1, '施設IDが必要です'),
+  supporterId: z.string().min(1, '相談員IDが必要です'),
   status: z.enum(['available', 'limited', 'unavailable'], {
     message: '有効な状態を選択してください',
   }),
-  comment: z.string().optional(),
+  note: z.string().trim().max(1000, '背景メモは1000文字以内で入力してください').optional(),
+  planId: z.string().trim().optional(),
+  clientId: z.string().trim().optional(),
 })
 
-export async function updateFacilitySlotAction(_prevState: unknown, formData: FormData) {
+export async function recordSupporterAvailabilityAction(_prevState: unknown, formData: FormData) {
   try {
-    // TODO: 認証機能を実装後に追加
-    // const session = await auth()
-    // if (!session?.user) {
-    //   redirect('/login')
-    // }
-
-    const parsed = updateSlotSchema.safeParse({
+    const parsed = recordSupporterAvailabilitySchema.safeParse({
       facilityId: formData.get('facilityId'),
+      supporterId: formData.get('supporterId'),
       status: formData.get('status'),
-      comment: formData.get('comment') || undefined,
+      note: formData.get('note') || undefined,
+      planId: formData.get('planId') || undefined,
+      clientId: formData.get('clientId') || undefined,
     })
 
     if (!parsed.success) {
@@ -102,13 +139,17 @@ export async function updateFacilitySlotAction(_prevState: unknown, formData: Fo
         error: parsed.error.issues[0]?.message ?? 'バリデーションエラーが発生しました',
         facilityId: formData.get('facilityId')?.toString(),
         status: formData.get('status')?.toString(),
-        comment: formData.get('comment')?.toString(),
+        note: formData.get('note')?.toString(),
       }
     }
 
-    const result = await updateSlotStatus({
-      ...parsed.data,
-      updatedBy: null, // TODO: 認証機能実装後に session.user.id に変更
+    const result = await recordSupporterAvailability({
+      facilityId: parsed.data.facilityId,
+      supporterId: parsed.data.supporterId,
+      status: parsed.data.status,
+      note: parsed.data.note,
+      planId: parsed.data.planId,
+      clientId: parsed.data.clientId,
     })
 
     if ('type' in result) {
@@ -116,18 +157,18 @@ export async function updateFacilitySlotAction(_prevState: unknown, formData: Fo
         error: result.message,
         facilityId: parsed.data.facilityId,
         status: parsed.data.status,
-        comment: parsed.data.comment,
+        note: parsed.data.note,
       }
     }
 
     return {
       success: true,
-      message: '空き状況を更新しました',
+      message: '空き状況メモを登録しました',
     }
   } catch (error) {
-    console.error('Failed to update slot status:', error)
+    console.error('Failed to record supporter availability:', error)
     return {
-      error: '空き状況の更新に失敗しました',
+      error: '空き状況メモの登録に失敗しました',
     }
   }
 }

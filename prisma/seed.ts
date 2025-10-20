@@ -13,8 +13,8 @@ async function main() {
     prisma.inquiry.deleteMany(),
     prisma.consentGrant.deleteMany(),
     prisma.consent.deleteMany(),
-    prisma.slotDetail.deleteMany(),
-    prisma.slot.deleteMany(),
+    prisma.supporterAvailabilityNote.deleteMany(),
+    prisma.facilityAvailabilityReport.deleteMany(),
     prisma.planCustomField.deleteMany(),
     prisma.planAccessibilityRequirement.deleteMany(),
     prisma.planVersion.deleteMany(),
@@ -308,19 +308,18 @@ async function main() {
     },
   })
 
-  // 空き状況作成
-  await prisma.slot.create({
+  // 空き状況レポート作成
+  await prisma.facilityAvailabilityReport.create({
     data: {
       facilityId: facility1.id,
       status: 'available',
-      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30日後
-      updatedBy: facilityStaff1.id,
-      details: {
-        create: [
-          { detailType: 'available_days', detailValue: '月水金' },
-          { detailType: 'time_slot', detailValue: '9:00-16:00' },
-        ],
-      },
+      validFrom: new Date(),
+      validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      note: '平日の日中枠に余裕があり、医療的ケアにも対応可能です。',
+      contextSummary: '日中活動で最大3名まで受入可能',
+      contextDetails: [],
+      confidence: 80,
+      reportedById: facilityStaff1.id,
     },
   })
 
@@ -336,18 +335,17 @@ async function main() {
     },
   })
 
-  await prisma.slot.create({
+  await prisma.facilityAvailabilityReport.create({
     data: {
       facilityId: facility2.id,
       status: 'limited',
-      expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14日後
-      updatedBy: facilityStaff2.id,
-      details: {
-        create: {
-          detailType: 'note',
-          detailValue: '残り2名まで受け入れ可能',
-        },
-      },
+      validFrom: new Date(),
+      validUntil: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+      note: '午後枠は調整可能だが重度対応は不可。',
+      contextSummary: '午後帯のみ2名まで受入可能',
+      contextDetails: [],
+      confidence: 60,
+      reportedById: facilityStaff2.id,
     },
   })
 
@@ -406,6 +404,22 @@ async function main() {
     },
   })
 
+  // 相談員側空き状況メモ
+  await prisma.supporterAvailabilityNote.create({
+    data: {
+      facilityId: facility1.id,
+      supporterId: supporter1.id,
+      planId: plan1.id,
+      clientId: client1.id,
+      status: 'limited',
+      intent: 'pre_inquiry',
+      note: '受入条件について面談予定。医療的ケアは条件付きで可とのこと。',
+      contextSummary: '医療的ケアは条件付き対応',
+      contextDetails: [],
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    },
+  })
+
   // プランバージョン作成（プラン2用）
   const planVersion2 = await prisma.planVersion.create({
     data: {
@@ -438,6 +452,21 @@ async function main() {
       accessibilityRequirements: {
         create: [{ requirementType: 'no_stairs', details: '階段の昇降が困難' }],
       },
+    },
+  })
+
+  await prisma.supporterAvailabilityNote.create({
+    data: {
+      facilityId: facility2.id,
+      supporterId: supporter2.id,
+      planId: plan2.id,
+      clientId: client2.id,
+      status: 'unavailable',
+      intent: 'post_meeting',
+      note: '現在は満床だが、来月以降空きが出るかもしれないとの回答。',
+      contextSummary: '満床だが翌月に空き予定',
+      contextDetails: [],
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     },
   })
 

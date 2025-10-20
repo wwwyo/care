@@ -28,7 +28,7 @@ export default async function FacilityDashboard() {
 
   // Prismaのデータ構造から必要な情報を取得
   const mainContact = facility.contacts[0]
-  const latestSlot = facility.slots[0]
+  const latestReport = facility.availabilityReports[0]
   const address = facility.location
     ? [
         facility.location.prefecture,
@@ -58,9 +58,9 @@ export default async function FacilityDashboard() {
           </CardHeader>
           <CardContent>
             <SlotStatusDisplay
-              status={latestSlot?.status ?? null}
-              comment={latestSlot?.comment ?? null}
-              updatedAt={latestSlot?.updatedAt ?? null}
+              status={latestReport?.status ?? null}
+              note={latestReport?.note ?? latestReport?.contextSummary ?? null}
+              updatedAt={latestReport?.updatedAt ?? null}
             />
             <Button asChild className="w-full mt-4">
               <Link href="/facility/slots">空き状況を更新</Link>

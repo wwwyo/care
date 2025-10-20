@@ -99,11 +99,7 @@ export async function updateClientAction(
 
   // 既存のクライアントを取得
   const existingClientRecord = await getClientById(validatedData.id, supporter.tenantId)
-  if (
-    !existingClientRecord ||
-    !existingClientRecord.profile ||
-    !existingClientRecord.addresses[0]
-  ) {
+  if (!existingClientRecord || !existingClientRecord.profile) {
     return {
       type: 'error' as const,
       message: '利用者が見つかりません',
@@ -113,26 +109,37 @@ export async function updateClientAction(
 
   // Prismaの型からドメインモデルに変換
   const profile = existingClientRecord.profile
-  const address = existingClientRecord.addresses[0]
+  const primaryAddress = existingClientRecord.addresses[0]
+  const addressData =
+    primaryAddress && primaryAddress.prefecture && primaryAddress.city
+      ? {
+          postalCode: primaryAddress.postalCode ?? undefined,
+          prefecture: primaryAddress.prefecture,
+          city: primaryAddress.city,
+          street: primaryAddress.street ?? undefined,
+          building: primaryAddress.building ?? undefined,
+        }
+      : undefined
+
   const clientData: ClientData = {
     id: existingClientRecord.id,
     tenantId: existingClientRecord.tenantId,
     name: profile.name,
+    nameKana: profile.nameKana,
     birthDate: profile.birthDate ?? undefined,
-    gender: (profile.gender || 'other') as 'male' | 'female' | 'other',
-    address: {
-      postalCode: address.postalCode || undefined,
-      prefecture: address.prefecture || '',
-      city: address.city || '',
-      street: address.street || '',
-      building: address.building || undefined,
-    },
-    phoneNumber: profile.phone || '',
-    emergencyContact: {
-      name: profile.emergencyContactName || '',
-      relationship: profile.emergencyContactRelation || '',
-      phoneNumber: profile.emergencyContactPhone || '',
-    },
+    gender: (profile.gender || null) as 'male' | 'female' | 'other' | null,
+    address: addressData,
+    phoneNumber: profile.phone || undefined,
+    emergencyContact:
+      profile.emergencyContactName ||
+      profile.emergencyContactRelation ||
+      profile.emergencyContactPhone
+        ? {
+            name: profile.emergencyContactName || '',
+            relationship: profile.emergencyContactRelation || '',
+            phoneNumber: profile.emergencyContactPhone || '',
+          }
+        : undefined,
     disability: profile.disability || undefined,
     careLevel: profile.careLevel || undefined,
     notes: profile.notes || undefined,

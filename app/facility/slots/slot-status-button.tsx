@@ -1,15 +1,15 @@
 'use client'
 
-import type { SlotStatus } from '@/domain/slot/model'
+import type { AvailabilityStatus } from '@/domain/availability/status'
 import { cn } from '@/lib/utils'
 
 type SlotStatusButtonProps = {
-  status: SlotStatus
+  status: AvailabilityStatus
   selected: boolean
   onClick: () => void
 }
 
-const statusConfig: Record<SlotStatus, { emoji: string; label: string; color: string }> = {
+const statusConfig: Record<AvailabilityStatus, { emoji: string; label: string; color: string }> = {
   available: {
     emoji: '🟢',
     label: '空きあり',

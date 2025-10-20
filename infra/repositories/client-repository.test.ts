@@ -161,8 +161,9 @@ describe.skip('ClientRepository', () => {
       expect(found).not.toBeNull()
       if (!found) return
 
-      expect(found.toData().name).toBe('田中一郎')
-      expect(found.toData().address.city).toBe('千葉市')
+      const foundData = found.toData()
+      expect(foundData.name).toBe('田中一郎')
+      expect(foundData.address?.city).toBe('千葉市')
     })
 
     it('存在しないIDの場合nullを返す', async () => {

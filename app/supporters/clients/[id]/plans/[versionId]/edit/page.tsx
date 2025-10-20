@@ -92,6 +92,7 @@ export default async function EditPlanPage({ params }: Props) {
         planId={plan.id}
         versionId={latestVersion.id}
         clientId={clientId}
+        supporterId={supporter.id}
         initialData={{
           desiredLife: latestVersion.desiredLife || '',
           troubles: latestVersion.troubles || '',
