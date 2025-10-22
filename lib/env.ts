@@ -3,6 +3,7 @@ import { z } from 'zod'
 const envSchema = z.object({
   // Database
   DATABASE_URL: z.string().url(),
+  DIRECT_URL: z.string().url(),
 
   // Auth
   BETTER_AUTH_SECRET: z.string().min(1),
@@ -20,6 +21,7 @@ const envSchema = z.object({
 
 const envResult = envSchema.safeParse({
   DATABASE_URL: process.env.DATABASE_URL,
+  DIRECT_URL: process.env.DIRECT_URL,
   BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
   BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,

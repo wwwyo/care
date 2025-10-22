@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { prisma } from '@/lib/prisma'
 import { ConsentForm } from './consent-form'
@@ -77,12 +78,17 @@ export default async function PublicPlanPage({ params }: { params: { planId: str
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">サービス等利用計画書</h1>
-          <p className="text-gray-600">利用者: {clientName} 様</p>
-          <p className="text-sm text-gray-500">
-            作成日: {new Date(currentVersion.createdAt).toLocaleDateString('ja-JP')}
-          </p>
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">サービス等利用計画書</h1>
+            <p className="text-gray-600">利用者: {clientName} 様</p>
+            <p className="text-sm text-gray-500">
+              作成日: {new Date(currentVersion.createdAt).toLocaleDateString('ja-JP')}
+            </p>
+          </div>
+          <Button asChild variant="default">
+            <a href={`/api/plans/${planId}/download`}>Excelでダウンロード</a>
+          </Button>
         </div>
 
         {/* 希望する生活 */}

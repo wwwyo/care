@@ -18,7 +18,6 @@ interface NewHearingMemoPageProps {
 }
 
 const SUMMARY_TEMPLATES: Array<{ slug: string; title: string }> = [
-  { slug: 'support-history', title: '支援経過' },
   { slug: 'current-status', title: '現状' },
   { slug: 'challenges', title: '課題' },
   { slug: 'family-tree', title: '家系図' },

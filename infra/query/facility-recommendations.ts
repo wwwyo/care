@@ -1,6 +1,7 @@
-import { type AvailabilityStatus, availabilityStatusSchema } from '@/domain/availability/status'
+import { type AvailabilityStatus, mapStatus } from '@/domain/availability/status'
 import type { Prisma } from '@/lib/generated/prisma'
 import { prisma } from '@/lib/prisma'
+import type { ServiceTypeValue } from '@/domain/facility/service-type'
 
 export type FacilityAvailabilityScore = {
   status: AvailabilityStatus | null
@@ -142,7 +143,7 @@ function mapFacility(facility: FacilityRecord): FacilityRecommendation {
   const reportRecord = facility.availabilityReports[0] ?? null
   const report: FacilityAvailabilityReportSummary | null = reportRecord
     ? {
-        status: availabilityStatusSchema.parse(reportRecord.status),
+        status: mapStatus(reportRecord.status),
         note: reportRecord.note,
         contextSummary: reportRecord.contextSummary,
         validFrom: reportRecord.validFrom.toISOString(),
@@ -154,7 +155,7 @@ function mapFacility(facility: FacilityRecord): FacilityRecommendation {
   const supporterNotes: SupporterAvailabilityNoteSummary[] =
     facility.supporterAvailabilityNotes.map((note) => ({
       id: note.id,
-      status: availabilityStatusSchema.parse(note.status),
+      status: mapStatus(note.status),
       note: note.note,
       contextSummary: note.contextSummary,
       expiresAt: note.expiresAt.toISOString(),
@@ -174,7 +175,7 @@ function mapFacility(facility: FacilityRecord): FacilityRecommendation {
 }
 
 export async function getFacilityRecommendations(
-  serviceType: string,
+  serviceType: ServiceTypeValue,
   limit = 4,
 ): Promise<FacilityRecommendation[]> {
   const now = new Date()
@@ -210,7 +211,7 @@ export async function getFacilityRecommendations(
 }
 
 export async function searchFacilitiesWithSlots(
-  serviceTypes: string[],
+  serviceTypes: ServiceTypeValue[],
   limit = 12,
 ): Promise<FacilityRecommendation[]> {
   if (serviceTypes.length === 0) {

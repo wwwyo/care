@@ -4,7 +4,7 @@ import { openai } from '@ai-sdk/openai'
 import { generateText } from 'ai'
 import type { TranscriptionItem } from './speech-recognition'
 
-const model = openai('gpt-5-nano') // コスト効率の良い高性能モデル
+const model = openai('gpt-5-mini') // コスト効率の良い高性能モデル
 
 type GenerateMemoResult = { success: true; memo: string } | { type: 'Error'; message: string }
 
@@ -42,7 +42,8 @@ export async function generateMemoFromTranscription(
       return { type: 'Error', message: '文字起こしデータがありません' }
     }
 
-    const transcriptionText = transcription
+    const recentSegments = transcription.slice(-3)
+    const transcriptionText = recentSegments
       .map((item) => {
         const time = new Date(item.timestamp).toLocaleTimeString('ja-JP')
         return `[${time}] ${item.text}`
@@ -51,7 +52,7 @@ export async function generateMemoFromTranscription(
 
     const prompt = `福祉相談の文字起こしから、重要な情報を整理してください。
 
-文字起こし内容（最新5件）:
+文字起こし内容（最新${recentSegments.length}件）:
 ${transcriptionText}
 
 ${
@@ -217,7 +218,7 @@ ${sectionDefinitions}
 - 新しい情報がない場合は既存の内容を保つ
 - JSON配列のみで返答し、ペイロードは以下の形式とする
 [
-  { "slug": "support-history", "title": "支援経過", "content": "本文" },
+  { "slug": "current-status", "title": "現状", "content": "本文" },
   ...
 ]
 - slugが入力でnullの場合は出力もnullのまま
