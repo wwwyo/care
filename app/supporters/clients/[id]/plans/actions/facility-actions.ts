@@ -2,6 +2,7 @@
 
 import { z } from 'zod'
 import { availabilityStatusSchema } from '@/domain/availability/status'
+import { resolveServiceTypeValue } from '@/domain/facility/service-type'
 import {
   type FacilityRecommendation,
   getFacilityRecommendations,
@@ -12,8 +13,22 @@ import { recordSupporterAvailability } from '@/uc/availability/record-supporter-
 export async function fetchFacilityRecommendations(
   serviceType: string,
 ): Promise<{ facilities: FacilityRecommendation[] } | { error: string }> {
+  console.log('[fetchFacilityRecommendations] start', { serviceType })
   try {
-    const facilities = await getFacilityRecommendations(serviceType)
+    const resolvedServiceType = resolveServiceTypeValue(serviceType)
+    if (!resolvedServiceType) {
+      console.error('[fetchFacilityRecommendations] unsupported service type label', {
+        serviceType,
+      })
+      return { error: '施設の取得に失敗しました' }
+    }
+
+    const facilities = await getFacilityRecommendations(resolvedServiceType)
+    console.log('[fetchFacilityRecommendations] success', {
+      serviceType,
+      resolvedServiceType,
+      count: facilities.length,
+    })
     return { facilities }
   } catch (error) {
     console.error('Failed to fetch facility recommendations:', error)

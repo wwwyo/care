@@ -86,7 +86,7 @@ export default async function PublicPlanPage({ params }: { params: { planId: str
               作成日: {new Date(currentVersion.createdAt).toLocaleDateString('ja-JP')}
             </p>
           </div>
-          <Button asChild variant="secondary">
+          <Button asChild variant="default">
             <a href={`/api/plans/${planId}/download`}>Excelでダウンロード</a>
           </Button>
         </div>
