@@ -2,6 +2,7 @@
 
 import { z } from 'zod'
 import { availabilityStatusSchema } from '@/domain/availability/status'
+import { resolveServiceTypeValue } from '@/domain/facility/service-type'
 import {
   type FacilityRecommendation,
   getFacilityRecommendations,
@@ -12,8 +13,22 @@ import { recordSupporterAvailability } from '@/uc/availability/record-supporter-
 export async function fetchFacilityRecommendations(
   serviceType: string,
 ): Promise<{ facilities: FacilityRecommendation[] } | { error: string }> {
+  console.log('[fetchFacilityRecommendations] start', { serviceType })
   try {
-    const facilities = await getFacilityRecommendations(serviceType)
+    const resolvedServiceType = resolveServiceTypeValue(serviceType)
+    if (!resolvedServiceType) {
+      console.error('[fetchFacilityRecommendations] unsupported service type label', {
+        serviceType,
+      })
+      return { error: '施設の取得に失敗しました' }
+    }
+
+    const facilities = await getFacilityRecommendations(resolvedServiceType)
+    console.log('[fetchFacilityRecommendations] success', {
+      serviceType,
+      resolvedServiceType,
+      count: facilities.length,
+    })
     return { facilities }
   } catch (error) {
     console.error('Failed to fetch facility recommendations:', error)
@@ -39,7 +54,7 @@ export type FacilityDetailData = {
     expiresAt: string
     createdAt: string
   }>
-  city: string | null
+  addressCity: string | null
   accessInfo: string | null
 }
 
@@ -54,12 +69,17 @@ export async function getFacilityDetail(facilityId: string): Promise<FacilityDet
         profile: {
           select: {
             name: true,
+          },
+        },
+        services: {
+          select: {
             serviceType: true,
           },
+          take: 1,
         },
         location: {
           select: {
-            city: true,
+            addressCity: true,
             accessInfo: true,
           },
         },
@@ -85,7 +105,7 @@ export async function getFacilityDetail(facilityId: string): Promise<FacilityDet
       facility: {
         id: facility.id,
         name: facility.profile?.name ?? '施設名未設定',
-        serviceType: facility.profile?.serviceType ?? null,
+        serviceType: facility.services[0]?.serviceType ?? null,
         facilityReport: facility.availabilityReports[0]
           ? {
               status: availabilityStatusSchema.parse(facility.availabilityReports[0].status),
@@ -102,7 +122,7 @@ export async function getFacilityDetail(facilityId: string): Promise<FacilityDet
           expiresAt: note.expiresAt.toISOString(),
           createdAt: note.createdAt.toISOString(),
         })),
-        city: facility.location?.city ?? null,
+        addressCity: facility.location?.addressCity ?? null,
         accessInfo: facility.location?.accessInfo ?? null,
       },
     }

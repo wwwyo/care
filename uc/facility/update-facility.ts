@@ -12,7 +12,8 @@ export type UpdateFacilityInput = {
   fax?: string | null
   email?: string | null
   website?: string | null
-  address?: string | null
+  addressCity?: string | null
+  addressDetail?: string | null
   postalCode?: string | null
   accessInfo?: string | null
 }
@@ -61,7 +62,8 @@ export async function updateFacility(
 
     // 場所情報更新
     updatedFacility = updatedFacility.updateLocation({
-      address: input.address,
+      addressCity: input.addressCity,
+      addressDetail: input.addressDetail,
       postalCode: input.postalCode,
       accessInfo: input.accessInfo,
     })

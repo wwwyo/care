@@ -10,11 +10,21 @@ describe('Facility', () => {
       name: 'テスト施設',
       nameKana: 'テストシセツ',
       description: 'これはテスト施設の説明文です。',
-      serviceType: '生活介護',
       capacity: null,
+      wamId: null,
+      officialId: null,
+      corporationId: null,
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-01'),
     },
+    services: [
+      {
+        id: 'service-1',
+        facilityId: 'facility-1',
+        serviceType: 'DAILY_LIFE_SUPPORT',
+        createdAt: new Date('2024-01-01'),
+      },
+    ],
     contacts: [
       {
         id: 'contact-1',
@@ -32,9 +42,8 @@ describe('Facility', () => {
       id: 'location-1',
       facilityId: 'facility-1',
       postalCode: '150-0001',
-      prefecture: '東京都',
-      city: '渋谷区',
-      street: '1-1-1',
+      addressCity: '東京都渋谷区',
+      addressDetail: '1-1-1',
       building: null,
       accessInfo: '駅から徒歩5分',
       latitude: null,
@@ -67,10 +76,14 @@ describe('Facility', () => {
     it('無効なサービス種別の場合でも作成できる', () => {
       const invalidData: FacilityData = {
         ...validFacilityData,
-        profile: {
-          ...validFacilityData.profile!,
-          serviceType: '無効なサービス',
-        },
+        services: [
+          {
+            id: 'service-1',
+            facilityId: 'facility-1',
+            serviceType: '無効なサービス' as never,
+            createdAt: new Date('2024-01-01'),
+          },
+        ],
       }
       const facility = Facility.create(invalidData)
       expect(facility).not.toBeNull()
@@ -118,7 +131,7 @@ describe('Facility', () => {
         name: '更新された施設名',
         nameKana: 'コウシンサレタシセツメイ',
         description: '新しい説明文です。',
-        serviceType: '就労継続支援A型',
+        serviceType: 'EMPLOYMENT_SUPPORT_A',
       })
 
       expect(isFacility(result)).toBe(true)
@@ -126,7 +139,7 @@ describe('Facility', () => {
         expect(result.getName()).toBe('更新された施設名')
         expect(result.getNameKana()).toBe('コウシンサレタシセツメイ')
         expect(result.getDescription()).toBe('新しい説明文です。')
-        expect(result.getServiceType()).toBe('就労継続支援A型')
+        expect(result.getServiceType()).toBe('EMPLOYMENT_SUPPORT_A')
         // 元のインスタンスは変更されていない
         expect(facility!.getName()).toBe('テスト施設')
       }
@@ -285,7 +298,8 @@ describe('Facility', () => {
       expect(facility).not.toBeNull()
 
       const updated = facility!.updateLocation({
-        address: '大阪府大阪市北区2-2-2',
+        addressCity: '大阪府大阪市北区',
+        addressDetail: '2-2-2',
         postalCode: '530-0001',
         accessInfo: 'バス停から徒歩3分',
       })
@@ -303,12 +317,14 @@ describe('Facility', () => {
 
       // 現在のモデルではバリデーションを行わない
       const updated = facility!.updateLocation({
-        address: 'あ'.repeat(256), // 長い値でも受け入れる
+        addressCity: 'あ'.repeat(128),
+        addressDetail: 'あ'.repeat(128), // 長い値でも受け入れる
         postalCode: '123456', // フォーマットが違っても受け入れる
         accessInfo: 'バス停から徒歩3分',
       })
 
-      expect(updated.getAddress()).toBe('あ'.repeat(256))
+      expect(updated.getAddressCity()).toBe('あ'.repeat(128))
+      expect(updated.getAddressDetail()).toBe('あ'.repeat(128))
       expect(updated.getPostalCode()).toBe('123456')
       expect(updated.getAccessInfo()).toBe('バス停から徒歩3分')
     })
@@ -318,7 +334,8 @@ describe('Facility', () => {
       expect(facility).not.toBeNull()
 
       const updated = facility!.updateLocation({
-        address: null,
+        addressCity: null,
+        addressDetail: null,
         postalCode: null,
         accessInfo: null,
       })
@@ -338,7 +355,7 @@ describe('Facility', () => {
       expect(facility!.getName()).toBe('テスト施設')
       expect(facility!.getNameKana()).toBe('テストシセツ')
       expect(facility!.getDescription()).toBe('これはテスト施設の説明文です。')
-      expect(facility!.getServiceType()).toBe('生活介護')
+      expect(facility!.getServiceType()).toBe('DAILY_LIFE_SUPPORT')
       expect(facility!.getPhone()).toBe('03-1234-5678')
       expect(facility!.getFax()).toBe('03-1234-5679')
       expect(facility!.getEmail()).toBe('test@example.com')
@@ -356,8 +373,8 @@ describe('Facility', () => {
           name: 'テスト施設',
           nameKana: null,
           description: null,
-          serviceType: null,
         },
+        services: [],
         contacts: [],
         location: null,
       }
@@ -381,10 +398,14 @@ describe('Facility', () => {
     it('就労継続支援A型の場合trueを返す', () => {
       const data: FacilityData = {
         ...validFacilityData,
-        profile: {
-          ...validFacilityData.profile!,
-          serviceType: '就労継続支援A型',
-        },
+        services: [
+          {
+            id: 'service-1',
+            facilityId: 'facility-1',
+            serviceType: 'EMPLOYMENT_SUPPORT_A',
+            createdAt: new Date('2024-01-01'),
+          },
+        ],
       }
       const facility = Facility.create(data)
       expect(facility?.isEmploymentFacility()).toBe(true)
@@ -393,10 +414,14 @@ describe('Facility', () => {
     it('就労継続支援B型の場合trueを返す', () => {
       const data: FacilityData = {
         ...validFacilityData,
-        profile: {
-          ...validFacilityData.profile!,
-          serviceType: '就労継続支援B型',
-        },
+        services: [
+          {
+            id: 'service-1',
+            facilityId: 'facility-1',
+            serviceType: 'EMPLOYMENT_SUPPORT_B',
+            createdAt: new Date('2024-01-01'),
+          },
+        ],
       }
       const facility = Facility.create(data)
       expect(facility?.isEmploymentFacility()).toBe(true)
@@ -405,10 +430,14 @@ describe('Facility', () => {
     it('就労移行支援の場合trueを返す', () => {
       const data: FacilityData = {
         ...validFacilityData,
-        profile: {
-          ...validFacilityData.profile!,
-          serviceType: '就労移行支援',
-        },
+        services: [
+          {
+            id: 'service-1',
+            facilityId: 'facility-1',
+            serviceType: 'EMPLOYMENT_TRANSITION',
+            createdAt: new Date('2024-01-01'),
+          },
+        ],
       }
       const facility = Facility.create(data)
       expect(facility?.isEmploymentFacility()).toBe(true)
@@ -422,10 +451,7 @@ describe('Facility', () => {
     it('サービス種別がnullの場合falseを返す', () => {
       const data: FacilityData = {
         ...validFacilityData,
-        profile: {
-          ...validFacilityData.profile!,
-          serviceType: null,
-        },
+        services: [],
       }
       const facility = Facility.create(data)
       expect(facility?.isEmploymentFacility()).toBe(false)
@@ -433,31 +459,7 @@ describe('Facility', () => {
   })
 
   describe('isChildCareFacility', () => {
-    it('児童発達支援の場合trueを返す', () => {
-      const data: FacilityData = {
-        ...validFacilityData,
-        profile: {
-          ...validFacilityData.profile!,
-          serviceType: '児童発達支援',
-        },
-      }
-      const facility = Facility.create(data)
-      expect(facility?.isChildCareFacility()).toBe(true)
-    })
-
-    it('放課後等デイサービスの場合trueを返す', () => {
-      const data: FacilityData = {
-        ...validFacilityData,
-        profile: {
-          ...validFacilityData.profile!,
-          serviceType: '放課後等デイサービス',
-        },
-      }
-      const facility = Facility.create(data)
-      expect(facility?.isChildCareFacility()).toBe(true)
-    })
-
-    it('生活介護の場合falseを返す', () => {
+    it('現在、児童向けサービスは未定義のためfalseを返す', () => {
       const facility = Facility.create(validFacilityData)
       expect(facility?.isChildCareFacility()).toBe(false)
     })
@@ -465,10 +467,7 @@ describe('Facility', () => {
     it('サービス種別がnullの場合falseを返す', () => {
       const data: FacilityData = {
         ...validFacilityData,
-        profile: {
-          ...validFacilityData.profile!,
-          serviceType: null,
-        },
+        services: [],
       }
       const facility = Facility.create(data)
       expect(facility?.isChildCareFacility()).toBe(false)

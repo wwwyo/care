@@ -102,6 +102,7 @@ model Facility {
   contacts                   FacilityContact[]
   services                   FacilityService[]
   conditions                 FacilityCondition[]
+  businessHours              FacilityBusinessHour[]
   staff                      FacilityStaffFacility[]
   availabilityReports        FacilityAvailabilityReport[]
   supporterAvailabilityNotes SupporterAvailabilityNote[]
@@ -213,36 +214,41 @@ model ClientAddress {
 // facility_profiles: 施設プロファイル
 
 model FacilityProfile {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  facilityId  String   @unique @map("facility_id") @db.Uuid
-  name        String   @db.VarChar(255)
-  nameKana    String?  @map("name_kana") @db.VarChar(255)
-  description String?  @db.Text
-  capacity    Int?
-  serviceType String?  @map("service_type") @db.VarChar(50)
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  facilityId    String   @unique @map("facility_id") @db.Uuid
+  name          String   @db.VarChar(255)
+  nameKana      String?  @map("name_kana") @db.VarChar(255)
+  description   String?  @db.Text
+  capacity      Int?
+  wamId         String?  @map("wam_id") @db.VarChar(50)
+  officialId    String?  @map("official_id") @db.VarChar(20)
+  corporationId String?  @map("corporation_id") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  facility    Facility             @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  corporation FacilityCorporation? @relation(fields: [corporationId], references: [id])
 
+  @@index([wamId])
+  @@index([officialId])
+  @@index([corporationId])
   @@map("facility_profiles")
 }
 
 // facility_locations: 施設所在地
 
 model FacilityLocation {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  facilityId String   @unique @map("facility_id") @db.Uuid
-  postalCode String?  @map("postal_code") @db.VarChar(10)
-  prefecture String?  @db.VarChar(10)
-  city       String?  @db.VarChar(100)
-  street     String?  @db.VarChar(255)
-  building   String?  @db.VarChar(255)
-  latitude   Decimal? @db.Decimal(10, 8)
-  longitude  Decimal? @db.Decimal(11, 8)
-  accessInfo String?  @map("access_info") @db.Text
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  facilityId    String   @unique @map("facility_id") @db.Uuid
+  postalCode    String?  @map("postal_code") @db.VarChar(10)
+  addressCity   String?  @map("address_city") @db.VarChar(200)
+  addressDetail String?  @map("address_detail") @db.VarChar(500)
+  building      String?  @db.VarChar(255)
+  latitude      Decimal? @db.Decimal(10, 8)
+  longitude     Decimal? @db.Decimal(11, 8)
+  accessInfo    String?  @map("access_info") @db.Text
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
 
@@ -274,7 +280,7 @@ model FacilityContact {
 model FacilityService {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   facilityId  String   @map("facility_id") @db.Uuid
-  serviceType String   @map("service_type") @db.VarChar(50)
+  serviceType String   @map("service_type") @db.VarChar(100)
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
@@ -298,6 +304,47 @@ model FacilityCondition {
   @@index([facilityId])
   @@index([conditionType])
   @@map("facility_conditions")
+}
+
+// facility_corporations: 法人
+
+model FacilityCorporation {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String   @db.VarChar(255)
+  nameKana        String?  @map("name_kana") @db.VarChar(255)
+  corporateNumber String?  @unique @map("corporate_number") @db.VarChar(13)
+  postalCode      String?  @map("postal_code") @db.VarChar(10)
+  addressCity     String?  @map("address_city") @db.VarChar(200)
+  addressDetail   String?  @map("address_detail") @db.VarChar(500)
+  phone           String?  @db.VarChar(20)
+  fax             String?  @db.VarChar(20)
+  url             String?  @db.VarChar(255)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  facilities FacilityProfile[]
+
+  @@index([corporateNumber])
+  @@map("facility_corporations")
+}
+
+// facility_business_hours: 施設営業時間
+
+model FacilityBusinessHour {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  facilityId      String   @unique @map("facility_id") @db.Uuid
+  weekdayHours    String?  @map("weekday_hours") @db.Text
+  saturdayHours   String?  @map("saturday_hours") @db.Text
+  sundayHours     String?  @map("sunday_hours") @db.Text
+  holidayHours    String?  @map("holiday_hours") @db.Text
+  regularHolidays String?  @map("regular_holidays") @db.Text
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@map("facility_business_hours")
 }
 
 // =====================================================
@@ -331,25 +378,61 @@ model Plan {
 // plan_versions: ケアプランバージョン
 
 model PlanVersion {
-  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  planId          String    @map("plan_id") @db.Uuid
-  versionNumber   Int       @map("version_number")
-  versionType     String    @default("draft") @map("version_type") @db.VarChar(20) // draft | published
-  desiredLife     String?   @map("desired_life") @db.Text // 希望する生活（厚労省様式1）
-  troubles        String?   @db.Text // 困っていること（厚労省様式2）
-  considerations  String?   @db.Text // 配慮してほしいこと（厚労省様式4）
-  validFrom       DateTime  @default(now()) @map("valid_from") @db.Timestamptz
-  validUntil      DateTime? @map("valid_until") @db.Timestamptz
-  createdBy       String    @map("created_by") @db.Uuid
-  reasonForUpdate String?   @map("reason_for_update") @db.Text
-  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  id                         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  planId                     String    @map("plan_id") @db.Uuid
+  versionNumber              Int       @map("version_number")
+  versionType                String    @default("draft") @map("version_type") @db.VarChar(20) // draft | published
+  desiredLife                String?   @map("desired_life") @db.Text // 希望する生活（厚労省様式1）
+  troubles                   String?   @db.Text // 困っていること（厚労省様式2）
+  considerations             String?   @db.Text // 配慮してほしいこと（厚労省様式4）
+  formCategory               String?   @map("form_category") @db.VarChar(20)
+  formRevisionMonth          DateTime? @map("form_revision_month") @db.Date
+  municipalityName           String?   @map("municipality_name") @db.VarChar(100)
+  planCreatedOn              DateTime? @map("plan_created_on") @db.Date
+  monitoringStartMonth       DateTime? @map("monitoring_start_month") @db.Date
+  monitoringEndMonth         DateTime? @map("monitoring_end_month") @db.Date
+  monitoringFrequency        String?   @map("monitoring_frequency") @db.VarChar(40)
+  monitoringFrequencyOther   String?   @map("monitoring_frequency_other") @db.VarChar(255)
+  consentSignerName          String?   @map("consent_signer_name") @db.VarChar(255)
+  consentSignedOn            DateTime? @map("consent_signed_on") @db.Date
+  consentNotes               String?   @map("consent_notes") @db.Text
+  clientNameSnapshot         String?   @map("client_name_snapshot") @db.VarChar(255)
+  clientNameKanaSnapshot     String?   @map("client_name_kana_snapshot") @db.VarChar(255)
+  clientPostalCodeSnapshot   String?   @map("client_postal_code_snapshot") @db.VarChar(10)
+  clientAddressSnapshot      String?   @map("client_address_snapshot") @db.Text
+  recipientCertificateNumber String?   @map("recipient_certificate_number") @db.VarChar(50)
+  regionalCertificateNumber  String?   @map("regional_certificate_number") @db.VarChar(50)
+  disabilityClassification   String?   @map("disability_classification") @db.VarChar(50)
+  disabilitySupportLevel     String?   @map("disability_support_level") @db.VarChar(50)
+  userBurdenLimit            String?   @map("user_burden_limit") @db.VarChar(100)
+  supportOfficeName          String?   @map("support_office_name") @db.VarChar(255)
+  planCreatorName            String?   @map("plan_creator_name") @db.VarChar(255)
+  planCreatorTitle           String?   @map("plan_creator_title") @db.VarChar(100)
+  planCreatorPhone           String?   @map("plan_creator_phone") @db.VarChar(20)
+  userIntentions             String?   @map("user_intentions") @db.Text
+  overallSupportPolicy       String?   @map("overall_support_policy") @db.Text
+  longTermGoal               String?   @map("long_term_goal") @db.Text
+  shortTermGoal              String?   @map("short_term_goal") @db.Text
+  envisionedLifeWithServices String?   @map("envisioned_life_with_services") @db.Text
+  nonWeeklyServiceNotes      String?   @map("non_weekly_service_notes") @db.Text
+  medicalCareNotes           String?   @map("medical_care_notes") @db.Text
+  medicalInstitution         String?   @map("medical_institution") @db.VarChar(255)
+  medicalVisitFrequency      String?   @map("medical_visit_frequency") @db.VarChar(255)
+  medicalTravelTime          String?   @map("medical_travel_time") @db.VarChar(100)
+  validFrom                  DateTime  @default(now()) @map("valid_from") @db.Timestamptz
+  validUntil                 DateTime? @map("valid_until") @db.Timestamptz
+  createdBy                  String    @map("created_by") @db.Uuid
+  reasonForUpdate            String?   @map("reason_for_update") @db.Text
+  createdAt                  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   plan                      Plan                           @relation(fields: [planId], references: [id], onDelete: Cascade)
   creator                   Supporter                      @relation("PlanVersionCreatedBy", fields: [createdBy], references: [id])
   services                  PlanService[] // 利用したいサービス（厚労省様式3）
   accessibilityRequirements PlanAccessibilityRequirement[]
   customFields              PlanCustomField[]
+  prioritizedSupports       PlanPrioritizedSupport[]
+  weeklySchedules           PlanWeeklyScheduleCell[]
 
   @@unique([planId, versionNumber])
   @@index([planId])
@@ -388,6 +471,48 @@ model PlanCustomField {
 
   @@index([planVersionId])
   @@map("plan_custom_fields")
+}
+
+model PlanPrioritizedSupport {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  planVersionId      String   @map("plan_version_id") @db.Uuid
+  priorityOrder      Int      @map("priority_order")
+  needDescription    String?  @map("need_description") @db.Text
+  supportGoal        String?  @map("support_goal") @db.Text
+  achievementTiming  String?  @map("achievement_timing") @db.VarChar(100)
+  welfareServiceName String?  @map("welfare_service_name") @db.VarChar(255)
+  serviceDetail      String?  @map("service_detail") @db.Text
+  providerName       String?  @map("provider_name") @db.VarChar(255)
+  providerContact    String?  @map("provider_contact") @db.VarChar(255)
+  userRole           String?  @map("user_role") @db.Text
+  evaluationTiming   String?  @map("evaluation_timing") @db.VarChar(100)
+  notes              String?  @db.Text
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  planVersion PlanVersion @relation(fields: [planVersionId], references: [id], onDelete: Cascade)
+
+  @@unique([planVersionId, priorityOrder])
+  @@index([planVersionId])
+  @@map("plan_prioritized_supports")
+}
+
+model PlanWeeklyScheduleCell {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  planVersionId String   @map("plan_version_id") @db.Uuid
+  timeSlot      String   @map("time_slot") @db.VarChar(20)
+  columnType    String   @map("column_type") @db.VarChar(40)
+  content       String?  @db.Text
+  providerName  String?  @map("provider_name") @db.VarChar(255)
+  notes         String?  @db.Text
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  planVersion PlanVersion @relation(fields: [planVersionId], references: [id], onDelete: Cascade)
+
+  @@index([planVersionId])
+  @@index([planVersionId, columnType])
+  @@map("plan_weekly_schedule_cells")
 }
 
 // plan_services: 利用したいサービス（厚労省様式3）

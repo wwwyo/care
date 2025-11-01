@@ -18,6 +18,7 @@
     "db:deploy": "bun db:generate && prisma migrate deploy",
     "db:seed": "bun run prisma/seed.ts",
     "db:studio": "prisma studio",
+    "db:import": "bun scripts/import-wam-facilities",
     "email:dev": "email dev"
   },
   "dependencies": {
@@ -67,6 +68,7 @@
     "@types/node": "24.2.1",
     "@types/react": "19.1.10",
     "@types/react-dom": "19.1.7",
+    "csv-parse": "6.1.0",
     "prisma": "6.14.0",
     "tailwindcss": "4.1.11",
     "tw-animate-css": "1.3.6",

@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { Button } from '@/components/ui/button'
 import { getHearingMemosByClient } from '@/infra/query/hearing-memo'
 import { requireRealm } from '@/lib/auth/helpers'
 import { prisma } from '@/lib/prisma'
@@ -71,21 +72,28 @@ export default async function EditPlanPage({ params }: Props) {
 
   return (
     <div className="container mx-auto py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">サービス等利用計画書 編集</h1>
-        <p className="text-muted-foreground mt-1">
-          {plan.client.profile?.name} 様 - バージョン {latestVersion.versionNumber}
-          {hasConsent && (
-            <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-              同意済み
-            </span>
-          )}
-        </p>
-        {latestConsent?.grants?.[0] && (
-          <p className="text-xs text-muted-foreground mt-1">
-            同意日: {new Date(latestConsent.grants[0].grantedAt).toLocaleDateString('ja-JP')}
+      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">サービス等利用計画書 編集</h1>
+          <p className="text-muted-foreground mt-1">
+            {plan.client.profile?.name} 様 - バージョン {latestVersion.versionNumber}
+            {hasConsent && (
+              <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                同意済み
+              </span>
+            )}
           </p>
-        )}
+          {latestConsent?.grants?.[0] && (
+            <p className="text-xs text-muted-foreground mt-1">
+              同意日: {new Date(latestConsent.grants[0].grantedAt).toLocaleDateString('ja-JP')}
+            </p>
+          )}
+        </div>
+        <Button asChild variant="secondary">
+          <a href={`/api/plans/${plan.id}/download?versionId=${latestVersion.id}`}>
+            Excelでダウンロード
+          </a>
+        </Button>
       </div>
 
       <PlanUpdateForm

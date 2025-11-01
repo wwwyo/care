@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 const facilityWithDetailsInclude = {
   profile: true,
   location: true,
+  services: true,
   contacts: {
     where: { contactType: 'main' },
     take: 1,

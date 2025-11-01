@@ -106,6 +106,7 @@ const SpeechRecognitionComponent = (
   const recognitionRef = useRef<SpeechRecognition | null>(null)
   const isListeningRef = useRef(false)
   const transcriptionRef = useRef<TranscriptionItem[]>(initialTranscription)
+  const manualStopRef = useRef(false)
   const [isSupported, setIsSupported] = useState<boolean | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
   const scrollAreaRef = useRef<HTMLDivElement>(null)
@@ -158,9 +159,9 @@ const SpeechRecognitionComponent = (
   }, [])
 
   const stopRecognition = useCallback(() => {
+    manualStopRef.current = true
     if (recognitionRef.current) {
       recognitionRef.current.stop()
-      recognitionRef.current = null
     }
     setIsListening(false)
     isListeningRef.current = false
@@ -179,6 +180,7 @@ const SpeechRecognitionComponent = (
     recognition.interimResults = true
     recognition.lang = 'ja-JP'
     recognition.maxAlternatives = 1
+    manualStopRef.current = false
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       let interim = ''
@@ -218,7 +220,7 @@ const SpeechRecognitionComponent = (
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       setInterimTranscript('')
-      if (event.error === 'aborted') {
+      if (event.error === 'aborted' || event.error === 'no-speech') {
         return
       }
       if (event.error === 'audio-capture') {
@@ -413,7 +415,7 @@ const SpeechRecognitionComponent = (
         )}
         <div
           ref={scrollAreaRef}
-          className="min-h-[220px] max-h-[260px] space-y-2 overflow-y-auto rounded-xl bg-muted/60 p-4"
+          className="h-[calc(100svh-240px)] space-y-2 overflow-y-auto rounded-xl bg-muted/60 p-4"
         >
           {transcription.map((item, index) => (
             <div

@@ -1,4 +1,5 @@
-import { type AvailabilityStatus, availabilityStatusSchema } from '@/domain/availability/status'
+import { type AvailabilityStatus, mapStatus } from '@/domain/availability/status'
+import type { ServiceTypeValue } from '@/domain/facility/service-type'
 import type { Prisma } from '@/lib/generated/prisma'
 import { prisma } from '@/lib/prisma'
 
@@ -41,17 +42,22 @@ const facilityStatusWeight = 0.7
 const supporterStatusWeight = 0.4
 const maxScore = facilityStatusWeight + supporterStatusWeight
 
-const facilityRecommendationSelectBase = {
+const facilitySelect = {
   id: true,
   profile: {
     select: {
       name: true,
+    },
+  },
+  services: {
+    select: {
       serviceType: true,
     },
+    take: 1,
   },
   location: {
     select: {
-      city: true,
+      addressCity: true,
       accessInfo: true,
     },
   },
@@ -79,9 +85,9 @@ const facilityRecommendationSelectBase = {
       createdAt: true,
     },
   },
-} as const
+} satisfies Prisma.FacilitySelect
 
-type FacilityRecord = Prisma.FacilityGetPayload<{ select: typeof facilityRecommendationSelectBase }>
+type FacilityRecord = Prisma.FacilityGetPayload<{ select: typeof facilitySelect }>
 
 function statusToNumeric(status: AvailabilityStatus): number {
   switch (status) {
@@ -137,7 +143,7 @@ function mapFacility(facility: FacilityRecord): FacilityRecommendation {
   const reportRecord = facility.availabilityReports[0] ?? null
   const report: FacilityAvailabilityReportSummary | null = reportRecord
     ? {
-        status: availabilityStatusSchema.parse(reportRecord.status),
+        status: mapStatus(reportRecord.status),
         note: reportRecord.note,
         contextSummary: reportRecord.contextSummary,
         validFrom: reportRecord.validFrom.toISOString(),
@@ -149,7 +155,7 @@ function mapFacility(facility: FacilityRecord): FacilityRecommendation {
   const supporterNotes: SupporterAvailabilityNoteSummary[] =
     facility.supporterAvailabilityNotes.map((note) => ({
       id: note.id,
-      status: availabilityStatusSchema.parse(note.status),
+      status: mapStatus(note.status),
       note: note.note,
       contextSummary: note.contextSummary,
       expiresAt: note.expiresAt.toISOString(),
@@ -159,8 +165,8 @@ function mapFacility(facility: FacilityRecord): FacilityRecommendation {
   return {
     id: facility.id,
     name: facility.profile?.name ?? '施設名未設定',
-    serviceType: facility.profile?.serviceType ?? null,
-    city: facility.location?.city ?? null,
+    serviceType: facility.services?.[0]?.serviceType ?? null,
+    city: facility.location?.addressCity ?? null,
     accessInfo: facility.location?.accessInfo ?? null,
     availability: buildAvailabilityScore(report, supporterNotes),
     facilityReport: report,
@@ -169,30 +175,30 @@ function mapFacility(facility: FacilityRecord): FacilityRecommendation {
 }
 
 export async function getFacilityRecommendations(
-  serviceType: string,
+  serviceType: ServiceTypeValue,
   limit = 4,
 ): Promise<FacilityRecommendation[]> {
   const now = new Date()
-  const availabilityValidityFilter = {
+  const availabilityValidityFilter: Prisma.FacilityAvailabilityReportWhereInput = {
     OR: [{ validUntil: null }, { validUntil: { gte: now } }],
-  } as const
+  }
 
   const facilities = await prisma.facility.findMany({
     where: {
       services: {
         some: {
-          serviceType,
+          serviceType: serviceType as never,
         },
       },
     },
     select: {
-      ...facilityRecommendationSelectBase,
+      ...facilitySelect,
       availabilityReports: {
-        ...facilityRecommendationSelectBase.availabilityReports,
+        ...facilitySelect.availabilityReports,
         where: availabilityValidityFilter,
       },
       supporterAvailabilityNotes: {
-        ...facilityRecommendationSelectBase.supporterAvailabilityNotes,
+        ...facilitySelect.supporterAvailabilityNotes,
         where: {
           expiresAt: { gte: now },
         },
@@ -205,7 +211,7 @@ export async function getFacilityRecommendations(
 }
 
 export async function searchFacilitiesWithSlots(
-  serviceTypes: string[],
+  serviceTypes: ServiceTypeValue[],
   limit = 12,
 ): Promise<FacilityRecommendation[]> {
   if (serviceTypes.length === 0) {
@@ -213,28 +219,28 @@ export async function searchFacilitiesWithSlots(
   }
 
   const now = new Date()
-  const availabilityValidityFilter = {
+  const availabilityValidityFilter: Prisma.FacilityAvailabilityReportWhereInput = {
     OR: [{ validUntil: null }, { validUntil: { gte: now } }],
-  } as const
+  }
 
   const facilities = await prisma.facility.findMany({
     where: {
       services: {
         some: {
           serviceType: {
-            in: serviceTypes,
+            in: serviceTypes as never[],
           },
         },
       },
     },
     select: {
-      ...facilityRecommendationSelectBase,
+      ...facilitySelect,
       availabilityReports: {
-        ...facilityRecommendationSelectBase.availabilityReports,
+        ...facilitySelect.availabilityReports,
         where: availabilityValidityFilter,
       },
       supporterAvailabilityNotes: {
-        ...facilityRecommendationSelectBase.supporterAvailabilityNotes,
+        ...facilitySelect.supporterAvailabilityNotes,
         where: {
           expiresAt: { gte: now },
         },

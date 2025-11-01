@@ -111,7 +111,7 @@ export async function updateClientAction(
   const profile = existingClientRecord.profile
   const primaryAddress = existingClientRecord.addresses[0]
   const addressData =
-    primaryAddress && primaryAddress.prefecture && primaryAddress.city
+    primaryAddress?.prefecture && primaryAddress.city
       ? {
           postalCode: primaryAddress.postalCode ?? undefined,
           prefecture: primaryAddress.prefecture,
