@@ -8,15 +8,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
+import type { FactKey, FactValues } from '../components/client-fact-panel'
 import {
-  ClientFactPanel,
-  FACT_FIELD_CONFIGS,
   buildAddressLine,
+  ClientFactPanel,
   createFactValuesFromSource,
   extractFactsFromTranscriptions,
+  FACT_FIELD_CONFIGS,
   getFactOptionLabel,
 } from '../components/client-fact-panel'
-import type { FactKey, FactValues } from '../components/client-fact-panel'
 import type { TranscriptionItem } from '../components/speech-recognition'
 import { TitleEditor } from './title-editor'
 
@@ -371,7 +371,10 @@ function ClientSummaryCard({
   const genderLabel = getFactOptionLabel('gender', summary.gender)
   const disabilityLabel = getFactOptionLabel('disability', summary.disability)
   const careLevelLabel = getFactOptionLabel('careLevel', summary.careLevel)
-  const relationLabel = getFactOptionLabel('emergencyContactRelation', summary.emergencyContactRelation)
+  const relationLabel = getFactOptionLabel(
+    'emergencyContactRelation',
+    summary.emergencyContactRelation,
+  )
   return (
     <div className="grid gap-4 rounded-xl border border-border bg-background p-4 md:grid-cols-3">
       <InfoItem label="ふりがな" value={summary.nameKana} />

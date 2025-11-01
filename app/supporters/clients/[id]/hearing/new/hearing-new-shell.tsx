@@ -12,14 +12,13 @@ import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { generateStructuredSummary } from '../components/ai-actions'
 import { AiSupport } from '../components/ai-support'
+import type { FactKey, FactValues } from '../components/client-fact-panel'
 import {
-  ClientFactPanel,
-  FACT_FIELD_CONFIGS,
-  FactKey,
-  FactValues,
   buildAddressLine,
+  ClientFactPanel,
   createFactValuesFromSource,
   extractFactsFromTranscriptions,
+  FACT_FIELD_CONFIGS,
   getFactOptionLabel,
 } from '../components/client-fact-panel'
 import type { SpeechRecognitionHandle, TranscriptionItem } from '../components/speech-recognition'

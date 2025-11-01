@@ -30,15 +30,13 @@ export type ClientFactsSource = {
   gender?: string | null
   birthDate?: string | null | Date
   phone?: string | null
-  address?:
-    | {
-        postalCode?: string | null
-        prefecture?: string | null
-        city?: string | null
-        street?: string | null
-        building?: string | null
-      }
-    | null
+  address?: {
+    postalCode?: string | null
+    prefecture?: string | null
+    city?: string | null
+    street?: string | null
+    building?: string | null
+  } | null
   disability?: string | null
   careLevel?: string | null
   emergencyContactName?: string | null

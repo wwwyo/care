@@ -1,7 +1,7 @@
 import { type AvailabilityStatus, mapStatus } from '@/domain/availability/status'
+import type { ServiceTypeValue } from '@/domain/facility/service-type'
 import type { Prisma } from '@/lib/generated/prisma'
 import { prisma } from '@/lib/prisma'
-import type { ServiceTypeValue } from '@/domain/facility/service-type'
 
 export type FacilityAvailabilityScore = {
   status: AvailabilityStatus | null
