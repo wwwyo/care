@@ -2,12 +2,21 @@
 
 import { ArrowLeft, ChevronDown, ChevronRight, Plus } from 'lucide-react'
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
+import type { FactKey, FactValues } from '../components/client-fact-panel'
+import {
+  buildAddressLine,
+  ClientFactPanel,
+  createFactValuesFromSource,
+  extractFactsFromTranscriptions,
+  FACT_FIELD_CONFIGS,
+  getFactOptionLabel,
+} from '../components/client-fact-panel'
 import type { TranscriptionItem } from '../components/speech-recognition'
 import { TitleEditor } from './title-editor'
 
@@ -55,7 +64,6 @@ type SummarySection = {
 }
 
 const SUMMARY_TEMPLATES: Array<{ slug: string; title: string }> = [
-  { slug: 'support-history', title: '支援経過' },
   { slug: 'current-status', title: '現状' },
   { slug: 'challenges', title: '課題' },
   { slug: 'family-tree', title: '家系図' },
@@ -92,19 +100,69 @@ export function HearingDetailShell({
   const [newSectionTitle, setNewSectionTitle] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [factValues, setFactValues] = useState<FactValues>(() =>
+    createFactValuesFromSource(toFactSource(clientSummary)),
+  )
+  const userEditedFactKeys = useRef<Set<FactKey>>(new Set())
+  const [autoFilledFactKeys, setAutoFilledFactKeys] = useState<Set<FactKey>>(new Set())
 
   const addressLine = useMemo(() => {
-    const address = clientSummary.address
-    if (!address) return null
-    const parts = [
-      address.prefecture ?? '',
-      address.city ?? '',
-      address.street ?? '',
-      address.building ?? '',
-    ].filter(Boolean)
-    if (parts.length === 0) return null
-    return parts.join('')
+    return buildAddressLine(clientSummary.address)
   }, [clientSummary.address])
+
+  useEffect(() => {
+    const nextFacts = createFactValuesFromSource(toFactSource(clientSummary))
+    setFactValues((prev) => {
+      let changed = false
+      for (const { key } of FACT_FIELD_CONFIGS) {
+        if (prev[key] !== nextFacts[key]) {
+          changed = true
+          break
+        }
+      }
+      return changed ? nextFacts : prev
+    })
+    userEditedFactKeys.current.clear()
+    setAutoFilledFactKeys(new Set())
+  }, [clientSummary])
+
+  useEffect(() => {
+    if (initialTranscription.length === 0) {
+      return
+    }
+    const suggestions = extractFactsFromTranscriptions(initialTranscription)
+    const entries = Object.entries(suggestions) as Array<[FactKey, string]>
+    if (entries.length === 0) {
+      return
+    }
+
+    const autoKeys: FactKey[] = []
+    setFactValues((prev) => {
+      const next = { ...prev }
+      let changed = false
+      for (const [key, value] of entries) {
+        if (!value) continue
+        if (userEditedFactKeys.current.has(key)) continue
+        if (next[key] === value) continue
+        next[key] = value
+        changed = true
+        autoKeys.push(key)
+      }
+      if (!changed) {
+        autoKeys.length = 0
+        return prev
+      }
+      return next
+    })
+
+    if (autoKeys.length > 0) {
+      setAutoFilledFactKeys((prev) => {
+        const updated = new Set(prev)
+        autoKeys.forEach((key) => updated.add(key))
+        return updated
+      })
+    }
+  }, [initialTranscription])
 
   const structuredContent = useMemo(() => serializeSummary(summarySections), [summarySections])
   const hasChanges = structuredContent !== baselineStructuredContent
@@ -131,6 +189,22 @@ export function HearingDetailShell({
     }
     setSummarySections((prev) => [...prev, nextSection])
     setNewSectionTitle('')
+  }
+
+  const handleFactChange = (key: FactKey, value: string) => {
+    userEditedFactKeys.current.add(key)
+    setAutoFilledFactKeys((prev) => {
+      if (!prev.has(key)) {
+        return prev
+      }
+      const next = new Set(prev)
+      next.delete(key)
+      return next
+    })
+    setFactValues((prev) => ({
+      ...prev,
+      [key]: value,
+    }))
   }
 
   const handleSave = async () => {
@@ -196,8 +270,13 @@ export function HearingDetailShell({
               </div>
             </div>
             {isHeaderExpanded && (
-              <div className="mt-3">
+              <div className="mt-3 space-y-4">
                 <ClientSummaryCard summary={clientSummary} addressLine={addressLine} />
+                <ClientFactPanel
+                  facts={factValues}
+                  autoFilledKeys={autoFilledFactKeys}
+                  onChange={handleFactChange}
+                />
               </div>
             )}
           </div>
@@ -289,20 +368,27 @@ function ClientSummaryCard({
   summary: ClientSummaryData
   addressLine: string | null
 }) {
+  const genderLabel = getFactOptionLabel('gender', summary.gender)
+  const disabilityLabel = getFactOptionLabel('disability', summary.disability)
+  const careLevelLabel = getFactOptionLabel('careLevel', summary.careLevel)
+  const relationLabel = getFactOptionLabel(
+    'emergencyContactRelation',
+    summary.emergencyContactRelation,
+  )
   return (
     <div className="grid gap-4 rounded-xl border border-border bg-background p-4 md:grid-cols-3">
       <InfoItem label="ふりがな" value={summary.nameKana} />
-      <InfoItem label="性別" value={summary.gender} />
+      <InfoItem label="性別" value={genderLabel} />
       <InfoItem
         label="生年月日"
         value={summary.birthDate ? formatBirthDate(summary.birthDate, summary.age) : null}
       />
       <InfoItem label="電話番号" value={summary.phone} />
-      <InfoItem label="障害種別" value={summary.disability} />
-      <InfoItem label="要介護度" value={summary.careLevel} />
+      <InfoItem label="障害種別" value={disabilityLabel} />
+      <InfoItem label="要介護度" value={careLevelLabel} />
       <InfoItem label="住所" value={addressLine} />
       <InfoItem label="緊急連絡先" value={summary.emergencyContactName} />
-      <InfoItem label="続柄" value={summary.emergencyContactRelation} />
+      <InfoItem label="続柄" value={relationLabel} />
       <InfoItem label="緊急連絡先電話" value={summary.emergencyContactPhone} />
       <InfoItem label="備考" value={summary.notes} className="md:col-span-3" />
     </div>
@@ -403,6 +489,21 @@ function buildInitialSummary(content: string): SummarySection[] {
   }
 
   return merged
+}
+
+function toFactSource(summary: ClientSummaryData) {
+  return {
+    gender: summary.gender ?? null,
+    birthDate: summary.birthDate ?? null,
+    phone: summary.phone ?? null,
+    address: summary.address ?? null,
+    disability: summary.disability ?? null,
+    careLevel: summary.careLevel ?? null,
+    emergencyContactName: summary.emergencyContactName ?? null,
+    emergencyContactRelation: summary.emergencyContactRelation ?? null,
+    emergencyContactPhone: summary.emergencyContactPhone ?? null,
+    notes: summary.notes ?? null,
+  }
 }
 
 function parseStructuredContent(content: string): Array<{ title: string; content: string }> {
