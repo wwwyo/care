@@ -46,5 +46,5 @@ supabase/.temp/
 supabase/.branches/
 
 /lib/generated/prisma
-!.cckiro
 settings.local.json
+!.agent
