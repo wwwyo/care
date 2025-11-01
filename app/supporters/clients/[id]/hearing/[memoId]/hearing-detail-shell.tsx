@@ -11,13 +11,12 @@ import { cn } from '@/lib/utils'
 import {
   ClientFactPanel,
   FACT_FIELD_CONFIGS,
-  FactKey,
-  FactValues,
   buildAddressLine,
   createFactValuesFromSource,
   extractFactsFromTranscriptions,
   getFactOptionLabel,
 } from '../components/client-fact-panel'
+import type { FactKey, FactValues } from '../components/client-fact-panel'
 import type { TranscriptionItem } from '../components/speech-recognition'
 import { TitleEditor } from './title-editor'
 
