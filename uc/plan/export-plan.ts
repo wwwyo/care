@@ -75,11 +75,13 @@ function readZip(buffer: Buffer): ParsedZip {
       } else if (compressionMethod === 8) {
         data = inflateRawSync(compressedData)
       } else {
-        throw new Error(`Unsupported compression method: ${compressionMethod}`)
+        throw new Error(`Unsupported compression method: ${compressionMethod} in file ${name}`)
       }
 
       if (uncompressedSize !== 0 && data.length !== uncompressedSize) {
-        throw new Error('Unexpected uncompressed size')
+        throw new Error(
+          `Unexpected uncompressed size: expected ${uncompressedSize}, got ${data.length} for file ${name}`,
+        )
       }
 
       entries.push({
@@ -295,6 +297,8 @@ type ExportPlanFailure = {
 
 export type ExportPlanResult = ExportPlanSuccess | ExportPlanFailure
 
+type WorkbookResult = { type: 'success'; buffer: Buffer } | ExportPlanFailure
+
 type PlanServiceData = {
   serviceType: string
   desiredAmount?: string | null
@@ -345,14 +349,14 @@ function buildAddressLine(data: WorkbookData): string | null {
   return parts.join('\n')
 }
 
-async function generateWorkbook(data: WorkbookData): Promise<Buffer | null> {
+async function generateWorkbook(data: WorkbookData): Promise<WorkbookResult> {
   const templatePath = path.join(process.cwd(), '.agent', 'nakanoku.xlsx')
   const templateBuffer = await fs.readFile(templatePath)
   const zip = readZip(templateBuffer)
 
   const sheetEntry = zip.entries.find((entry) => entry.name === 'xl/worksheets/sheet1.xml')
   if (!sheetEntry) {
-    return null
+    return { type: 'error', message: 'Excelシートのエントリーが見つかりませんでした。' }
   }
 
   let sheetXml = sheetEntry.data.toString('utf-8')
@@ -388,7 +392,7 @@ async function generateWorkbook(data: WorkbookData): Promise<Buffer | null> {
   sheetXml = applyCellUpdates(sheetXml, updates)
   sheetEntry.data = Buffer.from(sheetXml, 'utf-8')
 
-  return writeZip(zip)
+  return { type: 'success', buffer: writeZip(zip) }
 }
 
 function createFilename(planId: string, createdAt: Date): string {
@@ -458,14 +462,14 @@ export async function exportPlanUseCase(input: ExportPlanInput): Promise<ExportP
     })),
   }
 
-  const buffer = await generateWorkbook(workbookData)
-  if (!buffer) {
-    return { type: 'error', message: 'Excelテンプレートの読み込みに失敗しました。' }
+  const workbookResult = await generateWorkbook(workbookData)
+  if (workbookResult.type === 'error') {
+    return workbookResult
   }
 
   return {
     type: 'success',
-    buffer,
+    buffer: workbookResult.buffer,
     filename: createFilename(plan.id, targetVersion.createdAt),
   }
 }
