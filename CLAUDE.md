@@ -150,3 +150,7 @@ function useCase(): Promise<Data | DomainError>
 **try-catchの使用ガイドライン:**
 - `try-catch`は例外(外部ライブラリやPrismaなど)がthrowする可能性がある場合のみ使用
 - 使用する際は最小スコープで実装（必要最小限のコードのみをtryブロックに含める）
+
+## Exec Plan
+- 複雑な機能実装は `.agent/plans.md` に実装計画を記載する
+- `.agent/plans.md`は常に最新の状態に維持する。
