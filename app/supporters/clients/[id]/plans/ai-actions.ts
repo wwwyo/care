@@ -1,11 +1,8 @@
 'use server'
 
-import { google } from '@ai-sdk/google'
 import { generateText } from 'ai'
 import { getPlanWithVersions } from '@/features/plan/infra/query/plan-query'
 import { prisma } from '@/lib/prisma'
-
-const model = google('gemini-2.0-flash')
 
 type TranscriptionItem = {
   timestamp: string | Date
@@ -211,7 +208,7 @@ ${existingPlanText ? '前回の計画書内容も考慮し、新しい情報で�
 - 重要: 必ずJSON形式のみを出力し、コードブロックや説明文は一切含めないでください`
 
     const result = await generateText({
-      model,
+      model: 'google/gemini-2.5-flash',
       prompt,
       temperature: 0.3,
       maxOutputTokens: 10000,

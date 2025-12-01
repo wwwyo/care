@@ -1,10 +1,7 @@
 'use server'
 
-import { openai } from '@ai-sdk/openai'
 import { generateText } from 'ai'
 import type { TranscriptionItem } from './speech-recognition'
-
-const model = openai('gpt-5-mini') // コスト効率の良い高性能モデル
 
 type GenerateMemoResult = { success: true; memo: string } | { type: 'Error'; message: string }
 
@@ -79,7 +76,7 @@ ${existingMemo}
 - 簡潔に事実のみを記載`
 
     const result = await generateText({
-      model,
+      model: 'openai/gpt-5-mini',
       prompt,
       temperature: 0.3,
       maxOutputTokens: 100000,
@@ -146,7 +143,7 @@ JSON形式で以下のように出力してください：
 - 既に十分聞けている内容は除外する`
 
     const result = await generateText({
-      model,
+      model: 'openai/gpt-5-mini',
       prompt,
       temperature: 0.3,
       maxOutputTokens: 100000,
