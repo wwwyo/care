@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { getHearingMemosByClient } from '@/infra/query/hearing-memo'
-import { requireRealm } from '@/lib/auth/helpers'
+import { requireRealm } from '@/features/auth/helpers'
+import { getHearingMemosByClient } from '@/features/hearing-memo/infra/query/hearing-memo'
 import { prisma } from '@/lib/prisma'
 import { PlanUpdateForm } from './plan-update-form'
 

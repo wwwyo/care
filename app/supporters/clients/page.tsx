@@ -2,10 +2,10 @@ import { Plus, User } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { getAllClients } from '@/infra/query/client-query'
-import { getSupporterByUserId } from '@/infra/query/supporter-query'
-import { requireRealm } from '@/lib/auth/helpers'
-import { calculateAge } from '@/lib/utils/age-calculator'
+import { requireRealm } from '@/features/auth/helpers'
+import { getAllClients } from '@/features/client/infra/client-query'
+import { getSupporterByUserId } from '@/features/supporter/infra/query/supporter-query'
+import { calculateAge } from '@/lib/age-calculator'
 
 export default async function ClientsPage() {
   const session = await requireRealm('supporter')

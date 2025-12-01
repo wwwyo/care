@@ -2,9 +2,12 @@
 
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
-import { getFacilityByStaffUserId, getFacilityStaffByUserId } from '@/infra/query/facility-query'
-import { requireRealm } from '@/lib/auth/helpers'
-import { recordFacilityAvailability } from '@/uc/availability/record-facility-availability'
+import { requireRealm } from '@/features/auth/helpers'
+import { recordFacilityAvailability } from '@/features/availability/usecase/record-facility-availability'
+import {
+  getFacilityByStaffUserId,
+  getFacilityStaffByUserId,
+} from '@/features/facility/infra/query/facility-query'
 
 const updateSlotStatusSchema = z.object({
   status: z.enum(['available', 'limited', 'unavailable'], {

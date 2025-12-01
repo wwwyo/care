@@ -1,0 +1,6 @@
+process.env.DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/postgres'
+process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000'
+process.env.RESEND_API_KEY = 'your_resend_api_key'
+process.env.EMAIL_FROM = 'noreply@gmail.com'
+process.env.BETTER_AUTH_SECRET = 'your_better_auth_secret_key_here'
+process.env.OPENAI_API_KEY = 'your-openai-api-key'

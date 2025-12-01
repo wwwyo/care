@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
-import { getClientById } from '@/infra/query/client-query'
-import { getSupporterByUserId } from '@/infra/query/supporter-query'
-import { requireRealm } from '@/lib/auth/helpers'
+import { requireRealm } from '@/features/auth/helpers'
+import { getClientById } from '@/features/client/infra/client-query'
+import { getSupporterByUserId } from '@/features/supporter/infra/query/supporter-query'
 import EditClientForm from './edit-client-form'
 
 interface EditClientPageProps {

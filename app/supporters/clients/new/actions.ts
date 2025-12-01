@@ -2,10 +2,10 @@
 
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
-import { getSupporterByUserId } from '@/infra/query/supporter-query'
-import { clientRepository } from '@/infra/repositories/client-repository'
-import { requireRealm } from '@/lib/auth/helpers'
-import { createClient } from '@/uc/client/create-client'
+import { requireRealm } from '@/features/auth/helpers'
+import { clientRepository } from '@/features/client/infra/repository/client-repository'
+import { createClient } from '@/features/client/usecase/create-client'
+import { getSupporterByUserId } from '@/features/supporter/infra/query/supporter-query'
 
 const createClientSchema = z.object({
   name: z.string().min(1, '氏名は必須です'),

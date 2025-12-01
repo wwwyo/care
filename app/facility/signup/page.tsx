@@ -16,8 +16,8 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { authClient } from '@/lib/auth/client'
-import { USER_REALMS } from '@/lib/auth/schemas'
+import { authClient } from '@/features/auth/client'
+import { USER_REALMS } from '@/features/auth/schemas'
 
 export default function FacilitySignupPage() {
   const router = useRouter()

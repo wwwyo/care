@@ -147,7 +147,9 @@ const SpeechRecognitionComponent = (
     navigator.mediaDevices
       .getUserMedia({ audio: true })
       .then((stream) => {
-        stream.getTracks().forEach((track) => track.stop())
+        for (const track of stream.getTracks()) {
+          track.stop()
+        }
         setIsSupported(true)
         setErrorMessage('')
       })

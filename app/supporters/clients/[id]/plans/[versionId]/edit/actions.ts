@@ -2,10 +2,10 @@
 
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { parseArrayFromFormData } from '@/lib/utils/form-parser'
-import { createInquiryUseCase } from '@/uc/inquiry/create-inquiry'
-import { publishPlanUseCase } from '@/uc/plan/publish-plan'
-import { updatePlanUseCase } from '@/uc/plan/update-plan'
+import { createInquiryUseCase } from '@/features/inquiry/usecase/create-inquiry'
+import { publishPlanUseCase } from '@/features/plan/usecase/publish-plan'
+import { updatePlanUseCase } from '@/features/plan/usecase/update-plan'
+import { parseArrayFromFormData } from '@/lib/form-parser'
 
 const updatePlanSchema = z.object({
   planId: z.string().uuid(),

@@ -3,9 +3,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { getFacilityByStaffUserId } from '@/infra/query/facility-query'
-import { countNewInquiries } from '@/infra/query/inquiry-query'
-import { requireRealm } from '@/lib/auth/helpers'
+import { requireRealm } from '@/features/auth/helpers'
+import { getFacilityByStaffUserId } from '@/features/facility/infra/query/facility-query'
+import { countNewInquiries } from '@/features/inquiry/infra/query/inquiry-query'
 import { SlotStatusDisplay } from './slot-status-display'
 
 export default async function FacilityDashboard() {

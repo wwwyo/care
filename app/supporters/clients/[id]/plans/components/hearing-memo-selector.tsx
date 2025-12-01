@@ -1,12 +1,11 @@
 'use client'
 
-import { format } from 'date-fns'
-import { ja } from 'date-fns/locale'
 import { Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
+import { formatDateWithWeekday } from '@/lib/date'
 
 type HearingMemo = {
   id: string
@@ -80,8 +79,7 @@ export function HearingMemoSelector({ hearingMemos, onGenerate, isGenerating = f
               <label htmlFor={memo.id} className="flex-1 cursor-pointer space-y-1 leading-none">
                 <div className="font-medium">{memo.title}</div>
                 <div className="text-sm text-muted-foreground">
-                  {format(new Date(memo.date), 'yyyy年MM月dd日(E)', { locale: ja })} -{' '}
-                  {memo.supporter.profile?.name || '不明'}
+                  {formatDateWithWeekday(memo.date)} - {memo.supporter.profile?.name || '不明'}
                 </div>
                 <div className="text-sm text-muted-foreground line-clamp-2 mt-2">
                   {(() => {

@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server'
-import { exportPlanUseCase } from '@/uc/plan/export-plan'
+import { exportPlanUseCase } from '@/features/plan/usecase/export-plan'
 
 function toArrayBuffer(buffer: Buffer): ArrayBuffer {
   return buffer.buffer.slice(

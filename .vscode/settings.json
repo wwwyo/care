@@ -8,6 +8,6 @@
     "source.fixAll.biome": "explicit",
     "source.organizeImports.biome": "explicit"
   },
-  "bun.runtime": "/Users/yuito_watanabe/.local/share/mise/installs/bun/1.2.20/bin/bun",
+  "bun.runtime": "/Users/yuito_watanabe/.local/share/mise/installs/bun/1.3.2/bin/bun",
   "typescript.tsdk": "node_modules/typescript/lib"
 }

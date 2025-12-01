@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import type { FacilityRecommendation } from '@/infra/query/facility-recommendations'
+import type { FacilityRecommendation } from '@/features/facility/infra/query/facility-recommendations'
 import { cn } from '@/lib/utils'
 import { FacilityRecommendations } from './facility-recommendations'
 
@@ -126,7 +126,7 @@ export function PlanServiceFormWithRecommendations({
       // インデックスを再調整
       const newMap: { [key: number]: FacilityRecommendation[] } = {}
       Object.keys(updated).forEach((key) => {
-        const oldIndex = parseInt(key)
+        const oldIndex = parseInt(key, 10)
         const facilities = updated[oldIndex]
         if (!facilities) return
         if (oldIndex > index) {

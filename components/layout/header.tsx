@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { getUserRealm } from '@/lib/auth/helpers'
+import { getUserRealm } from '@/features/auth/helpers'
 
 export async function Header() {
   const realm = await getUserRealm()

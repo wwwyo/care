@@ -4,7 +4,6 @@ import { z } from 'zod'
 const serverEnvSchema = z.object({
   // Database
   DATABASE_URL: z.url(),
-  DIRECT_URL: z.url(),
 
   // Application
   NEXT_PUBLIC_APP_URL: z.url(),
@@ -35,7 +34,6 @@ function parseServerEnv(): ServerEnv {
   try {
     return serverEnvSchema.parse({
       DATABASE_URL: process.env.DATABASE_URL,
-      DIRECT_URL: process.env.DIRECT_URL,
       NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
       RESEND_API_KEY: process.env.RESEND_API_KEY,
       EMAIL_FROM: process.env.EMAIL_FROM,

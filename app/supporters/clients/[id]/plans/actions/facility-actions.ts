@@ -1,14 +1,14 @@
 'use server'
 
 import { z } from 'zod'
-import { availabilityStatusSchema } from '@/domain/availability/status'
-import { resolveServiceTypeValue } from '@/domain/facility/service-type'
+import { availabilityStatusSchema } from '@/features/availability/model/status'
+import { recordSupporterAvailability } from '@/features/availability/usecase/record-supporter-availability'
+import { resolveServiceTypeValue } from '@/features/facility/core/service-type'
 import {
   type FacilityRecommendation,
   getFacilityRecommendations,
-} from '@/infra/query/facility-recommendations'
+} from '@/features/facility/infra/query/facility-recommendations'
 import { prisma } from '@/lib/prisma'
-import { recordSupporterAvailability } from '@/uc/availability/record-supporter-availability'
 
 export async function fetchFacilityRecommendations(
   serviceType: string,

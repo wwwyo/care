@@ -1,7 +1,10 @@
 'use server'
 
-import { updateHearingMemoContent } from '@/uc/hearing/update-memo'
-import { addHearingTranscript, updateHearingTranscripts } from '@/uc/hearing/update-transcription'
+import { updateHearingMemoContent } from '@/features/hearing-memo/usecase/update-memo'
+import {
+  addHearingTranscript,
+  updateHearingTranscripts,
+} from '@/features/hearing-memo/usecase/update-transcription'
 
 type ActionError = {
   type: 'Error'
@@ -59,7 +62,7 @@ export async function updateTitle(
     return { type: 'Error', message: 'タイトルを入力してください' }
   }
 
-  const { updateHearingMemoTitle } = await import('@/uc/hearing/update-memo')
+  const { updateHearingMemoTitle } = await import('@/features/hearing-memo/usecase/update-memo')
   const result = await updateHearingMemoTitle(memoId, title.trim())
 
   if ('type' in result) {

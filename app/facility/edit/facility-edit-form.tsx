@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import type { FacilityWithDetails } from '@/infra/query/facility-query'
+import type { FacilityWithDetails } from '@/features/facility/infra/query/facility-query'
 import { updateFacilityAction } from './actions'
 
 const serviceTypes = [

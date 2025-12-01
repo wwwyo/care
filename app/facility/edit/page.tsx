@@ -1,5 +1,5 @@
-import { getFacilityByStaffUserId } from '@/infra/query/facility-query'
-import { requireRealm } from '@/lib/auth/helpers'
+import { requireRealm } from '@/features/auth/helpers'
+import { getFacilityByStaffUserId } from '@/features/facility/infra/query/facility-query'
 import { FacilityEditForm } from './facility-edit-form'
 
 export default async function FacilityEditPage() {

@@ -2,11 +2,11 @@
 
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
-import { requireRealm } from '@/lib/auth/helpers'
+import { requireRealm } from '@/features/auth/helpers'
+import { createInquiryUseCase } from '@/features/inquiry/usecase/create-inquiry'
+import { createPlanUseCase } from '@/features/plan/usecase/create-plan'
+import { parseArrayFromFormData } from '@/lib/form-parser'
 import { prisma } from '@/lib/prisma'
-import { parseArrayFromFormData } from '@/lib/utils/form-parser'
-import { createInquiryUseCase } from '@/uc/inquiry/create-inquiry'
-import { createPlanUseCase } from '@/uc/plan/create-plan'
 
 const createPlanSchema = z.object({
   clientId: z.string().uuid(),

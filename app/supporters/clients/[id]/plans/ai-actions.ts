@@ -2,7 +2,7 @@
 
 import { google } from '@ai-sdk/google'
 import { generateText } from 'ai'
-import { getPlanWithVersions } from '@/infra/query/plan-query'
+import { getPlanWithVersions } from '@/features/plan/infra/query/plan-query'
 import { prisma } from '@/lib/prisma'
 
 const model = google('gemini-2.0-flash')

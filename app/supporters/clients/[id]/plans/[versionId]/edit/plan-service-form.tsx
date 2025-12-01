@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import type { FacilityRecommendation } from '@/infra/query/facility-recommendations'
+import type { FacilityRecommendation } from '@/features/facility/infra/query/facility-recommendations'
 import { FacilityRecommendations } from '../../components/facility-recommendations'
 
 export type ServiceFormData = {

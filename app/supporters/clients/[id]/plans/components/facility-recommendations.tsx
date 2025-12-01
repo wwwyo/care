@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import type { FacilityRecommendation } from '@/infra/query/facility-recommendations'
+import type { FacilityRecommendation } from '@/features/facility/infra/query/facility-recommendations'
 import { cn } from '@/lib/utils'
 import { fetchFacilityRecommendations } from '../actions/facility-actions'
 
