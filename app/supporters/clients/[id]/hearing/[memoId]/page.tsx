@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
-import { getHearingMemo } from '@/infra/query/hearing-memo'
-import { getSupporterByUserId } from '@/infra/query/supporter-query'
-import { requireRealm } from '@/lib/auth/helpers'
+import { requireRealm } from '@/features/auth/helpers'
+import { getHearingMemo } from '@/features/hearing-memo/infra/query/hearing-memo'
+import { getSupporterByUserId } from '@/features/supporter/infra/query/supporter-query'
 import { saveDocument } from './actions'
 import { type ClientSummaryData, HearingDetailShell } from './hearing-detail-shell'
 

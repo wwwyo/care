@@ -2,13 +2,13 @@
 
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
-import { Client, type ClientData, isClient } from '@/domain/client/model'
-import { getClientById } from '@/infra/query/client-query'
-import { getSupporterByUserId } from '@/infra/query/supporter-query'
-import { clientRepository } from '@/infra/repositories/client-repository'
-import { requireRealm } from '@/lib/auth/helpers'
-import { phoneNumberSchema } from '@/lib/zod/phone-number'
-import { updateClient } from '@/uc/client/update-client'
+import { phoneNumberSchema } from '@/features/_shared/phone-number/schema'
+import { requireRealm } from '@/features/auth/helpers'
+import { getClientById } from '@/features/client/infra/client-query'
+import { clientRepository } from '@/features/client/infra/repository/client-repository'
+import { Client, type ClientData, isClient } from '@/features/client/model/model'
+import { updateClient } from '@/features/client/usecase/update-client'
+import { getSupporterByUserId } from '@/features/supporter/infra/query/supporter-query'
 
 const updateClientSchema = z.object({
   id: z.string().min(1, 'IDは必須です'),

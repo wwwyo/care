@@ -11,9 +11,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { getFacilityByStaffUserId } from '@/infra/query/facility-query'
-import { getInquiriesByFacilityId } from '@/infra/query/inquiry-query'
-import { requireRealm } from '@/lib/auth/helpers'
+import { requireRealm } from '@/features/auth/helpers'
+import { getFacilityByStaffUserId } from '@/features/facility/infra/query/facility-query'
+import { getInquiriesByFacilityId } from '@/features/plan/infra/query/inquiry-query'
 
 export default async function InquiriesPage() {
   const session = await requireRealm('facility_staff', '/login')

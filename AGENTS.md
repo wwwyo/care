@@ -33,9 +33,8 @@ Care Hub(ケアハブ)
 ```
 care/
 ├── app/                # Next.js App Router + Server Actions、internalなUI Components
-├── domain/             # ドメイン層（ビジネスロジック）
-│   ├── common/         # 共通Value Object（Phone, Address等）
-│   └── <feature>      # 機能別ドメインモデル
+│   └── features/       # 機能別ドメインモデル
+│       ├── _shared/    # 共通Value Object（Phone, Address等）
 │       ├── client/     # 利用者（福祉サービス利用者）の情報管理
 │       │               # 障害者や要介護者の基本情報、連絡先、緊急連絡先等を管理
 │       ├── facility/   # 福祉施設の情報管理
@@ -50,11 +49,15 @@ care/
 │       │               # 利用者の同意取得、証跡保存、2段階管理（リクエスト/記録）
 │       ├── inquiry/    # 照会管理
 │       │               # 施設への問い合わせ、受入可否返信、メッセージ履歴
-│       └── ...         # その他の機能ドメイン
-├── uc/                 # ユースケース層
-├── infra/              # インフラストラクチャ層
-│   ├── query/          # 読み取り専用クエリ（CQRS-query）
-│   └── repositories/   # リポジトリ実装 (CQRS-command)
+│       └── <feature>/  # その他の機能ドメイン
+│           ├── core/   # ドメイン層（ビジネスロジック）
+│           │   ├── model.ts # ドメインモデル
+│           │   └── repository.ts # リポジトリインターフェース
+│           ├── infra/  # インフラ層（実装）
+│           │   ├── repository/ # リポジトリ実装(CQRS-command)
+│           │   └── query/ # クエリ実装(CQRS-query)
+│           └── usecase/ # ユースケース層
+│               └── *.ts # ユースケース実装
 ├── components/         # 共通UIコンポーネント、shadcn/ui
 ├── hooks/              # 共通フック
 ├── lib/                # 共通ユーティリティ

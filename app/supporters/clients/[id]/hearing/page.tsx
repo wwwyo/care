@@ -3,10 +3,10 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { getClientById } from '@/infra/query/client-query'
-import { getHearingMemosByClient } from '@/infra/query/hearing-memo'
-import { getSupporterByUserId } from '@/infra/query/supporter-query'
-import { requireRealm } from '@/lib/auth/helpers'
+import { requireRealm } from '@/features/auth/helpers'
+import { getClientById } from '@/features/client/infra/client-query'
+import { getHearingMemosByClient } from '@/features/hearing-memo/infra/query/hearing-memo'
+import { getSupporterByUserId } from '@/features/supporter/infra/query/supporter-query'
 
 interface HearingMemoListPageProps {
   params: Promise<{ id: string }>

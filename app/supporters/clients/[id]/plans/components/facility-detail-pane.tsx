@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
-import type { AvailabilityStatus } from '@/domain/availability/status'
+import type { AvailabilityStatus } from '@/features/availability/model/status'
 import {
   type FacilityDetailData,
   getFacilityDetail,

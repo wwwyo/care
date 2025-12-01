@@ -1,6 +1,6 @@
 'use client'
 
-import type { AvailabilityStatus } from '@/domain/availability/status'
+import type { AvailabilityStatus } from '@/features/availability/model/status'
 import { cn } from '@/lib/utils'
 
 type SlotStatusButtonProps = {

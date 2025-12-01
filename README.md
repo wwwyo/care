@@ -9,7 +9,7 @@
 - **UI**: React 19 + Tailwind CSS v4
 - **Database**: Supabase (PostgreSQL + Row Level Security)
 - **ORM**: Prisma
-- **Authentication**: Supabase Auth (Magic Link)
+- **Authentication**: better-auth
 - **Linter/Formatter**: Biome
 
 ## セットアップ
@@ -31,7 +31,7 @@ bun install
 `.env.example`を`.env`にコピーして使用してください：
 
 ```bash
-cp .env.example .env
+cp -n .env.example .env
 ```
 
 ※ローカル開発用の設定は既に記入されています。

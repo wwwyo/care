@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import type { AvailabilityStatus } from '@/domain/availability/status'
+import type { AvailabilityStatus } from '@/features/availability/model/status'
 import { updateSlotStatusAction } from './actions'
 import { SlotStatusButton } from './slot-status-button'
 

@@ -1,11 +1,11 @@
 import { notFound, redirect } from 'next/navigation'
 import { z } from 'zod'
-import { getClientById } from '@/infra/query/client-query'
-import { getSupporterByUserId } from '@/infra/query/supporter-query'
-import { requireRealm } from '@/lib/auth/helpers'
-import { createHearingMemo } from '@/uc/hearing/create-memo'
-import { updateHearingMemoContent } from '@/uc/hearing/update-memo'
-import { updateHearingTranscripts } from '@/uc/hearing/update-transcription'
+import { requireRealm } from '@/features/auth/helpers'
+import { getClientById } from '@/features/client/infra/client-query'
+import { createHearingMemo } from '@/features/hearing-memo/usecase/create-memo'
+import { updateHearingMemoContent } from '@/features/hearing-memo/usecase/update-memo'
+import { updateHearingTranscripts } from '@/features/hearing-memo/usecase/update-transcription'
+import { getSupporterByUserId } from '@/features/supporter/infra/query/supporter-query'
 import {
   type ClientSnapshot,
   type CreateHearingFormState,

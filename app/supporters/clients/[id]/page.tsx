@@ -14,12 +14,12 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { getClientById } from '@/infra/query/client-query'
-import { getHearingMemosByClient } from '@/infra/query/hearing-memo'
-import { getPlanByClientId } from '@/infra/query/plan-query'
-import { getSupporterByUserId } from '@/infra/query/supporter-query'
-import { requireRealm } from '@/lib/auth/helpers'
-import { calculateAge } from '@/lib/utils/age-calculator'
+import { requireRealm } from '@/features/auth/helpers'
+import { getClientById } from '@/features/client/infra/client-query'
+import { getPlanByClientId } from '@/features/client/infra/query/plan-query'
+import { getHearingMemosByClient } from '@/features/hearing-memo/infra/query/hearing-memo'
+import { getSupporterByUserId } from '@/features/supporter/infra/query/supporter-query'
+import { calculateAge } from '@/lib/age-calculator'
 
 interface ClientDetailPageProps {
   params: Promise<{ id: string }>

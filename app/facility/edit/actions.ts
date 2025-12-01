@@ -2,9 +2,9 @@
 
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
-import { getFacilityByStaffUserId } from '@/infra/query/facility-query'
-import { requireRealm } from '@/lib/auth/helpers'
-import { updateFacility } from '@/uc/facility/update-facility'
+import { requireRealm } from '@/features/auth/helpers'
+import { getFacilityByStaffUserId } from '@/features/facility/infra/query/facility-query'
+import { updateFacility } from '@/features/facility/usecase/update-facility'
 
 // フォームデータの基本的な型変換のみ行う（詳細なバリデーションはドメイン層で実施）
 const updateFacilitySchema = z.object({

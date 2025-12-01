@@ -1,4 +1,4 @@
-import type { AvailabilityStatus } from '@/domain/availability/status'
+import type { AvailabilityStatus } from '@/features/availability/model/status'
 
 type SlotStatusDisplayProps = {
   status: AvailabilityStatus | string | null
