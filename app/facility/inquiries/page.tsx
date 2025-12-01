@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table'
 import { requireRealm } from '@/features/auth/helpers'
 import { getFacilityByStaffUserId } from '@/features/facility/infra/query/facility-query'
-import { getInquiriesByFacilityId } from '@/features/plan/infra/query/inquiry-query'
+import { getInquiriesByFacilityId } from '@/features/inquiry/infra/query/inquiry-query'
 
 export default async function InquiriesPage() {
   const session = await requireRealm('facility_staff', '/login')

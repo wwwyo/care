@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { requireRealm } from '@/features/auth/helpers'
 import { getFacilityByStaffUserId } from '@/features/facility/infra/query/facility-query'
-import { countNewInquiries } from '@/features/plan/infra/query/inquiry-query'
+import { countNewInquiries } from '@/features/inquiry/infra/query/inquiry-query'
 import { SlotStatusDisplay } from './slot-status-display'
 
 export default async function FacilityDashboard() {
