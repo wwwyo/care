@@ -1,4 +1,4 @@
-import { Decimal } from '@prisma/client/runtime/library'
+import { Decimal } from '@prisma/client/runtime/client'
 import { HearingTranscriptModel } from '@/features/hearing-transcript/core/model'
 import type {
   HearingTranscriptRepository,

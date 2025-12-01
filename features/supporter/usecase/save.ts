@@ -1,6 +1,6 @@
-import { getOrCreateDefaultTenant } from '@/features/supporter/infra/repository/tenant-repository'
 import { Supporter } from '@/features/supporter/core/model'
 import { supporterRepository } from '@/features/supporter/infra/repository/supporter-repository'
+import { getOrCreateDefaultTenant } from '@/features/supporter/infra/repository/tenant-repository'
 
 export type SaveSupporterInput = {
   userId: string

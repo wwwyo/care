@@ -1,6 +1,6 @@
 import { Plan, PlanService, PlanVersion } from '@/features/plan/core/model'
 import type { PlanRepository, PlanRepositoryError } from '@/features/plan/core/repository'
-import { Prisma } from '@/lib/generated/prisma'
+import { Prisma } from '@/lib/generated/prisma/client'
 import { prisma } from '@/lib/prisma'
 
 async function save(plan: Plan): Promise<undefined | PlanRepositoryError> {

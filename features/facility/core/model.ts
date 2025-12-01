@@ -3,7 +3,7 @@ import type {
   FacilityLocation,
   FacilityProfile,
   FacilityService,
-} from '@/lib/generated/prisma'
+} from '@/lib/generated/prisma/client'
 import { FacilityDescription } from './facility-description'
 import { FacilityName, FacilityNameKana } from './facility-name'
 import { OfficialFacilityId } from './official-facility-id'

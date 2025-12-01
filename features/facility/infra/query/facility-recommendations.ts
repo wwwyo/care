@@ -1,6 +1,6 @@
 import { type AvailabilityStatus, mapStatus } from '@/features/availability/model/status'
 import type { ServiceTypeValue } from '@/features/facility/core/service-type'
-import type { Prisma } from '@/lib/generated/prisma'
+import type { Prisma } from '@/lib/generated/prisma/client'
 import { prisma } from '@/lib/prisma'
 
 export type FacilityAvailabilityScore = {

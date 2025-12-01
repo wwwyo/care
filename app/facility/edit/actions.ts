@@ -17,11 +17,7 @@ const updateFacilitySchema = z.object({
   serviceType: z.string().optional(),
   phone: z.string().optional(),
   fax: z.string().optional(),
-  email: z
-    .string()
-    .email('正しいメールアドレス形式で入力してください')
-    .optional()
-    .or(z.literal('')),
+  email: z.email('正しいメールアドレス形式で入力してください').optional().or(z.literal('')),
   website: z.string().url('正しいURL形式で入力してください').optional().or(z.literal('')),
   address: z.string().optional(),
   postalCode: z.string().optional(),

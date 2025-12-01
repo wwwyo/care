@@ -1,4 +1,4 @@
-import type { Prisma, PrismaClient } from '@/lib/generated/prisma'
+import type { Prisma, PrismaClient } from '@/lib/generated/prisma/client'
 import { prisma } from '@/lib/prisma'
 
 /**

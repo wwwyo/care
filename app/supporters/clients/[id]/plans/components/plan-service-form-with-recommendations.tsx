@@ -126,7 +126,7 @@ export function PlanServiceFormWithRecommendations({
       // インデックスを再調整
       const newMap: { [key: number]: FacilityRecommendation[] } = {}
       Object.keys(updated).forEach((key) => {
-        const oldIndex = parseInt(key)
+        const oldIndex = parseInt(key, 10)
         const facilities = updated[oldIndex]
         if (!facilities) return
         if (oldIndex > index) {

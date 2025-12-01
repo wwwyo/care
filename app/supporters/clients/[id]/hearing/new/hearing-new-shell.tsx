@@ -259,7 +259,9 @@ export function HearingNewShell({
     if (autoKeys.length > 0) {
       setAutoFilledFactKeys((prev) => {
         const updated = new Set(prev)
-        autoKeys.forEach((key) => updated.add(key))
+        for (const key of autoKeys) {
+          updated.add(key)
+        }
         return updated
       })
     }

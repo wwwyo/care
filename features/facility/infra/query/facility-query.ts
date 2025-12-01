@@ -1,4 +1,4 @@
-import type { Prisma } from '@/lib/generated/prisma'
+import type { Prisma } from '@/lib/generated/prisma/client'
 import { prisma } from '@/lib/prisma'
 
 // Prismaのinclude設定を定義
