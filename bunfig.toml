@@ -1,7 +1,12 @@
 [install]
 exact = true
 minimumReleaseAge = 604800 # 1 week
-minimumReleaseAgeExcludes = ["@types/bun"]
+minimumReleaseAgeExcludes = [
+  "@types/bun",
+  "react", # CVE
+  "react-dom", # CVE
+  "next", # CVE
+]
 
 [test]
 preload = ["./test-setup.ts"]

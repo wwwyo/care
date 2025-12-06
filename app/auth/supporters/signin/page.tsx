@@ -101,15 +101,6 @@ export default function SupporterLoginPage() {
                   アカウントをお持ちでない方はこちら
                 </Button>
               </Link>
-
-              <div className="text-center space-y-2 pt-4 border-t w-full">
-                <Link
-                  href="/facility/login"
-                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  施設スタッフの方はこちら
-                </Link>
-              </div>
             </CardFooter>
           </form>
         </Card>

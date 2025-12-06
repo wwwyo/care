@@ -11,81 +11,170 @@ datasource db {
 }
 
 // =====================================================
-// 基本テーブル
+// better-auth 認証テーブル
 // =====================================================
 
-// tenants: マルチテナント用の組織テーブル
+model User {
+  id            String   @id
+  name          String
+  email         String
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime
+  updatedAt     DateTime
 
-model Tenant {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String   @db.VarChar(255)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  type String? // "supporter" | "client"
 
-  supporters Supporter[]
-  clients    Client[]
-  plans      Plan[]
+  sessions          Session[]
+  accounts          Account[]
+  members           Member[]
+  supporterProfile  SupporterProfile?
+  clients           Client[]
+  clientUsers       ClientUser[]
+  planVersions      PlanVersion[]               @relation("PlanVersionCreatedBy")
+  hearingMemos      HearingMemo[]
+  availabilityNotes SupporterAvailabilityNote[]
 
-  @@map("tenants")
+  @@unique([email])
+  @@map("users")
 }
 
-// supporters: 相談員（相談支援専門員）
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-model Supporter {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId  String   @map("tenant_id") @db.Uuid
-  userId    String   @map("user_id")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
-
-  tenant              Tenant                      @relation(fields: [tenantId], references: [id])
-  user                User                        @relation(fields: [userId], references: [id])
-  profile             SupporterProfile?
-  clientSupporters    ClientSupporter[]
-  planVersionsCreated PlanVersion[]               @relation("PlanVersionCreatedBy")
-  hearingMemos        HearingMemo[]
-  availabilityNotes   SupporterAvailabilityNote[]
-
-  @@index([tenantId])
-  @@index([userId])
-  @@map("supporters")
+  @@unique([token])
+  @@map("sessions")
 }
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("accounts")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verifications")
+}
+
+// =====================================================
+// better-auth Organization Plugin テーブル
+// =====================================================
+
+model Organization {
+  id        String   @id
+  name      String
+  slug      String   @unique
+  logo      String?
+  metadata  String?
+  createdAt DateTime @map("created_at")
+  updatedAt DateTime @map("updated_at")
+
+  members     Member[]
+  invitations Invitation[]
+  clients     Client[]
+  plans       Plan[]
+
+  @@map("organizations")
+}
+
+model Member {
+  id             String   @id
+  organizationId String   @map("organization_id")
+  userId         String   @map("user_id")
+  role           String
+  createdAt      DateTime @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("members")
+}
+
+model Invitation {
+  id             String   @id
+  organizationId String   @map("organization_id")
+  email          String
+  role           String
+  status         String
+  expiresAt      DateTime @map("expires_at")
+  inviterId      String   @map("inviter_id")
+  createdAt      DateTime @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("invitations")
+}
+
+// =====================================================
+// 基本テーブル
+// =====================================================
 
 // clients: サービス利用者
 
 model Client {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId  String   @map("tenant_id") @db.Uuid
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String   @map("organization_id")
+  userId         String?  @map("user_id")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  tenant                    Tenant                      @relation(fields: [tenantId], references: [id])
+  organization              Organization                @relation(fields: [organizationId], references: [id])
+  user                      User?                       @relation(fields: [userId], references: [id])
   profile                   ClientProfile?
   addresses                 ClientAddress[]
-  clientSupporters          ClientSupporter[]
+  clientUsers               ClientUser[]
   plans                     Plan[]
   hearingMemos              HearingMemo[]
   SupporterAvailabilityNote SupporterAvailabilityNote[]
 
-  @@index([tenantId])
+  @@index([organizationId])
+  @@index([userId])
   @@map("clients")
 }
 
-// client_supporters: 利用者と相談員の中間テーブル
-model ClientSupporter {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  clientId    String   @map("client_id") @db.Uuid
-  supporterId String   @map("supporter_id") @db.Uuid
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+// client_users: 利用者と相談員（User）の中間テーブル
+model ClientUser {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId  String   @map("client_id") @db.Uuid
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  client    Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  supporter Supporter @relation(fields: [supporterId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([clientId, supporterId])
+  @@unique([clientId, userId])
   @@index([clientId])
-  @@index([supporterId])
-  @@map("client_supporters")
+  @@index([userId])
+  @@map("client_users")
 }
 
 // facilities: 施設
@@ -101,72 +190,35 @@ model Facility {
   services                   FacilityService[]
   conditions                 FacilityCondition[]
   businessHours              FacilityBusinessHour[]
-  staff                      FacilityStaffFacility[]
-  availabilityReports        FacilityAvailabilityReport[]
   supporterAvailabilityNotes SupporterAvailabilityNote[]
   inquiries                  Inquiry[]
 
   @@map("facilities")
 }
 
-// facility_staff: 施設職員
-
-model FacilityStaff {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    String   @map("user_id")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
-
-  user                User                         @relation(fields: [userId], references: [id])
-  facilities          FacilityStaffFacility[]
-  availabilityReports FacilityAvailabilityReport[]
-
-  @@index([userId])
-  @@map("facility_staff")
-}
-
-// facility_staff_facilities: 施設職員と施設の関連
-
-model FacilityStaffFacility {
-  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  facilityStaffId String   @map("facility_staff_id") @db.Uuid
-  facilityId      String   @map("facility_id") @db.Uuid
-  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
-
-  facilityStaff FacilityStaff @relation(fields: [facilityStaffId], references: [id], onDelete: Cascade)
-  facility      Facility      @relation(fields: [facilityId], references: [id])
-
-  @@unique([facilityStaffId, facilityId])
-  @@index([facilityStaffId])
-  @@index([facilityId])
-  @@map("facility_staff_facilities")
-}
-
 // =====================================================
 // プロファイル関連テーブル
 // =====================================================
 
-// supporter_profiles: 相談員プロファイル
+// supporter_profiles: 相談員プロファイル（Userに紐付け）
 
 model SupporterProfile {
-  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  supporterId String    @unique @map("supporter_id") @db.Uuid
-  name        String    @db.VarChar(255)
-  nameKana    String?   @map("name_kana") @db.VarChar(255)
-  gender      String?   @db.VarChar(10)
-  birthDate   DateTime? @map("birth_date") @db.Date
-  phone       String?   @db.VarChar(20)
-  tenantId    String    @map("tenant_id") @db.Uuid
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @unique @map("user_id")
+  name      String    @db.VarChar(255)
+  nameKana  String?   @map("name_kana") @db.VarChar(255)
+  gender    String?   @db.VarChar(10)
+  birthDate DateTime? @map("birth_date") @db.Date
+  phone     String?   @db.VarChar(20)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  supporter Supporter @relation(fields: [supporterId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([tenantId])
   @@map("supporter_profiles")
 }
 
-// user_profiles: 利用者プロファイル
+// client_profiles: 利用者プロファイル
 
 model ClientProfile {
   id                       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -353,14 +405,14 @@ model FacilityBusinessHour {
 
 model Plan {
   id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId         String   @map("tenant_id") @db.Uuid
+  organizationId   String   @map("organization_id")
   clientId         String   @map("client_id") @db.Uuid
   currentVersionId String?  @map("current_version_id") @db.Uuid
   status           String   @default("draft") @db.VarChar(20)
   createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt        DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  tenant                    Tenant                      @relation(fields: [tenantId], references: [id])
+  organization              Organization                @relation(fields: [organizationId], references: [id])
   client                    Client                      @relation(fields: [clientId], references: [id])
   versions                  PlanVersion[]
   consents                  Consent[]
@@ -368,7 +420,7 @@ model Plan {
   SupporterAvailabilityNote SupporterAvailabilityNote[]
 
   @@unique([clientId])
-  @@index([tenantId])
+  @@index([organizationId])
   @@index([currentVersionId])
   @@map("plans")
 }
@@ -419,13 +471,13 @@ model PlanVersion {
   medicalTravelTime          String?   @map("medical_travel_time") @db.VarChar(100)
   validFrom                  DateTime  @default(now()) @map("valid_from") @db.Timestamptz
   validUntil                 DateTime? @map("valid_until") @db.Timestamptz
-  createdBy                  String    @map("created_by") @db.Uuid
+  createdBy                  String    @map("created_by")
   reasonForUpdate            String?   @map("reason_for_update") @db.Text
   createdAt                  DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt                  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   plan                      Plan                           @relation(fields: [planId], references: [id], onDelete: Cascade)
-  creator                   Supporter                      @relation("PlanVersionCreatedBy", fields: [createdBy], references: [id])
+  creator                   User                           @relation("PlanVersionCreatedBy", fields: [createdBy], references: [id])
   services                  PlanService[] // 利用したいサービス（厚労省様式3）
   accessibilityRequirements PlanAccessibilityRequirement[]
   customFields              PlanCustomField[]
@@ -557,22 +609,22 @@ model HearingTranscript {
 // hearing_memos: ヒアリングメモ
 
 model HearingMemo {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  clientId    String   @map("client_id") @db.Uuid
-  supporterId String   @map("supporter_id") @db.Uuid
-  date        DateTime @db.Date
-  title       String   @db.VarChar(255)
-  content     String   @db.Text // 議事録
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId  String   @map("client_id") @db.Uuid
+  userId    String   @map("user_id")
+  date      DateTime @db.Date
+  title     String   @db.VarChar(255)
+  content   String   @db.Text // 議事録
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   client      Client              @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  supporter   Supporter           @relation(fields: [supporterId], references: [id], onDelete: Cascade)
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   transcripts HearingTranscript[] // 文字起こし
   audioFiles  HearingAudio[] // 音声ファイル
 
   @@index([clientId])
-  @@index([supporterId])
+  @@index([userId])
   @@index([date])
   @@map("hearing_memos")
 }
@@ -593,36 +645,12 @@ model HearingAudio {
   @@map("hearing_audios")
 }
 
-// facility_availability_reports: 施設側空き状況レポート
-
-model FacilityAvailabilityReport {
-  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  facilityId     String    @map("facility_id") @db.Uuid
-  status         String    @db.VarChar(20)
-  validFrom      DateTime  @map("valid_from") @db.Timestamptz
-  validUntil     DateTime? @map("valid_until") @db.Timestamptz
-  note           String?   @db.Text
-  contextSummary String?   @map("context_summary") @db.VarChar(200)
-  contextDetails Json      @map("context_details")
-  confidence     Int?      @db.SmallInt
-  reportedById   String    @map("reported_by_id") @db.Uuid
-  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
-
-  facility Facility      @relation(fields: [facilityId], references: [id], onDelete: Cascade)
-  reporter FacilityStaff @relation(fields: [reportedById], references: [id], onDelete: Cascade)
-
-  @@index([facilityId, validUntil])
-  @@index([status])
-  @@map("facility_availability_reports")
-}
-
 // supporter_availability_notes: 相談員側空き状況メモ
 
 model SupporterAvailabilityNote {
   id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   facilityId     String   @map("facility_id") @db.Uuid
-  supporterId    String   @map("supporter_id") @db.Uuid
+  userId         String   @map("user_id")
   planId         String?  @map("plan_id") @db.Uuid
   clientId       String?  @map("client_id") @db.Uuid
   status         String   @db.VarChar(20)
@@ -634,12 +662,12 @@ model SupporterAvailabilityNote {
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  facility  Facility  @relation(fields: [facilityId], references: [id], onDelete: Cascade)
-  supporter Supporter @relation(fields: [supporterId], references: [id], onDelete: Cascade)
-  plan      Plan?     @relation(fields: [planId], references: [id], onDelete: SetNull)
-  client    Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan     Plan?    @relation(fields: [planId], references: [id], onDelete: SetNull)
+  client   Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
-  @@index([facilityId, supporterId])
+  @@index([facilityId, userId])
   @@index([planId])
   @@index([clientId])
   @@map("supporter_availability_notes")
@@ -758,70 +786,4 @@ model Audit {
   @@index([actorId])
   @@index([createdAt])
   @@map("audits")
-}
-
-// better-authの認証専用テーブル
-model User {
-  id            String    @id
-  name          String
-  email         String
-  emailVerified Boolean
-  image         String?
-  createdAt     DateTime
-  updatedAt     DateTime
-  sessions      Session[]
-  accounts      Account[]
-
-  realm String
-
-  supporters    Supporter[]
-  facilityStaff FacilityStaff[]
-
-  @@unique([email])
-  @@map("users")
-}
-
-model Session {
-  id        String   @id
-  expiresAt DateTime
-  token     String
-  createdAt DateTime
-  updatedAt DateTime
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([token])
-  @@map("sessions")
-}
-
-model Account {
-  id                    String    @id
-  accountId             String
-  providerId            String
-  userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?
-  password              String?
-  createdAt             DateTime
-  updatedAt             DateTime
-
-  @@map("accounts")
-}
-
-model Verification {
-  id         String    @id
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime?
-  updatedAt  DateTime?
-
-  @@map("verifications")
 }

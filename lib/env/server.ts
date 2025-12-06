@@ -15,6 +15,10 @@ const serverEnvSchema = z.object({
   // Better Auth
   BETTER_AUTH_SECRET: z.string().min(32),
 
+  // Google OAuth
+  GOOGLE_CLIENT_ID: z.string().min(1),
+  GOOGLE_CLIENT_SECRET: z.string().min(1),
+
   // Node environment
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
@@ -38,6 +42,8 @@ function parseServerEnv(): ServerEnv {
       RESEND_API_KEY: process.env.RESEND_API_KEY,
       EMAIL_FROM: process.env.EMAIL_FROM,
       BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+      GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+      GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
       NODE_ENV: process.env.NODE_ENV,
       OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     })
