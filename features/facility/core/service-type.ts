@@ -137,9 +137,7 @@ const SERVICE_TYPE_DISPLAY_NAMES: Record<ServiceTypeValue, string> = {
 /**
  * 日本語表示名からサービス種別コードを解決
  */
-export function resolveServiceTypeValue(
-  displayName: string | null | undefined,
-): ServiceTypeValue | null {
+export function resolveServiceTypeValue(displayName: string | null | undefined): ServiceTypeValue | null {
   if (!displayName) return null
   const match = Object.entries(SERVICE_TYPE_DISPLAY_NAMES).find(([, name]) => name === displayName)
   if (!match) return null

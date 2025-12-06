@@ -5,10 +5,7 @@ import { prisma } from '@/lib/prisma'
  * テナントIDを設定してPrismaクライアントを使用するヘルパー
  * RLSでテナント分離を実現するため、各クエリ実行前にテナントIDを設定
  */
-export async function prismaWithTenant<T>(
-  tenantId: string,
-  fn: (prisma: PrismaClient) => Promise<T>,
-): Promise<T> {
+export async function prismaWithTenant<T>(tenantId: string, fn: (prisma: PrismaClient) => Promise<T>): Promise<T> {
   // PostgreSQLのセッション変数にテナントIDを設定
   await prisma.$executeRaw`SET LOCAL app.current_tenant_id = ${tenantId}`
 

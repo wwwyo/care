@@ -24,11 +24,11 @@
      - `Account` → `accounts`
      - `Verification` → `verifications`
 
-3. **ログインページの実装**
+3. **サインインページの実装**
    - `/login` - 利用者用（realm='client'）
-   - `/supporter/login` - 相談員用（realm='supporter'）
+   - `/auth/supporters/signin` - 相談員用（realm='supporter'）
    - `/facility/login` - 施設管理者用（realm='facility'）
-   - 各ページでサインアップ/ログインを切り替え可能
+   - 各ページでサインアップ/サインインを切り替え可能
    - サインアップ時に自動的にrealmを設定
 
 4. **ルーティング構造**

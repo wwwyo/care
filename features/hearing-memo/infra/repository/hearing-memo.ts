@@ -1,13 +1,8 @@
 import { HearingMemoModel } from '@/features/hearing-memo/core/model'
-import type {
-  HearingMemoRepository,
-  HearingMemoRepositoryError,
-} from '@/features/hearing-memo/core/repository'
+import type { HearingMemoRepository, HearingMemoRepositoryError } from '@/features/hearing-memo/core/repository'
 import { prisma } from '@/lib/prisma'
 
-const save = async (
-  memo: HearingMemoModel,
-): Promise<HearingMemoModel | HearingMemoRepositoryError> => {
+const save = async (memo: HearingMemoModel): Promise<HearingMemoModel | HearingMemoRepositoryError> => {
   try {
     const data = memo.toJSON()
 
@@ -75,9 +70,7 @@ const findById = async (id: string): Promise<HearingMemoModel | HearingMemoRepos
   }
 }
 
-const findByClientId = async (
-  clientId: string,
-): Promise<HearingMemoModel[] | HearingMemoRepositoryError> => {
+const findByClientId = async (clientId: string): Promise<HearingMemoModel[] | HearingMemoRepositoryError> => {
   try {
     const memos = await prisma.hearingMemo.findMany({
       where: { clientId },
@@ -91,9 +84,7 @@ const findByClientId = async (
   }
 }
 
-const findBySupporterId = async (
-  supporterId: string,
-): Promise<HearingMemoModel[] | HearingMemoRepositoryError> => {
+const findBySupporterId = async (supporterId: string): Promise<HearingMemoModel[] | HearingMemoRepositoryError> => {
   try {
     const memos = await prisma.hearingMemo.findMany({
       where: { supporterId },

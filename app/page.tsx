@@ -15,7 +15,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 w-full">
+        <div className="grid w-full">
           <Card>
             <CardHeader>
               <CardTitle>相談員の方</CardTitle>
@@ -23,19 +23,7 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <Button asChild className="w-full">
-                <Link href="/supporter/login">相談員ログイン</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>施設スタッフの方</CardTitle>
-              <CardDescription>空き状況の更新と照会への対応を簡単に</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button asChild className="w-full" variant="secondary">
-                <Link href="/facility/login">施設ログイン</Link>
+                <Link href="/auth/supporters/signin">相談員ログイン</Link>
               </Button>
             </CardContent>
           </Card>

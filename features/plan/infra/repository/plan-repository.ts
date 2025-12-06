@@ -145,12 +145,7 @@ async function findById(id: string): Promise<Plan | PlanRepositoryError> {
         PlanService.fromPersistence({
           id: serviceData.id,
           planVersionId: serviceData.planVersionId,
-          serviceCategory: serviceData.serviceCategory as
-            | 'home'
-            | 'residential'
-            | 'daytime'
-            | 'other'
-            | 'child',
+          serviceCategory: serviceData.serviceCategory as 'home' | 'residential' | 'daytime' | 'other' | 'child',
           serviceType: serviceData.serviceType,
           desiredAmount: serviceData.desiredAmount,
           desiredLifeByService: serviceData.desiredLifeByService,
@@ -220,12 +215,7 @@ async function findByClientId(clientId: string): Promise<Plan[] | PlanRepository
           PlanService.fromPersistence({
             id: serviceData.id,
             planVersionId: serviceData.planVersionId,
-            serviceCategory: serviceData.serviceCategory as
-              | 'home'
-              | 'residential'
-              | 'daytime'
-              | 'other'
-              | 'child',
+            serviceCategory: serviceData.serviceCategory as 'home' | 'residential' | 'daytime' | 'other' | 'child',
             serviceType: serviceData.serviceType,
             desiredAmount: serviceData.desiredAmount,
             desiredLifeByService: serviceData.desiredLifeByService,

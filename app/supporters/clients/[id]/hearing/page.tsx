@@ -1,6 +1,6 @@
-import { ArrowLeft, NotebookPen, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { ArrowLeft, NotebookPen, Plus } from '@/components/icon'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { requireRealm } from '@/features/auth/helpers'
@@ -92,13 +92,9 @@ export default async function HearingMemoListPage({ params }: HearingMemoListPag
                           ・担当: {memo.supporter.profile?.name || '担当者未設定'}
                         </p>
                         {contentPreview && (
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {contentPreview}
-                          </p>
+                          <p className="text-sm text-muted-foreground line-clamp-2">{contentPreview}</p>
                         )}
-                        {!hasContent && (
-                          <p className="text-sm text-orange-600 mt-2">内容が未入力です</p>
-                        )}
+                        {!hasContent && <p className="text-sm text-orange-600 mt-2">内容が未入力です</p>}
                       </div>
                     </div>
                   </Link>

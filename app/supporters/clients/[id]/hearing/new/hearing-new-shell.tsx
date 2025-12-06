@@ -1,9 +1,9 @@
 'use client'
 
-import { ArrowLeft, ChevronDown, ChevronRight, Mic, Plus, Sparkles, Wand2 } from 'lucide-react'
 import Form from 'next/form'
 import Link from 'next/link'
 import { useActionState, useEffect, useMemo, useRef, useState, useTransition } from 'react'
+import { ArrowLeft, ChevronDown, ChevronRight, Mic, Plus, Sparkles, Wand2 } from '@/components/icon'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -63,10 +63,7 @@ interface HearingNewShellProps {
   defaultDate: string
   initialTitle: string
   initialSummary: SummarySection[]
-  createAction: (
-    prevState: CreateHearingFormState,
-    formData: FormData,
-  ) => Promise<CreateHearingFormState>
+  createAction: (prevState: CreateHearingFormState, formData: FormData) => Promise<CreateHearingFormState>
   initialFormState: CreateHearingFormState
   backHref: string
 }
@@ -139,18 +136,14 @@ export function HearingNewShell({
   const handleSummaryContentChange = (id: string, value: string) => {
     manualEditedSections.current.add(id)
     setSummarySections((prev) =>
-      prev.map((section) =>
-        section.id === id ? { ...section, content: value, aiGenerated: false } : section,
-      ),
+      prev.map((section) => (section.id === id ? { ...section, content: value, aiGenerated: false } : section)),
     )
   }
 
   const handleSummaryTitleChange = (id: string, value: string) => {
     manualEditedSections.current.add(id)
     setSummarySections((prev) =>
-      prev.map((section) =>
-        section.id === id ? { ...section, title: value, aiGenerated: false } : section,
-      ),
+      prev.map((section) => (section.id === id ? { ...section, title: value, aiGenerated: false } : section)),
     )
   }
 
@@ -269,8 +262,7 @@ export function HearingNewShell({
 
   useEffect(() => {
     const currentCount = transcriptions.length
-    const shouldAutoUpdate =
-      currentCount > 0 && currentCount % 3 === 0 && currentCount > lastAutoUpdateCount.current
+    const shouldAutoUpdate = currentCount > 0 && currentCount % 3 === 0 && currentCount > lastAutoUpdateCount.current
 
     if (!shouldAutoUpdate) {
       return
@@ -293,9 +285,7 @@ export function HearingNewShell({
             prev.map((section) => {
               const match =
                 result.sections.find((item) =>
-                  item.slug && section.slug
-                    ? item.slug === section.slug
-                    : item.title === section.title,
+                  item.slug && section.slug ? item.slug === section.slug : item.title === section.title,
                 ) ?? null
 
               if (!match) {
@@ -381,26 +371,15 @@ export function HearingNewShell({
                   onClick={() => setIsHeaderExpanded((prev) => !prev)}
                   className="flex items-center gap-2"
                 >
-                  {isHeaderExpanded ? (
-                    <ChevronDown className="h-4 w-4" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4" />
-                  )}
+                  {isHeaderExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                   利用者情報
                 </Button>
               </div>
             </div>
             {isHeaderExpanded && (
               <div className="mt-3 space-y-4">
-                <ClientSummary
-                  client={client}
-                  className="rounded-xl border border-border bg-background p-4"
-                />
-                <ClientFactPanel
-                  facts={factValues}
-                  autoFilledKeys={autoFilledFactKeys}
-                  onChange={handleFactChange}
-                />
+                <ClientSummary client={client} className="rounded-xl border border-border bg-background p-4" />
+                <ClientFactPanel facts={factValues} autoFilledKeys={autoFilledFactKeys} onChange={handleFactChange} />
               </div>
             )}
           </div>
@@ -430,16 +409,11 @@ export function HearingNewShell({
                       {summarySections.map((section, index) => (
                         <div
                           key={section.id}
-                          className={cn(
-                            'flex flex-col gap-3',
-                            index === 0 ? '' : 'border-t border-border/60 pt-6',
-                          )}
+                          className={cn('flex flex-col gap-3', index === 0 ? '' : 'border-t border-border/60 pt-6')}
                         >
                           <Input
                             value={section.title}
-                            onChange={(event) =>
-                              handleSummaryTitleChange(section.id, event.target.value)
-                            }
+                            onChange={(event) => handleSummaryTitleChange(section.id, event.target.value)}
                             className="text-base font-semibold"
                             placeholder="項目名"
                           />
@@ -451,9 +425,7 @@ export function HearingNewShell({
                           )}
                           <Textarea
                             value={section.content}
-                            onChange={(event) =>
-                              handleSummaryContentChange(section.id, event.target.value)
-                            }
+                            onChange={(event) => handleSummaryContentChange(section.id, event.target.value)}
                             rows={5}
                             className="resize-none"
                             placeholder="聞き取った内容をメモしましょう"
@@ -475,9 +447,7 @@ export function HearingNewShell({
                         </div>
                       </div>
                       {autoUpdateError && (
-                        <p className="text-sm text-destructive">
-                          AIの更新に失敗しました: {autoUpdateError}
-                        </p>
+                        <p className="text-sm text-destructive">AIの更新に失敗しました: {autoUpdateError}</p>
                       )}
                     </div>
                   </div>
@@ -607,10 +577,7 @@ function ClientSummary({ client, className }: ClientSummaryProps) {
       <InfoItem label="要介護度" value={getFactOptionLabel('careLevel', careLevel)} />
       <InfoItem label="住所" value={addressLine} />
       <InfoItem label="緊急連絡先" value={emergencyContactName} />
-      <InfoItem
-        label="続柄"
-        value={getFactOptionLabel('emergencyContactRelation', emergencyContactRelation)}
-      />
+      <InfoItem label="続柄" value={getFactOptionLabel('emergencyContactRelation', emergencyContactRelation)} />
       <InfoItem label="緊急連絡先電話" value={emergencyContactPhone} />
       <InfoItem label="備考" value={notes} className="md:col-span-3" />
     </div>

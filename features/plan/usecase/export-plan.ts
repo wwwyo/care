@@ -96,10 +96,7 @@ function readZip(buffer: Buffer): ParsedZip {
       continue
     }
 
-    if (
-      signature === CENTRAL_DIRECTORY_SIGNATURE ||
-      signature === END_OF_CENTRAL_DIRECTORY_SIGNATURE
-    ) {
+    if (signature === CENTRAL_DIRECTORY_SIGNATURE || signature === END_OF_CENTRAL_DIRECTORY_SIGNATURE) {
       break
     }
 
@@ -139,12 +136,7 @@ function writeZip(parsed: ParsedZip): Buffer {
     localHeader.writeUInt16LE(fileNameBuffer.length, 26)
     localHeader.writeUInt16LE(extraField.length, 28)
 
-    localParts.push(
-      localHeader,
-      fileNameBuffer,
-      extraField,
-      entry.isDirectory ? Buffer.alloc(0) : compressedData,
-    )
+    localParts.push(localHeader, fileNameBuffer, extraField, entry.isDirectory ? Buffer.alloc(0) : compressedData)
 
     const centralHeader = Buffer.alloc(46)
     centralHeader.writeUInt32LE(CENTRAL_DIRECTORY_SIGNATURE, 0)

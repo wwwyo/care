@@ -31,16 +31,38 @@
       },
       "style": {
         "noNonNullAssertion": "off",
-        "useConst": "error"
+        "useConst": "error",
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "lucide-react": {
+                "message": "アイコンは '@/components/icon' からインポートしてください。"
+              }
+            }
+          }
+        }
       }
     }
   },
+  "overrides": [
+    {
+      "includes": ["components/icon/index.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": "off"
+          }
+        }
+      }
+    }
+  ],
   "formatter": {
     "enabled": true,
     "formatWithErrors": false,
     "indentStyle": "space",
     "indentWidth": 2,
-    "lineWidth": 100,
+    "lineWidth": 120,
     "lineEnding": "lf"
   },
   "css": {

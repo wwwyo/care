@@ -1,20 +1,14 @@
 'use server'
 
 import { updateHearingMemoContent } from '@/features/hearing-memo/usecase/update-memo'
-import {
-  addHearingTranscript,
-  updateHearingTranscripts,
-} from '@/features/hearing-memo/usecase/update-transcription'
+import { addHearingTranscript, updateHearingTranscripts } from '@/features/hearing-memo/usecase/update-transcription'
 
 type ActionError = {
   type: 'Error'
   message: string
 }
 
-export async function saveDocument(
-  memoId: string,
-  formData: FormData,
-): Promise<{ success: true } | ActionError> {
+export async function saveDocument(memoId: string, formData: FormData): Promise<{ success: true } | ActionError> {
   const document = formData.get('document') as string
 
   const result = await updateHearingMemoContent(memoId, document)
@@ -39,10 +33,7 @@ export async function saveTranscription(
   return { success: true }
 }
 
-export async function addTranscriptionItem(
-  memoId: string,
-  text: string,
-): Promise<{ success: true } | ActionError> {
+export async function addTranscriptionItem(memoId: string, text: string): Promise<{ success: true } | ActionError> {
   const result = await addHearingTranscript(memoId, text)
 
   if ('type' in result) {
@@ -52,10 +43,7 @@ export async function addTranscriptionItem(
   return { success: true }
 }
 
-export async function updateTitle(
-  memoId: string,
-  formData: FormData,
-): Promise<{ success: true } | ActionError> {
+export async function updateTitle(memoId: string, formData: FormData): Promise<{ success: true } | ActionError> {
   const title = formData.get('title') as string
 
   if (!title || title.trim() === '') {

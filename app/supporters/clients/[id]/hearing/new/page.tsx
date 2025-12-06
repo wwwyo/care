@@ -70,9 +70,7 @@ function calculateAge(birthDate: Date | null): number | null {
   return age
 }
 
-function toClientSnapshot(
-  client: NonNullable<Awaited<ReturnType<typeof getClientById>>>,
-): ClientSnapshot {
+function toClientSnapshot(client: NonNullable<Awaited<ReturnType<typeof getClientById>>>): ClientSnapshot {
   const profile = client.profile
   const primaryAddress = client.addresses?.[0]
 
@@ -140,8 +138,7 @@ export default async function NewHearingMemoPage({ params }: NewHearingMemoPageP
     })
 
     if (!formInput.success) {
-      const message =
-        formInput.error.issues[0]?.message ?? '入力内容の検証に失敗しました。再度お試しください。'
+      const message = formInput.error.issues[0]?.message ?? '入力内容の検証に失敗しました。再度お試しください。'
       return { status: 'error', message }
     }
 
@@ -176,8 +173,7 @@ export default async function NewHearingMemoPage({ params }: NewHearingMemoPageP
         return { status: 'error', message: '文字起こしデータの読み込みに失敗しました' }
       }
 
-      const transcriptionsResult =
-        TranscriptionPayloadSchema.array().safeParse(parsedTranscriptions)
+      const transcriptionsResult = TranscriptionPayloadSchema.array().safeParse(parsedTranscriptions)
       if (!transcriptionsResult.success) {
         return { status: 'error', message: '文字起こしデータの形式が不正です' }
       }

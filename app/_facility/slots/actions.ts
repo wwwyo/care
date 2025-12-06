@@ -4,10 +4,7 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { requireRealm } from '@/features/auth/helpers'
 import { recordFacilityAvailability } from '@/features/availability/usecase/record-facility-availability'
-import {
-  getFacilityByStaffUserId,
-  getFacilityStaffByUserId,
-} from '@/features/facility/infra/query/facility-query'
+import { getFacilityByStaffUserId, getFacilityStaffByUserId } from '@/features/facility/infra/query/facility-query'
 
 const updateSlotStatusSchema = z.object({
   status: z.enum(['available', 'limited', 'unavailable'], {
@@ -27,10 +24,7 @@ type ActionState = {
   values?: Record<string, string>
 } | null
 
-export async function updateSlotStatusAction(
-  _prevState: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
+export async function updateSlotStatusAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await requireRealm('facility_staff', '/login')
 
   const [facility, facilityStaff] = await Promise.all([

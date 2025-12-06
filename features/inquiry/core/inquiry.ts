@@ -9,14 +9,7 @@ export class Inquiry {
   ) {}
 
   static create(params: { planId: string; facilityId: string }): Inquiry {
-    return new Inquiry(
-      crypto.randomUUID(),
-      params.planId,
-      params.facilityId,
-      'pending',
-      new Date(),
-      new Date(),
-    )
+    return new Inquiry(crypto.randomUUID(), params.planId, params.facilityId, 'pending', new Date(), new Date())
   }
 
   static fromPrisma(data: {
@@ -27,14 +20,7 @@ export class Inquiry {
     createdAt: Date
     updatedAt: Date
   }): Inquiry {
-    return new Inquiry(
-      data.id,
-      data.planId,
-      data.facilityId,
-      data.status,
-      data.createdAt,
-      data.updatedAt,
-    )
+    return new Inquiry(data.id, data.planId, data.facilityId, data.status, data.createdAt, data.updatedAt)
   }
 
   updateStatus(status: 'pending' | 'accepted' | 'rejected' | 'closed'): Inquiry {

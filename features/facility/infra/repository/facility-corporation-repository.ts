@@ -4,9 +4,7 @@ import type {
 } from '@/features/facility/core/corporation-repository'
 import { prisma } from '@/lib/prisma'
 
-async function findByCorporateNumber(
-  corporateNumber: string,
-): Promise<FacilityCorporationData | null> {
+async function findByCorporateNumber(corporateNumber: string): Promise<FacilityCorporationData | null> {
   const corporation = await prisma.facilityCorporation.findUnique({
     where: { corporateNumber },
   })

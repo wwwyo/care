@@ -3,14 +3,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { requireRealm } from '@/features/auth/helpers'
 import { getFacilityByStaffUserId } from '@/features/facility/infra/query/facility-query'
 import { getInquiriesByFacilityId } from '@/features/inquiry/infra/query/inquiry-query'
@@ -23,9 +16,7 @@ export default async function InquiriesPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <Alert variant="destructive">
-          <AlertDescription>
-            施設情報が登録されていません。管理者にお問い合わせください。
-          </AlertDescription>
+          <AlertDescription>施設情報が登録されていません。管理者にお問い合わせください。</AlertDescription>
         </Alert>
       </div>
     )

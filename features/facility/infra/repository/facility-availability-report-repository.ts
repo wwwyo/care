@@ -3,17 +3,11 @@ import { FacilityAvailabilityReport } from '@/features/availability/model/facili
 import type { FacilityAvailabilityReportRepository } from '@/features/availability/model/repository'
 import { prisma } from '@/lib/prisma'
 
-type FacilityAvailabilityRecord = NonNullable<
-  Awaited<ReturnType<typeof prisma.facilityAvailabilityReport.findFirst>>
->
+type FacilityAvailabilityRecord = NonNullable<Awaited<ReturnType<typeof prisma.facilityAvailabilityReport.findFirst>>>
 
-type FacilityAvailabilityListRecord = Awaited<
-  ReturnType<typeof prisma.facilityAvailabilityReport.findMany>
->[number]
+type FacilityAvailabilityListRecord = Awaited<ReturnType<typeof prisma.facilityAvailabilityReport.findMany>>[number]
 
-function toDomain(
-  record: FacilityAvailabilityRecord | FacilityAvailabilityListRecord,
-): FacilityAvailabilityReport {
+function toDomain(record: FacilityAvailabilityRecord | FacilityAvailabilityListRecord): FacilityAvailabilityReport {
   const contextDetails = AvailabilityContext.create(record.contextDetails ?? []).toJSON()
 
   return FacilityAvailabilityReport.fromData({
@@ -40,9 +34,7 @@ async function save(report: FacilityAvailabilityReport): Promise<void> {
   })
 }
 
-async function findLatestByFacility(
-  facilityId: string,
-): Promise<FacilityAvailabilityReport | null> {
+async function findLatestByFacility(facilityId: string): Promise<FacilityAvailabilityReport | null> {
   const now = new Date()
 
   const record = await prisma.facilityAvailabilityReport.findFirst({

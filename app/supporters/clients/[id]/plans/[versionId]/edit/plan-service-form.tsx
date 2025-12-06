@@ -1,16 +1,10 @@
-import { Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { Trash2 } from '@/components/icon'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import type { FacilityRecommendation } from '@/features/facility/infra/query/facility-recommendations'
 import { FacilityRecommendations } from '../../components/facility-recommendations'
@@ -62,11 +56,7 @@ type ServiceItemFormProps = {
   service: ServiceFormData
   disabled?: boolean
   readOnly?: boolean
-  onServiceChange: (
-    index: number,
-    field: keyof ServiceFormData,
-    value: ServiceFormData[keyof ServiceFormData],
-  ) => void
+  onServiceChange: (index: number, field: keyof ServiceFormData, value: ServiceFormData[keyof ServiceFormData]) => void
   onRemove: (index: number) => void
   onShowFacilityDetail?: (facilityId: string | null) => void
 }
@@ -130,39 +120,15 @@ function ServiceItemForm({
 
         {/* Hidden form fields for submission */}
         <input type="hidden" name={`services[${index}].id`} value={service.id || ''} />
-        <input
-          type="hidden"
-          name={`services[${index}].serviceCategory`}
-          value={service.serviceCategory}
-        />
+        <input type="hidden" name={`services[${index}].serviceCategory`} value={service.serviceCategory} />
         <input type="hidden" name={`services[${index}].serviceType`} value={service.serviceType} />
-        <input
-          type="hidden"
-          name={`services[${index}].desiredAmount`}
-          value={service.desiredAmount}
-        />
-        <input
-          type="hidden"
-          name={`services[${index}].desiredLifeByService`}
-          value={service.desiredLifeByService}
-        />
-        <input
-          type="hidden"
-          name={`services[${index}].achievementPeriod`}
-          value={service.achievementPeriod}
-        />
+        <input type="hidden" name={`services[${index}].desiredAmount`} value={service.desiredAmount} />
+        <input type="hidden" name={`services[${index}].desiredLifeByService`} value={service.desiredLifeByService} />
+        <input type="hidden" name={`services[${index}].achievementPeriod`} value={service.achievementPeriod} />
         {service.selectedFacilities?.map((facility, fidx) => (
           <div key={facility.id}>
-            <input
-              type="hidden"
-              name={`services[${index}].selectedFacilities[${fidx}].id`}
-              value={facility.id}
-            />
-            <input
-              type="hidden"
-              name={`services[${index}].selectedFacilities[${fidx}].name`}
-              value={facility.name}
-            />
+            <input type="hidden" name={`services[${index}].selectedFacilities[${fidx}].id`} value={facility.id} />
+            <input type="hidden" name={`services[${index}].selectedFacilities[${fidx}].name`} value={facility.name} />
           </div>
         ))}
 
@@ -172,8 +138,7 @@ function ServiceItemForm({
             {readOnly ? (
               <Input
                 value={
-                  SERVICE_CATEGORIES.find((c) => c.value === service.serviceCategory)?.label ||
-                  service.serviceCategory
+                  SERVICE_CATEGORIES.find((c) => c.value === service.serviceCategory)?.label || service.serviceCategory
                 }
                 readOnly
                 className="bg-gray-50"
@@ -212,15 +177,14 @@ function ServiceItemForm({
                   <SelectValue placeholder="サービスを選択" />
                 </SelectTrigger>
                 <SelectContent>
-                  {service.serviceCategory &&
-                  service.serviceCategory in SERVICE_TYPES_BY_CATEGORY ? (
-                    SERVICE_TYPES_BY_CATEGORY[
-                      service.serviceCategory as keyof typeof SERVICE_TYPES_BY_CATEGORY
-                    ].map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))
+                  {service.serviceCategory && service.serviceCategory in SERVICE_TYPES_BY_CATEGORY ? (
+                    SERVICE_TYPES_BY_CATEGORY[service.serviceCategory as keyof typeof SERVICE_TYPES_BY_CATEGORY].map(
+                      (type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ),
+                    )
                   ) : (
                     <SelectItem value="">サービスカテゴリーを選択してください</SelectItem>
                   )}
@@ -270,9 +234,7 @@ function ServiceItemForm({
 
         {service.selectedFacilities && service.selectedFacilities.length > 0 && (
           <div className="p-3 bg-primary/5 rounded-lg">
-            <p className="text-sm font-medium mb-2">
-              施設候補（{service.selectedFacilities.length}/3）
-            </p>
+            <p className="text-sm font-medium mb-2">施設候補（{service.selectedFacilities.length}/3）</p>
             <div className="space-y-1">
               {service.selectedFacilities.map((facility) => (
                 <p key={facility.id} className="text-sm text-muted-foreground">

@@ -36,10 +36,7 @@ type ActionState = {
   values?: Record<string, string>
 } | null
 
-export async function updateClientAction(
-  _prevState: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
+export async function updateClientAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   // フォームの値を保存（エラー時に返す）
   const formValues = Object.fromEntries(formData.entries())
 
@@ -131,9 +128,7 @@ export async function updateClientAction(
     address: addressData,
     phoneNumber: profile.phone || undefined,
     emergencyContact:
-      profile.emergencyContactName ||
-      profile.emergencyContactRelation ||
-      profile.emergencyContactPhone
+      profile.emergencyContactName || profile.emergencyContactRelation || profile.emergencyContactPhone
         ? {
             name: profile.emergencyContactName || '',
             relationship: profile.emergencyContactRelation || '',

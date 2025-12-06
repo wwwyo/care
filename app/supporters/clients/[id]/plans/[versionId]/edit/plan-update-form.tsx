@@ -1,10 +1,10 @@
 'use client'
 
-import { AlertCircle, CheckCircle, Copy, Link as LinkIcon } from 'lucide-react'
 import Form from 'next/form'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useActionState, useCallback, useState } from 'react'
 import { toast } from 'sonner'
+import { AlertCircle, CheckCircle, Copy, Link as LinkIcon } from '@/components/icon'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -211,9 +211,7 @@ export function PlanUpdateForm({
                     placeholder="どのような生活を希望されていますか？"
                     className={`min-h-[120px] ${isPublished ? 'bg-gray-50' : ''}`}
                     defaultValue={
-                      generatedData?.desiredLife ||
-                      updateState.formData?.desiredLife ||
-                      initialData.desiredLife
+                      generatedData?.desiredLife || updateState.formData?.desiredLife || initialData.desiredLife
                     }
                     key={generatedData?.desiredLife ? 'generated-desired' : 'default-desired'}
                     readOnly={isPublished}
@@ -230,11 +228,7 @@ export function PlanUpdateForm({
                     name="troubles"
                     placeholder="現在困っていることは何ですか？"
                     className={`min-h-[120px] ${isPublished ? 'bg-gray-50' : ''}`}
-                    defaultValue={
-                      generatedData?.troubles ||
-                      updateState.formData?.troubles ||
-                      initialData.troubles
-                    }
+                    defaultValue={generatedData?.troubles || updateState.formData?.troubles || initialData.troubles}
                     key={generatedData?.troubles ? 'generated-troubles' : 'default-troubles'}
                     readOnly={isPublished}
                   />
@@ -268,11 +262,7 @@ export function PlanUpdateForm({
                       updateState.formData?.considerations ||
                       initialData.considerations
                     }
-                    key={
-                      generatedData?.considerations
-                        ? 'generated-considerations'
-                        : 'default-considerations'
-                    }
+                    key={generatedData?.considerations ? 'generated-considerations' : 'default-considerations'}
                     readOnly={isPublished}
                   />
                 </CardContent>
@@ -356,9 +346,7 @@ export function PlanUpdateForm({
       {/* 確定版の情報メッセージ */}
       {isPublished && (
         <Alert>
-          <AlertDescription>
-            この計画書は確定版です。変更するには新しいバージョンを作成してください。
-          </AlertDescription>
+          <AlertDescription>この計画書は確定版です。変更するには新しいバージョンを作成してください。</AlertDescription>
         </Alert>
       )}
 
@@ -407,11 +395,7 @@ export function PlanUpdateForm({
 
       {/* AI生成セクション */}
       {!isPublished && hearingMemos.length > 0 && (
-        <HearingMemoSelector
-          hearingMemos={hearingMemos}
-          onGenerate={handleAIGenerate}
-          isGenerating={isGenerating}
-        />
+        <HearingMemoSelector hearingMemos={hearingMemos} onGenerate={handleAIGenerate} isGenerating={isGenerating} />
       )}
 
       <Form action={updateFormAction} className="space-y-6">
@@ -427,11 +411,7 @@ export function PlanUpdateForm({
               name="desiredLife"
               placeholder="どのような生活を希望されていますか？"
               className={`min-h-[120px] ${isPublished ? 'bg-gray-50' : ''}`}
-              defaultValue={
-                generatedData?.desiredLife ||
-                updateState.formData?.desiredLife ||
-                initialData.desiredLife
-              }
+              defaultValue={generatedData?.desiredLife || updateState.formData?.desiredLife || initialData.desiredLife}
               key={generatedData?.desiredLife ? 'generated-desired' : 'default-desired'}
               readOnly={isPublished}
             />
@@ -447,9 +427,7 @@ export function PlanUpdateForm({
               name="troubles"
               placeholder="現在困っていることは何ですか？"
               className={`min-h-[120px] ${isPublished ? 'bg-gray-50' : ''}`}
-              defaultValue={
-                generatedData?.troubles || updateState.formData?.troubles || initialData.troubles
-              }
+              defaultValue={generatedData?.troubles || updateState.formData?.troubles || initialData.troubles}
               key={generatedData?.troubles ? 'generated-troubles' : 'default-troubles'}
               readOnly={isPublished}
             />
@@ -479,15 +457,9 @@ export function PlanUpdateForm({
               placeholder="移動支援、設備要件、医療的ケア、食事要件など"
               className={`min-h-[120px] ${isPublished ? 'bg-gray-50' : ''}`}
               defaultValue={
-                generatedData?.considerations ||
-                updateState.formData?.considerations ||
-                initialData.considerations
+                generatedData?.considerations || updateState.formData?.considerations || initialData.considerations
               }
-              key={
-                generatedData?.considerations
-                  ? 'generated-considerations'
-                  : 'default-considerations'
-              }
+              key={generatedData?.considerations ? 'generated-considerations' : 'default-considerations'}
               readOnly={isPublished}
             />
           </CardContent>

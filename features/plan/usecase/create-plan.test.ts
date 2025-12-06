@@ -31,8 +31,7 @@ describe('createPlanUseCase', () => {
     expect(result).not.toHaveProperty('type')
     expect(mockPlanRepository.save).toHaveBeenCalledTimes(1)
 
-    const savedPlan = (mockPlanRepository.save as ReturnType<typeof mock>).mock
-      .calls[0]?.[0] as Plan
+    const savedPlan = (mockPlanRepository.save as ReturnType<typeof mock>).mock.calls[0]?.[0] as Plan
     expect(savedPlan.tenantId).toBe('tenant-123')
     expect(savedPlan.clientId).toBe('client-456')
     expect(savedPlan.status).toBe('draft')
@@ -60,8 +59,7 @@ describe('createPlanUseCase', () => {
     expect(result).not.toHaveProperty('type')
     expect(mockPlanRepository.save).toHaveBeenCalledTimes(1)
 
-    const savedPlan = (mockPlanRepository.save as ReturnType<typeof mock>).mock
-      .calls[0]?.[0] as Plan
+    const savedPlan = (mockPlanRepository.save as ReturnType<typeof mock>).mock.calls[0]?.[0] as Plan
     const version = savedPlan.versions[0]
     expect(version?.desiredLife).toBeNull()
     expect(version?.troubles).toBeNull()

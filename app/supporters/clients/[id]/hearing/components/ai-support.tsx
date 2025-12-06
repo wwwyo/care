@@ -29,8 +29,7 @@ export function AiSupport({ transcription, currentMemo, isActive = true }: AiSup
           {
             key: 'missing-topics',
             title: 'まだ聞けていない重要項目',
-            description:
-              'ヒアリングで触れられていない内容です。状況確認の優先順位にご活用ください。',
+            description: 'ヒアリングで触れられていない内容です。状況確認の優先順位にご活用ください。',
             items: suggestions.missingTopics,
           },
           {
@@ -66,10 +65,7 @@ export function AiSupport({ transcription, currentMemo, isActive = true }: AiSup
   useEffect(() => {
     const currentCount = transcription.length
     const shouldAnalyze =
-      currentCount > 0 &&
-      currentCount % 3 === 0 &&
-      currentCount > lastAnalyzedCountRef.current &&
-      !isAnalyzing
+      currentCount > 0 && currentCount % 3 === 0 && currentCount > lastAnalyzedCountRef.current && !isAnalyzing
 
     if (shouldAnalyze) {
       lastAnalyzedCountRef.current = currentCount
@@ -78,9 +74,7 @@ export function AiSupport({ transcription, currentMemo, isActive = true }: AiSup
   }, [transcription.length, handleAnalyze, isAnalyzing])
 
   return (
-    <div
-      className={cn('flex h-full flex-col border-t border-border/60 pt-6', !isActive && 'hidden')}
-    >
+    <div className={cn('flex h-full flex-col border-t border-border/60 pt-6', !isActive && 'hidden')}>
       {isAnalyzing && (
         <div className="flex justify-end gap-1 text-sm text-muted-foreground">
           <div className="h-2 w-2 animate-pulse rounded-full bg-orange-500" />

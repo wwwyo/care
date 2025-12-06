@@ -23,9 +23,7 @@ export type UpdateFacilityError =
   | { type: 'ValidationError'; message: string }
   | { type: 'UnexpectedError'; message: string }
 
-export async function updateFacility(
-  input: UpdateFacilityInput,
-): Promise<{ success: true } | UpdateFacilityError> {
+export async function updateFacility(input: UpdateFacilityInput): Promise<{ success: true } | UpdateFacilityError> {
   try {
     const repository: FacilityRepository = facilityRepository
     const facility = await repository.findById(input.facilityId)

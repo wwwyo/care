@@ -1,8 +1,4 @@
-import {
-  isPhoneNumber,
-  PhoneNumber,
-  type PhoneNumberError,
-} from '../../_shared/phone-number/phone-number'
+import { isPhoneNumber, PhoneNumber, type PhoneNumberError } from '../../_shared/phone-number/phone-number'
 
 export interface EmergencyContactData {
   name: string
@@ -64,16 +60,12 @@ export class EmergencyContact {
 
   equals(other: EmergencyContact): boolean {
     return (
-      this.name === other.name &&
-      this.relationship === other.relationship &&
-      this.phoneNumber.equals(other.phoneNumber)
+      this.name === other.name && this.relationship === other.relationship && this.phoneNumber.equals(other.phoneNumber)
     )
   }
 }
 
 // Type guard
-export function isEmergencyContact(
-  value: EmergencyContact | EmergencyContactError,
-): value is EmergencyContact {
+export function isEmergencyContact(value: EmergencyContact | EmergencyContactError): value is EmergencyContact {
   return !(value as EmergencyContactError).type
 }

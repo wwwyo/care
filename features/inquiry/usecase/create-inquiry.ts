@@ -12,9 +12,7 @@ type CreateInquiryResult =
   | { type: 'ValidationError'; message: string }
   | { type: 'NotFound'; message: string }
 
-export async function createInquiryUseCase(
-  params: CreateInquiryParams,
-): Promise<CreateInquiryResult> {
+export async function createInquiryUseCase(params: CreateInquiryParams): Promise<CreateInquiryResult> {
   if (!params.planId || !params.facilityId) {
     return {
       type: 'ValidationError',

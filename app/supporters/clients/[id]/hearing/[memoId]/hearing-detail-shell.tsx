@@ -1,9 +1,9 @@
 'use client'
 
-import { ArrowLeft, ChevronDown, ChevronRight, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { ArrowLeft, ChevronDown, ChevronRight, Plus } from '@/components/icon'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -51,9 +51,7 @@ interface HearingDetailShellProps {
   clientSummary: ClientSummaryData
   initialDocument: string
   initialTranscription: TranscriptionItem[]
-  onSaveDocument: (
-    formData: FormData,
-  ) => Promise<{ success: true } | { type: 'Error'; message: string }>
+  onSaveDocument: (formData: FormData) => Promise<{ success: true } | { type: 'Error'; message: string }>
 }
 
 type SummarySection = {
@@ -87,10 +85,7 @@ export function HearingDetailShell({
   initialTranscription,
   onSaveDocument,
 }: HearingDetailShellProps) {
-  const initialSummarySections = useMemo(
-    () => buildInitialSummary(initialDocument),
-    [initialDocument],
-  )
+  const initialSummarySections = useMemo(() => buildInitialSummary(initialDocument), [initialDocument])
 
   const [isHeaderExpanded, setIsHeaderExpanded] = useState(false)
   const [summarySections, setSummarySections] = useState<SummarySection[]>(initialSummarySections)
@@ -170,15 +165,11 @@ export function HearingDetailShell({
   const hasChanges = structuredContent !== baselineStructuredContent
 
   const handleSummaryTitleChange = (id: string, value: string) => {
-    setSummarySections((prev) =>
-      prev.map((section) => (section.id === id ? { ...section, title: value } : section)),
-    )
+    setSummarySections((prev) => prev.map((section) => (section.id === id ? { ...section, title: value } : section)))
   }
 
   const handleSummaryContentChange = (id: string, value: string) => {
-    setSummarySections((prev) =>
-      prev.map((section) => (section.id === id ? { ...section, content: value } : section)),
-    )
+    setSummarySections((prev) => prev.map((section) => (section.id === id ? { ...section, content: value } : section)))
   }
 
   const handleAddSection = () => {
@@ -262,11 +253,7 @@ export function HearingDetailShell({
                   onClick={() => setIsHeaderExpanded((prev) => !prev)}
                   className="flex items-center gap-2"
                 >
-                  {isHeaderExpanded ? (
-                    <ChevronDown className="h-4 w-4" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4" />
-                  )}
+                  {isHeaderExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                   利用者情報
                 </Button>
               </div>
@@ -274,11 +261,7 @@ export function HearingDetailShell({
             {isHeaderExpanded && (
               <div className="mt-3 space-y-4">
                 <ClientSummaryCard summary={clientSummary} addressLine={addressLine} />
-                <ClientFactPanel
-                  facts={factValues}
-                  autoFilledKeys={autoFilledFactKeys}
-                  onChange={handleFactChange}
-                />
+                <ClientFactPanel facts={factValues} autoFilledKeys={autoFilledFactKeys} onChange={handleFactChange} />
               </div>
             )}
           </div>
@@ -293,9 +276,7 @@ export function HearingDetailShell({
                 <div className="flex items-start justify-between">
                   <div>
                     <h2 className="text-lg font-semibold">ヒアリング要約</h2>
-                    <p className="text-sm text-muted-foreground">
-                      ヒアリング項目ごとに整理されたメモを編集できます。
-                    </p>
+                    <p className="text-sm text-muted-foreground">ヒアリング項目ごとに整理されたメモを編集できます。</p>
                   </div>
                 </div>
                 <div className="mt-6 flex-1">
@@ -310,17 +291,13 @@ export function HearingDetailShell({
                       >
                         <Input
                           value={section.title}
-                          onChange={(event) =>
-                            handleSummaryTitleChange(section.id, event.target.value)
-                          }
+                          onChange={(event) => handleSummaryTitleChange(section.id, event.target.value)}
                           className="text-base font-semibold"
                           placeholder="項目名"
                         />
                         <Textarea
                           value={section.content}
-                          onChange={(event) =>
-                            handleSummaryContentChange(section.id, event.target.value)
-                          }
+                          onChange={(event) => handleSummaryContentChange(section.id, event.target.value)}
                           rows={6}
                           className="resize-none"
                           placeholder="聞き取った内容をメモしましょう"
@@ -341,9 +318,7 @@ export function HearingDetailShell({
                         </Button>
                       </div>
                     </div>
-                    {saveError && (
-                      <p className="text-sm text-destructive">保存エラー: {saveError}</p>
-                    )}
+                    {saveError && <p className="text-sm text-destructive">保存エラー: {saveError}</p>}
                   </div>
                 </div>
               </article>
@@ -363,28 +338,16 @@ export function HearingDetailShell({
   )
 }
 
-function ClientSummaryCard({
-  summary,
-  addressLine,
-}: {
-  summary: ClientSummaryData
-  addressLine: string | null
-}) {
+function ClientSummaryCard({ summary, addressLine }: { summary: ClientSummaryData; addressLine: string | null }) {
   const genderLabel = getFactOptionLabel('gender', summary.gender)
   const disabilityLabel = getFactOptionLabel('disability', summary.disability)
   const careLevelLabel = getFactOptionLabel('careLevel', summary.careLevel)
-  const relationLabel = getFactOptionLabel(
-    'emergencyContactRelation',
-    summary.emergencyContactRelation,
-  )
+  const relationLabel = getFactOptionLabel('emergencyContactRelation', summary.emergencyContactRelation)
   return (
     <div className="grid gap-4 rounded-xl border border-border bg-background p-4 md:grid-cols-3">
       <InfoItem label="ふりがな" value={summary.nameKana} />
       <InfoItem label="性別" value={genderLabel} />
-      <InfoItem
-        label="生年月日"
-        value={summary.birthDate ? formatBirthDate(summary.birthDate, summary.age) : null}
-      />
+      <InfoItem label="生年月日" value={summary.birthDate ? formatBirthDate(summary.birthDate, summary.age) : null} />
       <InfoItem label="電話番号" value={summary.phone} />
       <InfoItem label="障害種別" value={disabilityLabel} />
       <InfoItem label="要介護度" value={careLevelLabel} />
@@ -417,9 +380,7 @@ interface InfoItemProps {
 function InfoItem({ label, value, className }: InfoItemProps) {
   if (!value) return null
   return (
-    <div
-      className={cn('space-y-1 rounded-lg border border-border/60 bg-background/70 p-3', className)}
-    >
+    <div className={cn('space-y-1 rounded-lg border border-border/60 bg-background/70 p-3', className)}>
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <p className="text-sm">{value}</p>
     </div>
@@ -436,13 +397,8 @@ function TranscriptionList({ items }: { items: TranscriptionItem[] }) {
           </div>
         ) : (
           items.map((item, index) => (
-            <div
-              key={`${item.timestamp.getTime()}-${index}`}
-              className="rounded-lg bg-background/90 p-2"
-            >
-              <p className="mb-1 text-xs text-muted-foreground">
-                {item.timestamp.toLocaleTimeString('ja-JP')}
-              </p>
+            <div key={`${item.timestamp.getTime()}-${index}`} className="rounded-lg bg-background/90 p-2">
+              <p className="mb-1 text-xs text-muted-foreground">{item.timestamp.toLocaleTimeString('ja-JP')}</p>
               <p className="text-sm leading-relaxed">{item.text}</p>
             </div>
           ))

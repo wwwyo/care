@@ -1,9 +1,6 @@
 import { z } from 'zod'
 
-const facilityNameSchema = z
-  .string()
-  .min(1, '施設名称は必須です')
-  .max(255, '施設名称は255文字以内で入力してください')
+const facilityNameSchema = z.string().min(1, '施設名称は必須です').max(255, '施設名称は255文字以内で入力してください')
 
 export class FacilityName {
   private constructor(private readonly value: string) {}

@@ -63,9 +63,7 @@ export default function SlotManagementPage() {
                 onClick={() => setSelectedStatus('unavailable')}
               />
             </div>
-            {state?.fieldErrors?.status && (
-              <p className="text-sm text-red-500 mt-2">{state.fieldErrors.status}</p>
-            )}
+            {state?.fieldErrors?.status && <p className="text-sm text-red-500 mt-2">{state.fieldErrors.status}</p>}
           </CardContent>
         </Card>
 
@@ -86,9 +84,7 @@ export default function SlotManagementPage() {
                 rows={3}
                 placeholder="例：来月から1名受入可能／医療的ケア対応可"
               />
-              {state?.fieldErrors?.note && (
-                <p className="text-sm text-red-500">{state.fieldErrors.note}</p>
-              )}
+              {state?.fieldErrors?.note && <p className="text-sm text-red-500">{state.fieldErrors.note}</p>}
               <p className="text-sm text-muted-foreground">1000文字以内</p>
             </div>
           </CardContent>

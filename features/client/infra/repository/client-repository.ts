@@ -165,10 +165,7 @@ async function findBySupporterId(_supporterId: string): Promise<Client[]> {
   return []
 }
 
-async function _findAll(
-  tenantId: string,
-  options?: { limit?: number; offset?: number },
-): Promise<Client[]> {
+async function _findAll(tenantId: string, options?: { limit?: number; offset?: number }): Promise<Client[]> {
   const clientRecords = await prisma.client.findMany({
     where: { tenantId },
     include: {

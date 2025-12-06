@@ -187,15 +187,10 @@ export async function generateStructuredSummary(
       .join('\n')
 
     const sectionDefinitions = sections
-      .map(
-        (section, index) =>
-          `${index + 1}. ${section.title}${section.slug ? ` (slug: ${section.slug})` : ''}`,
-      )
+      .map((section, index) => `${index + 1}. ${section.title}${section.slug ? ` (slug: ${section.slug})` : ''}`)
       .join('\n')
 
-    const existingSummary = sections
-      .map((section) => `${section.title}: ${section.content || '（未入力）'}`)
-      .join('\n')
+    const existingSummary = sections.map((section) => `${section.title}: ${section.content || '（未入力）'}`).join('\n')
 
     const prompt = `あなたは福祉相談のヒアリング内容を整理するアシスタントです。
 最新の文字起こしと現在の要約を基に、各セクションの内容を更新してください。
@@ -244,12 +239,10 @@ ${sectionDefinitions}
       const source = sections[index] ?? null
       const itemRecord = isRecord(item) ? item : {}
 
-      const resolvedSlug =
-        typeof itemRecord.slug === 'string' ? itemRecord.slug : (source?.slug ?? null)
+      const resolvedSlug = typeof itemRecord.slug === 'string' ? itemRecord.slug : (source?.slug ?? null)
 
       const inputTitle = typeof itemRecord.title === 'string' ? itemRecord.title.trim() : ''
-      const resolvedTitle =
-        inputTitle.length > 0 ? inputTitle : (source?.title ?? `セクション${index + 1}`)
+      const resolvedTitle = inputTitle.length > 0 ? inputTitle : (source?.title ?? `セクション${index + 1}`)
 
       const inputContent = typeof itemRecord.content === 'string' ? itemRecord.content.trim() : ''
       const resolvedContent = inputContent.length > 0 ? inputContent : (source?.content ?? '')

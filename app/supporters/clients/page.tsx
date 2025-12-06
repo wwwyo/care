@@ -1,5 +1,5 @@
-import { Plus, User } from 'lucide-react'
 import Link from 'next/link'
+import { Plus, User } from '@/components/icon'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { requireRealm } from '@/features/auth/helpers'
@@ -37,9 +37,7 @@ export default async function ClientsPage() {
           <CardContent className="flex flex-col items-center justify-center py-16">
             <User className="h-12 w-12 text-muted-foreground mb-4" />
             <p className="text-lg font-medium">利用者が登録されていません</p>
-            <p className="text-sm text-muted-foreground mt-2">
-              新規登録ボタンから最初の利用者を登録してください
-            </p>
+            <p className="text-sm text-muted-foreground mt-2">新規登録ボタンから最初の利用者を登録してください</p>
           </CardContent>
         </Card>
       ) : (
@@ -62,16 +60,13 @@ export default async function ClientsPage() {
                   <CardTitle className="flex items-center justify-between">
                     <div className="flex flex-col gap-1">
                       {profile.nameKana && (
-                        <span className="text-sm font-normal text-muted-foreground">
-                          {profile.nameKana}
-                        </span>
+                        <span className="text-sm font-normal text-muted-foreground">{profile.nameKana}</span>
                       )}
                       <span>{profile.name}</span>
                     </div>
                   </CardTitle>
                   <CardDescription>
-                    {genderLabel} ・{' '}
-                    {profile.birthDate ? `${calculateAge(profile.birthDate)}歳` : '年齢未定義'}
+                    {genderLabel} ・ {profile.birthDate ? `${calculateAge(profile.birthDate)}歳` : '年齢未定義'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -79,9 +74,7 @@ export default async function ClientsPage() {
                     <div className="flex items-start">
                       <span className="font-medium w-24">住所:</span>
                       <span className="flex-1">
-                        {address
-                          ? `${address.prefecture || ''}${address.city || ''}${address.street || ''}`
-                          : '未登録'}
+                        {address ? `${address.prefecture || ''}${address.city || ''}${address.street || ''}` : '未登録'}
                       </span>
                     </div>
                     <div className="flex items-start">

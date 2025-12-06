@@ -1,18 +1,11 @@
 'use client'
 
-import { AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
+import { AlertCircle } from '@/components/icon'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { authClient } from '@/features/auth/client'
@@ -28,7 +21,7 @@ export default function SupporterLoginPage() {
     setIsLoading(true)
     setError(null)
 
-    // ログイン
+    // サインイン
     await authClient.signIn.email(
       {
         email,
@@ -100,10 +93,10 @@ export default function SupporterLoginPage() {
 
             <CardFooter className="flex flex-col space-y-4 pt-6">
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? '処理中...' : 'ログイン'}
+                {isLoading ? '処理中...' : 'サインイン'}
               </Button>
 
-              <Link href="/supporter/signup" className="w-full">
+              <Link href="/auth/supporters/signup" className="w-full">
                 <Button type="button" variant="link" className="w-full">
                   アカウントをお持ちでない方はこちら
                 </Button>

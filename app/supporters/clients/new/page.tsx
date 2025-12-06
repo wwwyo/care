@@ -1,11 +1,11 @@
 'use client'
 
-import { ArrowLeft } from 'lucide-react'
 import Form from 'next/form'
 import Link from 'next/link'
 import type { KeyboardEvent } from 'react'
 import { useActionState, useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { ArrowLeft } from '@/components/icon'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -80,17 +80,13 @@ export default function NewClientPage() {
                   onChange={(event) => setName(event.target.value)}
                   placeholder="山田太郎"
                 />
-                {state?.fieldErrors?.name && (
-                  <p className="text-sm text-red-500">{state.fieldErrors.name}</p>
-                )}
+                {state?.fieldErrors?.name && <p className="text-sm text-red-500">{state.fieldErrors.name}</p>}
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="nameKana">ふりがな *</Label>
-                  <p className="text-xs text-muted-foreground">
-                    氏名から自動入力されますが、必要に応じて編集できます
-                  </p>
+                  <p className="text-xs text-muted-foreground">氏名から自動入力されますが、必要に応じて編集できます</p>
                 </div>
                 <Input
                   id="nameKana"
@@ -105,9 +101,7 @@ export default function NewClientPage() {
                   spellCheck={false}
                   placeholder="やまだたろう"
                 />
-                {state?.fieldErrors?.nameKana && (
-                  <p className="text-sm text-red-500">{state.fieldErrors.nameKana}</p>
-                )}
+                {state?.fieldErrors?.nameKana && <p className="text-sm text-red-500">{state.fieldErrors.nameKana}</p>}
               </div>
 
               <div className="space-y-2">
@@ -120,9 +114,7 @@ export default function NewClientPage() {
                   value={birthDate}
                   onChange={(event) => setBirthDate(event.target.value)}
                 />
-                {state?.fieldErrors?.birthDate && (
-                  <p className="text-sm text-red-500">{state.fieldErrors.birthDate}</p>
-                )}
+                {state?.fieldErrors?.birthDate && <p className="text-sm text-red-500">{state.fieldErrors.birthDate}</p>}
               </div>
             </div>
 

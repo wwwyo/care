@@ -23,10 +23,7 @@ function normalizeStatus(status: string | null): AvailabilityStatus | null {
   }
 }
 
-const statusConfig: Record<
-  AvailabilityStatus,
-  { emoji: string; label: string; className: string }
-> = {
+const statusConfig: Record<AvailabilityStatus, { emoji: string; label: string; className: string }> = {
   available: {
     emoji: '🟢',
     label: '空きあり',

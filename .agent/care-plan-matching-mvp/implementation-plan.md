@@ -55,7 +55,7 @@ care/
   - NEXT_PUBLIC_APP_URL ✅
 - Supabase基本設定（lib/supabase/）✅
 - Tailwind CSS v4の設定 ✅
-- 認証基本実装（Magic Linkログイン画面）✅
+- 認証基本実装（Magic Linkサインイン画面）✅
 
 ### フェーズ2: データベース構築（Day 3-5）
 
@@ -95,7 +95,7 @@ care/
   - clients テーブルとの連携（authUserIdで紐付け）✅
 
 - **Supporter向け認証** ✅
-  - パス: `/supporter/login`
+  - パス: `/auth/supporters/signin`
   - Email/Password認証フロー ✅
   - サインアップ時にrealm='supporter'を設定 ✅
   - supporters テーブルとの連携（authUserIdで紐付け）✅
@@ -138,7 +138,7 @@ care/
 - [x] Better Auth基本設定 ✅ 2025-01-15
 - [x] Email/Password認証実装 ✅ 2025-01-15
 - [x] Realmベースのマルチユーザータイプ対応 ✅ 2025-01-15
-- [x] 各ユーザータイプ用ログインページ ✅ 2025-01-15
+- [x] 各ユーザータイプ用サインインページ ✅ 2025-01-15
 
 ### フェーズ4の成果物
 - [ ] ドメインモデルの単体テスト（100%カバレッジ）

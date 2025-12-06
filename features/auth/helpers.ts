@@ -20,12 +20,9 @@ export async function requireAuth(redirectTo = '/login'): Promise<Session> {
   return session
 }
 
-export async function requireRealm(
-  realm: UserRealm,
-  redirectTo = '/unauthorized',
-): Promise<Session> {
+export async function requireRealm(realm: UserRealm, redirectTo = '/unauthorized'): Promise<Session> {
   // realmに応じた認証失敗時のリダイレクト先を設定
-  const authRedirectTo = realm === 'supporter' ? '/supporter/login' : '/login'
+  const authRedirectTo = realm === 'supporter' ? '/auth/supporters/signin' : '/login'
   const session = await requireAuth(authRedirectTo)
 
   const userRealm = session.user.realm

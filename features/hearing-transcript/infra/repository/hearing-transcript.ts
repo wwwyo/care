@@ -89,9 +89,7 @@ const deleteById = async (id: string): Promise<undefined | HearingTranscriptRepo
   }
 }
 
-const findById = async (
-  id: string,
-): Promise<HearingTranscriptModel | HearingTranscriptRepositoryError> => {
+const findById = async (id: string): Promise<HearingTranscriptModel | HearingTranscriptRepositoryError> => {
   try {
     const transcript = await prisma.hearingTranscript.findUnique({
       where: { id },

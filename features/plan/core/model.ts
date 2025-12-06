@@ -3,9 +3,7 @@ import { ServiceCategory, type ServiceCategoryType } from './service-category'
 type PlanStatus = 'draft' | 'published'
 type VersionType = 'draft' | 'published'
 
-export type PlanError =
-  | { type: 'ValidationError'; message: string }
-  | { type: 'NotFound'; message: string }
+export type PlanError = { type: 'ValidationError'; message: string } | { type: 'NotFound'; message: string }
 
 export class Plan {
   readonly id: string
@@ -52,10 +50,7 @@ export class Plan {
 
   addVersion(version: PlanVersion): Plan | PlanError {
     // バージョン番号の連続性チェック
-    const latestVersion = this.versions.reduce(
-      (max, v) => (v.versionNumber > max ? v.versionNumber : max),
-      0,
-    )
+    const latestVersion = this.versions.reduce((max, v) => (v.versionNumber > max ? v.versionNumber : max), 0)
     const expectedVersionNumber = latestVersion + 1
     if (version.versionNumber !== expectedVersionNumber) {
       return {
@@ -86,10 +81,7 @@ export class Plan {
       achievementPeriod?: string
     }>
   }): Plan | PlanError {
-    const latestVersionNumber = this.versions.reduce(
-      (max, v) => (v.versionNumber > max ? v.versionNumber : max),
-      0,
-    )
+    const latestVersionNumber = this.versions.reduce((max, v) => (v.versionNumber > max ? v.versionNumber : max), 0)
     const nextVersionNumber = latestVersionNumber + 1
 
     let newVersion = PlanVersion.create({
@@ -328,11 +320,7 @@ export class PlanVersion {
     return this.versionType !== 'published'
   }
 
-  update(props: {
-    desiredLife?: string
-    troubles?: string
-    considerations?: string
-  }): PlanVersion | PlanError {
+  update(props: { desiredLife?: string; troubles?: string; considerations?: string }): PlanVersion | PlanError {
     // 確定版は更新できない
     if (!this.canUpdate()) {
       return {
@@ -469,11 +457,7 @@ export class PlanService {
     })
   }
 
-  update(props: {
-    desiredAmount?: string
-    desiredLifeByService?: string
-    achievementPeriod?: string
-  }): PlanService {
+  update(props: { desiredAmount?: string; desiredLifeByService?: string; achievementPeriod?: string }): PlanService {
     return new PlanService({
       ...this,
       desiredAmount: props.desiredAmount ?? this.desiredAmount,

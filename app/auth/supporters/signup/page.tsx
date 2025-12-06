@@ -1,25 +1,18 @@
 'use client'
 
-import { AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { AlertCircle } from '@/components/icon'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { authClient } from '@/features/auth/client'
 import { USER_REALMS } from '@/features/auth/schemas'
 
-export default function FacilitySignupPage() {
+export default function SupporterSignupPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -32,19 +25,19 @@ export default function FacilitySignupPage() {
     setIsLoading(true)
     setError(null)
 
-    // サインアップ時にrealmを指定（autoSignIn: trueにより自動的にサインインされる）
+    // サインアップ時にrealmを指定
     await authClient.signUp.email(
       {
         email,
         password,
         name,
-        realm: USER_REALMS.FACILITY_STAFF,
-        callbackURL: '/facility',
+        realm: USER_REALMS.SUPPORTER,
+        callbackURL: '/supporters/clients',
       },
       {
         onSuccess: () => {
           setIsLoading(false)
-          router.push('/facility')
+          router.push('/supporters/clients')
         },
         onError: (ctx) => {
           setError(ctx.error.message || 'サインアップに失敗しました')
@@ -63,7 +56,7 @@ export default function FacilitySignupPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>施設管理者様アカウント作成</CardTitle>
+            <CardTitle>相談員様アカウント作成</CardTitle>
             <CardDescription>新規アカウントを作成してください</CardDescription>
           </CardHeader>
 
@@ -92,7 +85,7 @@ export default function FacilitySignupPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@example.com"
+                  placeholder="supporter@example.com"
                 />
               </div>
 
@@ -123,7 +116,7 @@ export default function FacilitySignupPage() {
                 {isLoading ? '処理中...' : 'アカウント作成'}
               </Button>
 
-              <Link href="/facility/login" className="w-full">
+              <Link href="/auth/supporters/signin" className="w-full">
                 <Button type="button" variant="link" className="w-full">
                   すでにアカウントをお持ちの方はこちら
                 </Button>
@@ -131,10 +124,10 @@ export default function FacilitySignupPage() {
 
               <div className="text-center space-y-2 pt-4 border-t w-full">
                 <Link
-                  href="/supporter/signup"
+                  href="/facility/signup"
                   className="block text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  相談員の方はこちら
+                  施設スタッフの方はこちら
                 </Link>
               </div>
             </CardFooter>

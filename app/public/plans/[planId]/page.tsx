@@ -64,16 +64,17 @@ export default async function PublicPlanPage({ params }: { params: { planId: str
   const hasExistingConsent = plan.consents.length > 0
 
   // サービスをカテゴリ別にグループ化
-  const servicesByCategory = currentVersion.services.reduce<
-    Record<string, typeof currentVersion.services>
-  >((acc, service) => {
-    const category = service.serviceCategory
-    if (!acc[category]) {
-      acc[category] = []
-    }
-    acc[category].push(service)
-    return acc
-  }, {})
+  const servicesByCategory = currentVersion.services.reduce<Record<string, typeof currentVersion.services>>(
+    (acc, service) => {
+      const category = service.serviceCategory
+      if (!acc[category]) {
+        acc[category] = []
+      }
+      acc[category].push(service)
+      return acc
+    },
+    {},
+  )
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -124,17 +125,13 @@ export default async function PublicPlanPage({ params }: { params: { planId: str
             <CardContent>
               {Object.entries(servicesByCategory).map(([category, services]) => (
                 <div key={category} className="mb-6 last:mb-0">
-                  <h3 className="font-semibold mb-3 text-lg">
-                    {serviceCategoryLabels[category] || category}
-                  </h3>
+                  <h3 className="font-semibold mb-3 text-lg">{serviceCategoryLabels[category] || category}</h3>
                   <div className="space-y-4">
                     {services.map((service) => (
                       <div key={service.id} className="border-l-4 border-gray-300 pl-4">
                         <p className="font-medium">{service.serviceType}</p>
                         {service.desiredAmount && (
-                          <p className="text-sm text-gray-600 mt-1">
-                            希望量: {service.desiredAmount}
-                          </p>
+                          <p className="text-sm text-gray-600 mt-1">希望量: {service.desiredAmount}</p>
                         )}
                         {service.desiredLifeByService && (
                           <p className="text-sm text-gray-600 mt-1">
@@ -142,9 +139,7 @@ export default async function PublicPlanPage({ params }: { params: { planId: str
                           </p>
                         )}
                         {service.achievementPeriod && (
-                          <p className="text-sm text-gray-600 mt-1">
-                            達成時期: {service.achievementPeriod}
-                          </p>
+                          <p className="text-sm text-gray-600 mt-1">達成時期: {service.achievementPeriod}</p>
                         )}
                       </div>
                     ))}

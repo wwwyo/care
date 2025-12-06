@@ -44,9 +44,7 @@ export function ConsentForm({ planId, hasExistingConsent }: ConsentFormProps) {
       <Card className="mb-6 border-green-200 bg-green-50">
         <CardHeader>
           <CardTitle className="text-green-800">同意済み</CardTitle>
-          <CardDescription className="text-green-700">
-            この計画書に同意いただきありがとうございます
-          </CardDescription>
+          <CardDescription className="text-green-700">この計画書に同意いただきありがとうございます</CardDescription>
         </CardHeader>
       </Card>
     )
@@ -75,12 +73,7 @@ export function ConsentForm({ planId, hasExistingConsent }: ConsentFormProps) {
             上記のサービス等利用計画書の内容に同意します
           </label>
         </div>
-        <Button
-          onClick={handleConsent}
-          disabled={!agreed || isSubmitting}
-          className="w-full"
-          size="lg"
-        >
+        <Button onClick={handleConsent} disabled={!agreed || isSubmitting} className="w-full" size="lg">
           {isSubmitting ? '処理中...' : '同意して送信'}
         </Button>
       </CardContent>

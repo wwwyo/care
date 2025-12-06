@@ -1,8 +1,4 @@
-import {
-  isPhoneNumber,
-  PhoneNumber,
-  type PhoneNumberError,
-} from '../../_shared/phone-number/phone-number'
+import { isPhoneNumber, PhoneNumber, type PhoneNumberError } from '../../_shared/phone-number/phone-number'
 import { Address, type AddressData, type AddressError, isAddress } from './address'
 import {
   EmergencyContact,

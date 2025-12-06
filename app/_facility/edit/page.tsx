@@ -10,9 +10,7 @@ export default async function FacilityEditPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-          <p className="text-yellow-800">
-            施設情報が登録されていません。管理者にお問い合わせください。
-          </p>
+          <p className="text-yellow-800">施設情報が登録されていません。管理者にお問い合わせください。</p>
         </div>
       </div>
     )

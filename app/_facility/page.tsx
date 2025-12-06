@@ -16,9 +16,7 @@ export default async function FacilityDashboard() {
     return (
       <div className="container mx-auto px-4 py-8">
         <Alert variant="destructive">
-          <AlertDescription>
-            施設情報が登録されていません。管理者にお問い合わせください。
-          </AlertDescription>
+          <AlertDescription>施設情報が登録されていません。管理者にお問い合わせください。</AlertDescription>
         </Alert>
       </div>
     )
@@ -39,9 +37,7 @@ export default async function FacilityDashboard() {
     <div className="max-w-7xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">{facility.profile?.name || '未設定'}</h1>
-        {facility.profile?.nameKana && (
-          <p className="text-muted-foreground">{facility.profile.nameKana}</p>
-        )}
+        {facility.profile?.nameKana && <p className="text-muted-foreground">{facility.profile.nameKana}</p>}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
@@ -132,9 +128,7 @@ export default async function FacilityDashboard() {
             </div>
             <div className="md:col-span-2">
               <dt className="text-sm text-muted-foreground mb-1">施設紹介</dt>
-              <dd className="font-medium whitespace-pre-wrap">
-                {facility.profile?.description || '未設定'}
-              </dd>
+              <dd className="font-medium whitespace-pre-wrap">{facility.profile?.description || '未設定'}</dd>
             </div>
           </dl>
         </CardContent>

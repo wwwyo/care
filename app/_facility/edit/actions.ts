@@ -31,10 +31,7 @@ type ActionState = {
   values?: Record<string, string>
 } | null
 
-export async function updateFacilityAction(
-  _prevState: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
+export async function updateFacilityAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   try {
     const session = await requireRealm('facility_staff', '/login')
 

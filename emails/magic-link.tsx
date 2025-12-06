@@ -1,15 +1,4 @@
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Link,
-  Preview,
-  Section,
-  Text,
-} from '@react-email/components'
+import { Body, Button, Container, Head, Heading, Html, Link, Preview, Section, Text } from '@react-email/components'
 
 interface MagicLinkEmailProps {
   url: string
@@ -20,7 +9,7 @@ export const MagicLinkEmail = ({ url }: MagicLinkEmailProps) => {
   return (
     <Html>
       <Head />
-      <Preview>Care Hubへのログインリンク</Preview>
+      <Preview>Care Hubへのサインインリンク</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={header}>
@@ -29,25 +18,22 @@ export const MagicLinkEmail = ({ url }: MagicLinkEmailProps) => {
 
           <Section style={content}>
             <Text style={paragraph}>こんにちは、</Text>
-            <Text style={paragraph}>Care Hubへのログインリンクをお送りします。</Text>
-            <Text style={paragraph}>下記のボタンをクリックしてログインしてください：</Text>
+            <Text style={paragraph}>Care Hubへのサインインリンクをお送りします。</Text>
+            <Text style={paragraph}>下記のボタンをクリックしてサインインしてください：</Text>
 
             <Section style={buttonContainer}>
               <Button style={button} href={url}>
-                ログインする
+                サインインする
               </Button>
             </Section>
 
             <Section style={warningBox}>
               <Text style={warningText}>
-                <strong>重要:</strong> このリンクは10分間有効です。
-                期限が切れた場合は、再度ログインをお試しください。
+                <strong>重要:</strong> このリンクは10分間有効です。 期限が切れた場合は、再度サインインをお試しください。
               </Text>
             </Section>
 
-            <Text style={smallText}>
-              このメールに心当たりがない場合は、無視していただいて構いません。
-            </Text>
+            <Text style={smallText}>このメールに心当たりがない場合は、無視していただいて構いません。</Text>
 
             <Text style={smallText}>
               ボタンが機能しない場合は、以下のリンクをブラウザにコピー＆ペーストしてください：
@@ -75,8 +61,7 @@ export default MagicLinkEmail
 
 const main = {
   backgroundColor: '#f5f5f5',
-  fontFamily:
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif',
 }
 
 const container = {

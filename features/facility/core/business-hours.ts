@@ -10,9 +10,7 @@ const dayTypeSchema = z.enum(['weekday', 'saturday', 'sunday', 'holiday'])
 /**
  * 時間フォーマット（HH:MM）
  */
-const timeSchema = z
-  .string()
-  .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, '時間はHH:MM形式で入力してください')
+const timeSchema = z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, '時間はHH:MM形式で入力してください')
 
 export type BusinessHourData = {
   dayType: DayType

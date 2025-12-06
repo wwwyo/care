@@ -1,17 +1,11 @@
 'use client'
 
-import { Building2, Clock, Info, MapPin, MessageSquareText, Users, Wifi, X } from 'lucide-react'
 import Form from 'next/form'
 import { useActionState, useEffect, useMemo, useState } from 'react'
+import { Building2, Clock, Info, MapPin, MessageSquareText, Users, Wifi, X } from '@/components/icon'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import type { AvailabilityStatus } from '@/features/availability/model/status'
@@ -70,24 +64,17 @@ function computeAvailability(detail: FacilityDetail): {
   status: AvailabilityStatus | null
   percent: number | null
 } {
-  const facilityScore = detail.facilityReport
-    ? facilityStatusWeight * statusToNumeric(detail.facilityReport.status)
-    : 0
+  const facilityScore = detail.facilityReport ? facilityStatusWeight * statusToNumeric(detail.facilityReport.status) : 0
 
   const supporterValues = detail.supporterNotes.map((note) => statusToNumeric(note.status))
   const supporterAverage =
-    supporterValues.length > 0
-      ? supporterValues.reduce((sum, value) => sum + value, 0) / supporterValues.length
-      : 0
+    supporterValues.length > 0 ? supporterValues.reduce((sum, value) => sum + value, 0) / supporterValues.length : 0
 
   if (!detail.facilityReport && supporterValues.length === 0) {
     return { status: null, percent: null }
   }
 
-  const combinedScore = Math.min(
-    (facilityScore + supporterAverage * supporterStatusWeight) / maxScore,
-    1,
-  )
+  const combinedScore = Math.min((facilityScore + supporterAverage * supporterStatusWeight) / maxScore, 1)
   return {
     status: numericToStatus(combinedScore),
     percent: Math.round(combinedScore * 100),
@@ -128,10 +115,7 @@ function SupporterAvailabilityForm({
   onCancel: () => void
   onSuccess: (detail: FacilityDetail) => void
 }) {
-  const [state, formAction, isPending] = useActionState<ActionState, FormData>(
-    recordSupporterAvailabilityAction,
-    null,
-  )
+  const [state, formAction, isPending] = useActionState<ActionState, FormData>(recordSupporterAvailabilityAction, null)
 
   const errorState = state && 'error' in state ? state : null
 
@@ -185,9 +169,7 @@ function SupporterAvailabilityForm({
             className="min-h-[80px]"
             maxLength={1000}
           />
-          <p className="text-xs text-muted-foreground">
-            1000文字以内。入力しない場合は空のままで保存できます。
-          </p>
+          <p className="text-xs text-muted-foreground">1000文字以内。入力しない場合は空のままで保存できます。</p>
         </div>
 
         {errorState?.error && <p className="text-sm text-destructive">{errorState.error}</p>}
@@ -212,9 +194,7 @@ function FacilityReportSection({ report }: { report: FacilityReport | null }) {
         <h4 className="font-semibold text-sm flex items-center gap-2">
           <Building2 className="h-4 w-4" /> 事業所からのレポート
         </h4>
-        <p className="text-sm text-muted-foreground">
-          まだ事業所からのレポートは登録されていません。
-        </p>
+        <p className="text-sm text-muted-foreground">まだ事業所からのレポートは登録されていません。</p>
       </div>
     )
   }
@@ -230,9 +210,7 @@ function FacilityReportSection({ report }: { report: FacilityReport | null }) {
           {new Date(report.updatedAt).toLocaleString('ja-JP')}
         </div>
         {report.contextSummary && <p className="text-sm font-medium">{report.contextSummary}</p>}
-        {report.note && (
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap">{report.note}</p>
-        )}
+        {report.note && <p className="text-sm text-muted-foreground whitespace-pre-wrap">{report.note}</p>}
       </div>
     </div>
   )
@@ -264,17 +242,11 @@ function SupporterNotes({ notes }: { notes: SupporterNote[] }) {
             </div>
             <div className="text-sm">
               <strong className="mr-2">
-                {note.status === 'available'
-                  ? '○ 空きあり'
-                  : note.status === 'limited'
-                    ? '△ 要相談'
-                    : '× 満床'}
+                {note.status === 'available' ? '○ 空きあり' : note.status === 'limited' ? '△ 要相談' : '× 満床'}
               </strong>
               {note.contextSummary && <span>{note.contextSummary}</span>}
             </div>
-            {note.note && (
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{note.note}</p>
-            )}
+            {note.note && <p className="text-sm text-muted-foreground whitespace-pre-wrap">{note.note}</p>}
           </div>
         ))}
       </div>
@@ -347,9 +319,7 @@ export function FacilityDetailPane({ facilityId, supporterId, clientId, planId, 
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-lg font-semibold">{facility.name}</h2>
-            {facility.serviceType && (
-              <p className="text-sm text-muted-foreground">{facility.serviceType}</p>
-            )}
+            {facility.serviceType && <p className="text-sm text-muted-foreground">{facility.serviceType}</p>}
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-5 w-5" />

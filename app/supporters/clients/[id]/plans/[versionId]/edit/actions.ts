@@ -43,10 +43,7 @@ type UpdateState = {
   }
 }
 
-export async function updatePlanAction(
-  _prevState: UpdateState,
-  formData: FormData,
-): Promise<UpdateState> {
+export async function updatePlanAction(_prevState: UpdateState, formData: FormData): Promise<UpdateState> {
   const rawData = {
     planId: formData.get('planId'),
     versionId: formData.get('versionId'),
@@ -134,10 +131,7 @@ type PublishState = {
   success: boolean
 }
 
-export async function publishPlanAction(
-  _prevState: PublishState,
-  formData: FormData,
-): Promise<PublishState> {
+export async function publishPlanAction(_prevState: PublishState, formData: FormData): Promise<PublishState> {
   const rawData = {
     planId: formData.get('planId'),
     versionId: formData.get('versionId'),

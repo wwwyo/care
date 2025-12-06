@@ -2,10 +2,7 @@
  * FormDataから配列形式のデータをパースする
  * services[0].serviceCategory のような形式を配列に変換
  */
-export function parseArrayFromFormData<T extends Record<string, unknown>>(
-  formData: FormData,
-  fieldName: string,
-): T[] {
+export function parseArrayFromFormData<T extends Record<string, unknown>>(formData: FormData, fieldName: string): T[] {
   const result: T[] = []
   const pattern = new RegExp(`^${fieldName}\\[(\\d+)\\]\\.(.+)$`)
 

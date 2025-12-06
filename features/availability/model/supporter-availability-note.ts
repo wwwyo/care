@@ -1,13 +1,6 @@
 import { z } from 'zod'
-import {
-  AvailabilityContext,
-  type AvailabilityContextData,
-} from '@/features/availability/model/context'
-import {
-  type AvailabilityStatus,
-  availabilityStatusSchema,
-  mapStatus,
-} from '@/features/availability/model/status'
+import { AvailabilityContext, type AvailabilityContextData } from '@/features/availability/model/context'
+import { type AvailabilityStatus, availabilityStatusSchema, mapStatus } from '@/features/availability/model/status'
 
 export type SupporterAvailabilityNoteData = {
   id: string

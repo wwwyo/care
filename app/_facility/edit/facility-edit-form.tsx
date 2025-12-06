@@ -8,13 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import type { FacilityWithDetails } from '@/features/facility/infra/query/facility-query'
 import { updateFacilityAction } from './actions'
@@ -70,9 +64,7 @@ export function FacilityEditForm({ facility }: Props) {
                 defaultValue={state?.values?.name ?? facility.profile?.name ?? ''}
                 required
               />
-              {state?.fieldErrors?.name && (
-                <p className="text-sm text-red-500">{state.fieldErrors.name}</p>
-              )}
+              {state?.fieldErrors?.name && <p className="text-sm text-red-500">{state.fieldErrors.name}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="nameKana">施設名称（カナ）</Label>
@@ -82,9 +74,7 @@ export function FacilityEditForm({ facility }: Props) {
                 name="nameKana"
                 defaultValue={state?.values?.nameKana ?? facility.profile?.nameKana ?? ''}
               />
-              {state?.fieldErrors?.nameKana && (
-                <p className="text-sm text-red-500">{state.fieldErrors.nameKana}</p>
-              )}
+              {state?.fieldErrors?.nameKana && <p className="text-sm text-red-500">{state.fieldErrors.nameKana}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="serviceType">サービス種別</Label>
@@ -126,21 +116,12 @@ export function FacilityEditForm({ facility }: Props) {
                 name="phone"
                 defaultValue={state?.values?.phone ?? mainContact?.phone ?? ''}
               />
-              {state?.fieldErrors?.phone && (
-                <p className="text-sm text-red-500">{state.fieldErrors.phone}</p>
-              )}
+              {state?.fieldErrors?.phone && <p className="text-sm text-red-500">{state.fieldErrors.phone}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="fax">FAX番号</Label>
-              <Input
-                type="tel"
-                id="fax"
-                name="fax"
-                defaultValue={state?.values?.fax ?? mainContact?.fax ?? ''}
-              />
-              {state?.fieldErrors?.fax && (
-                <p className="text-sm text-red-500">{state.fieldErrors.fax}</p>
-              )}
+              <Input type="tel" id="fax" name="fax" defaultValue={state?.values?.fax ?? mainContact?.fax ?? ''} />
+              {state?.fieldErrors?.fax && <p className="text-sm text-red-500">{state.fieldErrors.fax}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">メールアドレス</Label>
@@ -150,9 +131,7 @@ export function FacilityEditForm({ facility }: Props) {
                 name="email"
                 defaultValue={state?.values?.email ?? mainContact?.email ?? ''}
               />
-              {state?.fieldErrors?.email && (
-                <p className="text-sm text-red-500">{state.fieldErrors.email}</p>
-              )}
+              {state?.fieldErrors?.email && <p className="text-sm text-red-500">{state.fieldErrors.email}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="website">ウェブサイト</Label>
@@ -162,9 +141,7 @@ export function FacilityEditForm({ facility }: Props) {
                 name="website"
                 defaultValue={state?.values?.website ?? mainContact?.website ?? ''}
               />
-              {state?.fieldErrors?.website && (
-                <p className="text-sm text-red-500">{state.fieldErrors.website}</p>
-              )}
+              {state?.fieldErrors?.website && <p className="text-sm text-red-500">{state.fieldErrors.website}</p>}
             </div>
           </div>
         </CardContent>
@@ -226,9 +203,7 @@ export function FacilityEditForm({ facility }: Props) {
                 defaultValue={state?.values?.accessInfo ?? facility.location?.accessInfo ?? ''}
                 rows={2}
               />
-              {state?.fieldErrors?.accessInfo && (
-                <p className="text-sm text-red-500">{state.fieldErrors.accessInfo}</p>
-              )}
+              {state?.fieldErrors?.accessInfo && <p className="text-sm text-red-500">{state.fieldErrors.accessInfo}</p>}
             </div>
           </div>
         </CardContent>
@@ -250,9 +225,7 @@ export function FacilityEditForm({ facility }: Props) {
               rows={5}
               placeholder="施設の特徴や支援内容について記載してください"
             />
-            {state?.fieldErrors?.description && (
-              <p className="text-sm text-red-500">{state.fieldErrors.description}</p>
-            )}
+            {state?.fieldErrors?.description && <p className="text-sm text-red-500">{state.fieldErrors.description}</p>}
           </div>
         </CardContent>
       </Card>

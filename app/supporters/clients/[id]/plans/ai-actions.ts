@@ -48,10 +48,7 @@ type GeneratePlanResult =
     }
   | { type: 'Error'; message: string }
 
-export async function generatePlanFromHearingMemos(
-  memoIds: string[],
-  planId?: string,
-): Promise<GeneratePlanResult> {
+export async function generatePlanFromHearingMemos(memoIds: string[], planId?: string): Promise<GeneratePlanResult> {
   try {
     if (memoIds.length === 0) {
       return { type: 'Error', message: 'ヒアリングメモを選択してください' }
@@ -87,10 +84,7 @@ ${
             if (parsed.metadata?.sources) {
               return parsed.metadata.sources
                 .filter((s) => s.type === 'voice')
-                .map(
-                  (item) =>
-                    `[${new Date(item.timestamp).toLocaleTimeString('ja-JP')}] ${item.text}`,
-                )
+                .map((item) => `[${new Date(item.timestamp).toLocaleTimeString('ja-JP')}] ${item.text}`)
                 .join('\n')
             }
             return 'なし'
@@ -108,10 +102,7 @@ ${
                 : (memo.content as ParsedContent)
             if (parsed.transcription) {
               return parsed.transcription
-                .map(
-                  (item) =>
-                    `[${new Date(item.timestamp).toLocaleTimeString('ja-JP')}] ${item.text}`,
-                )
+                .map((item) => `[${new Date(item.timestamp).toLocaleTimeString('ja-JP')}] ${item.text}`)
                 .join('\n')
             }
           } catch {

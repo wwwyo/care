@@ -2,10 +2,7 @@ import type { NextRequest } from 'next/server'
 import { exportPlanUseCase } from '@/features/plan/usecase/export-plan'
 
 function toArrayBuffer(buffer: Buffer): ArrayBuffer {
-  return buffer.buffer.slice(
-    buffer.byteOffset,
-    buffer.byteOffset + buffer.byteLength,
-  ) as ArrayBuffer
+  return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer
 }
 
 export async function GET(_request: NextRequest, { params }: { params: { planId: string } }) {

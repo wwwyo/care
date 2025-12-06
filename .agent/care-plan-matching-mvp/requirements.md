@@ -26,7 +26,7 @@
   - マイページでの情報確認
 - **アクセス方法**:
   - 同意確認リンク経由（認証不要）
-  - マイページログイン（Magic Link認証）
+  - マイページサインイン（Magic Link認証）
 
 ### 2.3 施設スタッフ（FacilityStaff）
 - **定義**: 福祉施設のスタッフ
@@ -38,7 +38,7 @@
 ## 3. 機能要件
 
 ### 3.1 認証・認可
-- **FR-AUTH-001**: Supabase Auth (Magic Link)によるログイン
+- **FR-AUTH-001**: Supabase Auth (Magic Link)によるサインイン
 - **FR-AUTH-002**: ロールベースアクセス制御（RBAC）
   - Supporter: plans/search/inquiries/consentsの作成・閲覧
   - FacilityStaff: ロールに応じた自施設のslots/inquiries管理
@@ -151,7 +151,7 @@
 ## 6. MVP画面構成
 
 ### 6.1 共通
-1. **/login** - ログイン画面（Supporter/FacilityStaff/User共通）
+1. **/login** - サインイン画面（Supporter/FacilityStaff/User共通）
 
 ### 6.2 Supporter向け
 2. **/plans/import** - 計画書入力/アップロード画面

@@ -30,7 +30,4 @@ export const phoneNumberSchema = z
   .string()
   .min(1, '電話番号は必須です')
   .transform(normalizePhoneNumber)
-  .refine(
-    (val) => /^\d{2,3}-\d{4}-\d{4}$/.test(val),
-    '電話番号の形式が正しくありません（例: 090-1234-5678）',
-  )
+  .refine((val) => /^\d{2,3}-\d{4}-\d{4}$/.test(val), '電話番号の形式が正しくありません（例: 090-1234-5678）')

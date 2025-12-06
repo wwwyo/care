@@ -1,6 +1,5 @@
 'use client'
 
-import { Mic, MicOff, Sparkles } from 'lucide-react'
 import {
   type ForwardedRef,
   forwardRef,
@@ -11,6 +10,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { Mic, MicOff, Sparkles } from '@/components/icon'
 import { Button } from '@/components/ui/button'
 import { generateMemoFromTranscription } from './ai-actions'
 
@@ -121,8 +121,7 @@ const SpeechRecognitionComponent = (
 
     hasInitializedSupportCheck.current = true
 
-    const isLocalhost =
-      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     const isSecureContext = window.location.protocol === 'https:' || isLocalhost
 
     if (!isSecureContext) {
@@ -326,14 +325,7 @@ const SpeechRecognitionComponent = (
         setIsGeneratingMemo(false)
         onMemoGenerationEnd?.()
       })
-  }, [
-    transcription,
-    currentMemo,
-    onMemoGenerate,
-    isGeneratingMemo,
-    onMemoGenerationStart,
-    onMemoGenerationEnd,
-  ])
+  }, [transcription, currentMemo, onMemoGenerate, isGeneratingMemo, onMemoGenerationStart, onMemoGenerationEnd])
 
   useEffect(() => {
     return () => {
@@ -361,18 +353,14 @@ const SpeechRecognitionComponent = (
         <div className="rounded-xl border border-border/60 p-4 text-sm text-warning-foreground">
           <p className="font-semibold text-warning">⚠️ 文字起こしを利用できません</p>
           <p className="mt-2 text-muted-foreground">
-            {errorMessage
-              ? errorMessage
-              : 'お使いのブラウザは Web Speech API をサポートしていません。'}
+            {errorMessage ? errorMessage : 'お使いのブラウザは Web Speech API をサポートしていません。'}
           </p>
           <ul className="mt-2 ml-4 list-disc space-y-1 text-muted-foreground">
             <li>Google Chrome（推奨）</li>
             <li>Microsoft Edge</li>
             <li>Safari（macOS/iOS）※一部制限あり</li>
           </ul>
-          <p className="mt-3 text-xs text-muted-foreground">
-            ※ Firefox は現在サポートされていません
-          </p>
+          <p className="mt-3 text-xs text-muted-foreground">※ Firefox は現在サポートされていません</p>
         </div>
       </BaseContainer>
     )
@@ -383,11 +371,7 @@ const SpeechRecognitionComponent = (
       {showHeader && (
         <div className="flex items-center justify-between">
           <span className="text-base font-semibold">文字起こし</span>
-          <Button
-            onClick={toggleListening}
-            variant={isListening ? 'destructive' : 'default'}
-            size="sm"
-          >
+          <Button onClick={toggleListening} variant={isListening ? 'destructive' : 'default'} size="sm">
             {isListening ? (
               <>
                 <MicOff className="mr-2 h-4 w-4" />
@@ -411,22 +395,15 @@ const SpeechRecognitionComponent = (
           </div>
         )}
         {errorMessage && (
-          <div className="rounded-md bg-destructive/10 p-2 text-sm text-destructive">
-            {errorMessage}
-          </div>
+          <div className="rounded-md bg-destructive/10 p-2 text-sm text-destructive">{errorMessage}</div>
         )}
         <div
           ref={scrollAreaRef}
           className="h-[calc(100svh-240px)] space-y-2 overflow-y-auto rounded-xl bg-muted/60 p-4"
         >
           {transcription.map((item, index) => (
-            <div
-              key={`${item.timestamp.getTime()}-${index}`}
-              className="rounded-lg bg-background/90 p-2"
-            >
-              <p className="mb-1 text-xs text-muted-foreground">
-                {item.timestamp.toLocaleTimeString('ja-JP')}
-              </p>
+            <div key={`${item.timestamp.getTime()}-${index}`} className="rounded-lg bg-background/90 p-2">
+              <p className="mb-1 text-xs text-muted-foreground">{item.timestamp.toLocaleTimeString('ja-JP')}</p>
               <p className="text-sm leading-relaxed">{item.text}</p>
             </div>
           ))}
