@@ -5,7 +5,7 @@ import { getUserRealm } from '@/features/auth/helpers'
 export async function Header() {
   const realm = await getUserRealm()
 
-  const href = realm === 'supporter' ? '/supporters/clients' : realm === 'facility_staff' ? '/_facility' : '/'
+  const href = realm === 'supporter' ? '/supporters/clients' : realm === 'client' ? '/clients/dashboard' : '/'
 
   return (
     <header className="sticky top-0 z-50 bg-background border-b">

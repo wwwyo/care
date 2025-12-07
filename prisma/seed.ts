@@ -14,7 +14,7 @@ async function main() {
     prisma.consentGrant.deleteMany(),
     prisma.consent.deleteMany(),
     prisma.supporterAvailabilityNote.deleteMany(),
-    prisma.facilityAvailabilityReport.deleteMany(),
+    prisma.planService.deleteMany(),
     prisma.planCustomField.deleteMany(),
     prisma.planAccessibilityRequirement.deleteMany(),
     prisma.planVersion.deleteMany(),
@@ -26,21 +26,43 @@ async function main() {
     prisma.facilityProfile.deleteMany(),
     prisma.clientAddress.deleteMany(),
     prisma.clientProfile.deleteMany(),
-    prisma.clientSupporter.deleteMany(),
+    prisma.clientUser.deleteMany(),
+    prisma.hearingTranscript.deleteMany(),
+    prisma.hearingMemo.deleteMany(),
     prisma.supporterProfile.deleteMany(),
-    prisma.facilityStaffFacility.deleteMany(),
-    prisma.facilityStaff.deleteMany(),
     prisma.facility.deleteMany(),
     prisma.client.deleteMany(),
-    prisma.supporter.deleteMany(),
-    prisma.tenant.deleteMany(),
+    prisma.invitation.deleteMany(),
+    prisma.member.deleteMany(),
+    prisma.organization.deleteMany(),
     prisma.verification.deleteMany(),
     prisma.account.deleteMany(),
     prisma.session.deleteMany(),
     prisma.user.deleteMany(),
   ])
 
-  // Better Auth用のUserを作成
+  // Organization作成
+  const organization1 = await prisma.organization.create({
+    data: {
+      id: generateId(),
+      name: 'テスト事業所A',
+      slug: 'test-org-a',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  })
+
+  const organization2 = await prisma.organization.create({
+    data: {
+      id: generateId(),
+      name: 'テスト事業所B',
+      slug: 'test-org-b',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  })
+
+  // Better Auth用のUserを作成（Supporter）
   const userSupporter1 = await prisma.user.create({
     data: {
       id: generateId(),
@@ -65,82 +87,54 @@ async function main() {
     },
   })
 
-  const userFacilityStaff1 = await prisma.user.create({
+  // MemberでOrganizationとUserを関連付け
+  await prisma.member.create({
     data: {
       id: generateId(),
-      name: '施設担当者A',
-      email: 'staff1@example.com',
-      emailVerified: true,
-      realm: 'facility_staff',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  })
-
-  const userFacilityStaff2 = await prisma.user.create({
-    data: {
-      id: generateId(),
-      name: '施設担当者B',
-      email: 'staff2@example.com',
-      emailVerified: true,
-      realm: 'facility_staff',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  })
-
-  // テナント作成
-  const tenant1 = await prisma.tenant.create({
-    data: {
-      name: 'テスト事業所A',
-    },
-  })
-
-  const tenant2 = await prisma.tenant.create({
-    data: {
-      name: 'テスト事業所B',
-    },
-  })
-
-  // サポーター作成
-  const supporter1 = await prisma.supporter.create({
-    data: {
-      tenantId: tenant1.id,
+      organizationId: organization1.id,
       userId: userSupporter1.id,
-      profile: {
-        create: {
-          tenantId: tenant1.id,
-          name: '山田太郎',
-          nameKana: 'ヤマダタロウ',
-          gender: '男性',
-          birthDate: new Date('1980-01-01'),
-          phone: '090-1234-5678',
-        },
-      },
+      role: 'owner',
+      createdAt: new Date(),
     },
   })
 
-  const supporter2 = await prisma.supporter.create({
+  await prisma.member.create({
     data: {
-      tenantId: tenant2.id,
+      id: generateId(),
+      organizationId: organization2.id,
       userId: userSupporter2.id,
-      profile: {
-        create: {
-          tenantId: tenant2.id,
-          name: '佐藤花子',
-          nameKana: 'サトウハナコ',
-          gender: '女性',
-          birthDate: new Date('1985-05-15'),
-          phone: '090-8765-4321',
-        },
-      },
+      role: 'owner',
+      createdAt: new Date(),
+    },
+  })
+
+  // SupporterProfile作成
+  await prisma.supporterProfile.create({
+    data: {
+      userId: userSupporter1.id,
+      name: '山田太郎',
+      nameKana: 'ヤマダタロウ',
+      gender: '男性',
+      birthDate: new Date('1980-01-01'),
+      phone: '090-1234-5678',
+    },
+  })
+
+  await prisma.supporterProfile.create({
+    data: {
+      userId: userSupporter2.id,
+      name: '佐藤花子',
+      nameKana: 'サトウハナコ',
+      gender: '女性',
+      birthDate: new Date('1985-05-15'),
+      phone: '090-8765-4321',
     },
   })
 
   // 利用者作成
   const client1 = await prisma.client.create({
     data: {
-      tenantId: tenant1.id,
+      organizationId: organization1.id,
       profile: {
         create: {
           name: '田中一郎',
@@ -164,7 +158,7 @@ async function main() {
 
   const client2 = await prisma.client.create({
     data: {
-      tenantId: tenant2.id,
+      organizationId: organization2.id,
       profile: {
         create: {
           name: '鈴木二郎',
@@ -185,26 +179,26 @@ async function main() {
     },
   })
 
-  // 利用者とサポーターの関連付け
-  await prisma.clientSupporter.create({
+  // 利用者とユーザーの関連付け（ClientUser）
+  await prisma.clientUser.create({
     data: {
       clientId: client1.id,
-      supporterId: supporter1.id,
+      userId: userSupporter1.id,
     },
   })
 
-  await prisma.clientSupporter.create({
+  await prisma.clientUser.create({
     data: {
       clientId: client2.id,
-      supporterId: supporter2.id,
+      userId: userSupporter2.id,
     },
   })
 
   // client1には複数のサポーターを割り当て
-  await prisma.clientSupporter.create({
+  await prisma.clientUser.create({
     data: {
       clientId: client1.id,
-      supporterId: supporter2.id,
+      userId: userSupporter2.id,
     },
   })
 
@@ -294,63 +288,10 @@ async function main() {
     },
   })
 
-  // 施設スタッフ作成
-  const facilityStaff1 = await prisma.facilityStaff.create({
-    data: {
-      userId: userFacilityStaff1.id,
-      facilities: {
-        create: {
-          facilityId: facility1.id,
-        },
-      },
-    },
-  })
-
-  // 空き状況レポート作成
-  await prisma.facilityAvailabilityReport.create({
-    data: {
-      facilityId: facility1.id,
-      status: 'available',
-      validFrom: new Date(),
-      validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      note: '平日の日中枠に余裕があり、医療的ケアにも対応可能です。',
-      contextSummary: '日中活動で最大3名まで受入可能',
-      contextDetails: [],
-      confidence: 80,
-      reportedById: facilityStaff1.id,
-    },
-  })
-
-  // 施設スタッフ2作成
-  const facilityStaff2 = await prisma.facilityStaff.create({
-    data: {
-      userId: userFacilityStaff2.id,
-      facilities: {
-        create: {
-          facilityId: facility2.id,
-        },
-      },
-    },
-  })
-
-  await prisma.facilityAvailabilityReport.create({
-    data: {
-      facilityId: facility2.id,
-      status: 'limited',
-      validFrom: new Date(),
-      validUntil: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-      note: '午後枠は調整可能だが重度対応は不可。',
-      contextSummary: '午後帯のみ2名まで受入可能',
-      contextDetails: [],
-      confidence: 60,
-      reportedById: facilityStaff2.id,
-    },
-  })
-
   // プラン作成
   const plan1 = await prisma.plan.create({
     data: {
-      tenantId: tenant1.id,
+      organizationId: organization1.id,
       clientId: client1.id,
       status: 'active',
     },
@@ -358,7 +299,7 @@ async function main() {
 
   const plan2 = await prisma.plan.create({
     data: {
-      tenantId: tenant2.id,
+      organizationId: organization2.id,
       clientId: client2.id,
       status: 'draft',
     },
@@ -373,7 +314,7 @@ async function main() {
       desiredLife: '地域で自立した生活を送りたい',
       troubles: '日常生活での身体介助が必要。移動に車椅子を使用。',
       considerations: '医療的ケアが必要な場合があります。',
-      createdBy: supporter1.id,
+      createdBy: userSupporter1.id,
       reasonForUpdate: '初回作成',
       services: {
         create: [
@@ -406,7 +347,7 @@ async function main() {
   await prisma.supporterAvailabilityNote.create({
     data: {
       facilityId: facility1.id,
-      supporterId: supporter1.id,
+      userId: userSupporter1.id,
       planId: plan1.id,
       clientId: client1.id,
       status: 'limited',
@@ -427,7 +368,7 @@ async function main() {
       desiredLife: '就労を通じて社会参加したい',
       troubles: '一般就労が困難な状況。作業能力の向上が必要。',
       considerations: '集中力の持続が困難な場合があります。',
-      createdBy: supporter2.id,
+      createdBy: userSupporter2.id,
       reasonForUpdate: '初回作成',
       services: {
         create: [
@@ -456,7 +397,7 @@ async function main() {
   await prisma.supporterAvailabilityNote.create({
     data: {
       facilityId: facility2.id,
-      supporterId: supporter2.id,
+      userId: userSupporter2.id,
       planId: plan2.id,
       clientId: client2.id,
       status: 'unavailable',

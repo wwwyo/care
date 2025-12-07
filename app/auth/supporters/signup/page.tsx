@@ -124,10 +124,10 @@ export default function SupporterSignupPage() {
 
               <div className="text-center space-y-2 pt-4 border-t w-full">
                 <Link
-                  href="/facility/signup"
+                  href="/auth/clients/signup"
                   className="block text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  施設スタッフの方はこちら
+                  サービス利用者の方はこちら
                 </Link>
               </div>
             </CardFooter>

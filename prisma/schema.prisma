@@ -23,7 +23,7 @@ model User {
   createdAt     DateTime
   updatedAt     DateTime
 
-  type String? // "supporter" | "client"
+  realm String? // "supporter" | "client"
 
   sessions          Session[]
   accounts          Account[]

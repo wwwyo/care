@@ -5,11 +5,12 @@ function toArrayBuffer(buffer: Buffer): ArrayBuffer {
   return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer
 }
 
-export async function GET(_request: NextRequest, { params }: { params: { planId: string } }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ planId: string }> }) {
+  const { planId } = await params
   const url = new URL(_request.url)
   const versionId = url.searchParams.get('versionId') ?? undefined
 
-  const result = await exportPlanUseCase({ planId: params.planId, versionId })
+  const result = await exportPlanUseCase({ planId, versionId })
 
   if (result.type === 'error') {
     return new Response(result.message, { status: 404 })
