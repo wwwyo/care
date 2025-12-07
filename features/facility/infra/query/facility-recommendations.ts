@@ -122,8 +122,7 @@ function buildAvailabilityScore(
   const supporterNumericValues = supporterNotes.map((note) => statusToNumeric(note.status))
   const supporterAverage =
     supporterNumericValues.length > 0
-      ? supporterNumericValues.reduce((sum, value) => sum + value, 0) /
-        supporterNumericValues.length
+      ? supporterNumericValues.reduce((sum, value) => sum + value, 0) / supporterNumericValues.length
       : 0
 
   const supporterScore = supporterAverage * supporterStatusWeight
@@ -152,15 +151,14 @@ function mapFacility(facility: FacilityRecord): FacilityRecommendation {
       }
     : null
 
-  const supporterNotes: SupporterAvailabilityNoteSummary[] =
-    facility.supporterAvailabilityNotes.map((note) => ({
-      id: note.id,
-      status: mapStatus(note.status),
-      note: note.note,
-      contextSummary: note.contextSummary,
-      expiresAt: note.expiresAt.toISOString(),
-      createdAt: note.createdAt.toISOString(),
-    }))
+  const supporterNotes: SupporterAvailabilityNoteSummary[] = facility.supporterAvailabilityNotes.map((note) => ({
+    id: note.id,
+    status: mapStatus(note.status),
+    note: note.note,
+    contextSummary: note.contextSummary,
+    expiresAt: note.expiresAt.toISOString(),
+    createdAt: note.createdAt.toISOString(),
+  }))
 
   return {
     id: facility.id,

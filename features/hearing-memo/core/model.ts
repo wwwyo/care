@@ -34,12 +34,7 @@ export class HearingMemoModel {
     this.updatedAt = data.updatedAt
   }
 
-  static create(params: {
-    clientId: string
-    supporterId: string
-    date: Date
-    title: string
-  }): HearingMemoModel {
+  static create(params: { clientId: string; supporterId: string; date: Date; title: string }): HearingMemoModel {
     const now = new Date()
     const data: HearingMemo = {
       id: crypto.randomUUID(),

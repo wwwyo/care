@@ -29,10 +29,7 @@ type ActionState = {
   values?: Record<string, string>
 } | null
 
-export async function createClientAction(
-  _prevState: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
+export async function createClientAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   // フォームの値を保存（エラー時に返す）
   const formValues = Object.fromEntries(formData.entries())
 

@@ -3,17 +3,11 @@ import type { SupporterAvailabilityNoteRepository } from '@/features/availabilit
 import { SupporterAvailabilityNote } from '@/features/availability/model/supporter-availability-note'
 import { prisma } from '@/lib/prisma'
 
-type SupporterAvailabilityRecord = NonNullable<
-  Awaited<ReturnType<typeof prisma.supporterAvailabilityNote.findFirst>>
->
+type SupporterAvailabilityRecord = NonNullable<Awaited<ReturnType<typeof prisma.supporterAvailabilityNote.findFirst>>>
 
-type SupporterAvailabilityListRecord = Awaited<
-  ReturnType<typeof prisma.supporterAvailabilityNote.findMany>
->[number]
+type SupporterAvailabilityListRecord = Awaited<ReturnType<typeof prisma.supporterAvailabilityNote.findMany>>[number]
 
-function toDomain(
-  record: SupporterAvailabilityRecord | SupporterAvailabilityListRecord,
-): SupporterAvailabilityNote {
+function toDomain(record: SupporterAvailabilityRecord | SupporterAvailabilityListRecord): SupporterAvailabilityNote {
   const contextDetails = AvailabilityContext.create(record.contextDetails ?? []).toJSON()
 
   return SupporterAvailabilityNote.fromData({

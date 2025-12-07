@@ -14,13 +14,7 @@ interface SendEmailOptions {
   from?: string
 }
 
-export async function sendEmail({
-  to,
-  subject,
-  template,
-  text,
-  from = serverEnv.EMAIL_FROM,
-}: SendEmailOptions) {
+export async function sendEmail({ to, subject, template, text, from = serverEnv.EMAIL_FROM }: SendEmailOptions) {
   // React EmailコンポーネントをHTMLに変換
   const html = await render(template)
 

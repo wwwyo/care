@@ -1,18 +1,12 @@
 'use client'
 
-import { Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { Trash2 } from '@/components/icon'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import type { FacilityRecommendation } from '@/features/facility/infra/query/facility-recommendations'
 import { cn } from '@/lib/utils'
@@ -229,21 +223,9 @@ export function PlanServiceFormWithRecommendations({
 
                   {/* Hidden form fields */}
                   <input type="hidden" name={`services[${index}].id`} value={service.id || ''} />
-                  <input
-                    type="hidden"
-                    name={`services[${index}].serviceCategory`}
-                    value={service.serviceCategory}
-                  />
-                  <input
-                    type="hidden"
-                    name={`services[${index}].serviceType`}
-                    value={service.serviceType}
-                  />
-                  <input
-                    type="hidden"
-                    name={`services[${index}].desiredAmount`}
-                    value={service.desiredAmount}
-                  />
+                  <input type="hidden" name={`services[${index}].serviceCategory`} value={service.serviceCategory} />
+                  <input type="hidden" name={`services[${index}].serviceType`} value={service.serviceType} />
+                  <input type="hidden" name={`services[${index}].desiredAmount`} value={service.desiredAmount} />
                   <input
                     type="hidden"
                     name={`services[${index}].desiredLifeByService`}
@@ -274,9 +256,7 @@ export function PlanServiceFormWithRecommendations({
                       <Label>サービス種別カテゴリ</Label>
                       <Select
                         value={service.serviceCategory}
-                        onValueChange={(value) =>
-                          handleServiceChange(index, 'serviceCategory', value)
-                        }
+                        onValueChange={(value) => handleServiceChange(index, 'serviceCategory', value)}
                         disabled={disabled}
                       >
                         <SelectTrigger>
@@ -303,8 +283,7 @@ export function PlanServiceFormWithRecommendations({
                           <SelectValue placeholder="サービスを選択" />
                         </SelectTrigger>
                         <SelectContent>
-                          {service.serviceCategory &&
-                          service.serviceCategory in SERVICE_TYPES_BY_CATEGORY ? (
+                          {service.serviceCategory && service.serviceCategory in SERVICE_TYPES_BY_CATEGORY ? (
                             SERVICE_TYPES_BY_CATEGORY[
                               service.serviceCategory as keyof typeof SERVICE_TYPES_BY_CATEGORY
                             ].map((type) => (
@@ -325,9 +304,7 @@ export function PlanServiceFormWithRecommendations({
                       <Label>希望するサービス量</Label>
                       <Input
                         value={service.desiredAmount}
-                        onChange={(e) =>
-                          handleServiceChange(index, 'desiredAmount', e.target.value)
-                        }
+                        onChange={(e) => handleServiceChange(index, 'desiredAmount', e.target.value)}
                         placeholder="例：週5日、月20日"
                         disabled={disabled}
                         onClick={(e) => e.stopPropagation()}
@@ -338,9 +315,7 @@ export function PlanServiceFormWithRecommendations({
                       <Label>達成時期</Label>
                       <Input
                         value={service.achievementPeriod}
-                        onChange={(e) =>
-                          handleServiceChange(index, 'achievementPeriod', e.target.value)
-                        }
+                        onChange={(e) => handleServiceChange(index, 'achievementPeriod', e.target.value)}
                         placeholder="例：3ヶ月後、継続"
                         disabled={disabled}
                         onClick={(e) => e.stopPropagation()}
@@ -352,9 +327,7 @@ export function PlanServiceFormWithRecommendations({
                     <Label>サービス利用により望まれる生活</Label>
                     <Textarea
                       value={service.desiredLifeByService}
-                      onChange={(e) =>
-                        handleServiceChange(index, 'desiredLifeByService', e.target.value)
-                      }
+                      onChange={(e) => handleServiceChange(index, 'desiredLifeByService', e.target.value)}
                       placeholder="このサービスを利用することで実現したい生活を記入"
                       className="min-h-[80px]"
                       disabled={disabled}
@@ -364,9 +337,7 @@ export function PlanServiceFormWithRecommendations({
 
                   {service.selectedFacilities && service.selectedFacilities.length > 0 && (
                     <div className="p-3 bg-primary/5 rounded-lg">
-                      <p className="text-sm font-medium mb-2">
-                        施設候補（{service.selectedFacilities.length}/3）
-                      </p>
+                      <p className="text-sm font-medium mb-2">施設候補（{service.selectedFacilities.length}/3）</p>
                       <div className="space-y-1">
                         {service.selectedFacilities.map((facility) => (
                           <p key={facility.id} className="text-sm text-muted-foreground">
@@ -404,9 +375,7 @@ export function PlanServiceFormWithRecommendations({
               }
               onShowDetail={onShowFacilityDetail}
               selectedFacilityIds={
-                activeServiceIndex !== null
-                  ? selectedFacilitiesMap[activeServiceIndex]?.map((f) => f.id) || []
-                  : []
+                activeServiceIndex !== null ? selectedFacilitiesMap[activeServiceIndex]?.map((f) => f.id) || [] : []
               }
               maxSelection={3}
             />

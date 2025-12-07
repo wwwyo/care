@@ -1,9 +1,4 @@
-import type {
-  FacilityContact,
-  FacilityLocation,
-  FacilityProfile,
-  FacilityService,
-} from '@/lib/generated/prisma/client'
+import type { FacilityContact, FacilityLocation, FacilityProfile, FacilityService } from '@/lib/generated/prisma/client'
 import { FacilityDescription } from './facility-description'
 import { FacilityName, FacilityNameKana } from './facility-name'
 import { OfficialFacilityId } from './official-facility-id'
@@ -146,19 +141,13 @@ export class Facility {
       return { type: 'InvalidName', message: '施設名が無効です' }
     }
 
-    const newNameKana =
-      params.nameKana !== undefined ? FacilityNameKana.create(params.nameKana) : this.nameKana
+    const newNameKana = params.nameKana !== undefined ? FacilityNameKana.create(params.nameKana) : this.nameKana
     const newDescription =
-      params.description !== undefined
-        ? FacilityDescription.create(params.description)
-        : this.description
-    const newServiceType =
-      params.serviceType !== undefined ? ServiceType.create(params.serviceType) : this.serviceType
+      params.description !== undefined ? FacilityDescription.create(params.description) : this.description
+    const newServiceType = params.serviceType !== undefined ? ServiceType.create(params.serviceType) : this.serviceType
     const newCapacity = params.capacity !== undefined ? params.capacity : this.capacity
     const newOfficialId =
-      params.officialId !== undefined
-        ? OfficialFacilityId.create(params.officialId)
-        : this.officialId
+      params.officialId !== undefined ? OfficialFacilityId.create(params.officialId) : this.officialId
 
     return new Facility(
       this.id,

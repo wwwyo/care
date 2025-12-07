@@ -6,14 +6,10 @@ export type HearingTranscriptRepositoryError =
   | { type: 'DeleteFailed'; message: string }
 
 export interface HearingTranscriptRepository {
-  save: (
-    transcript: HearingTranscriptModel,
-  ) => Promise<HearingTranscriptModel | HearingTranscriptRepositoryError>
+  save: (transcript: HearingTranscriptModel) => Promise<HearingTranscriptModel | HearingTranscriptRepositoryError>
   delete: (id: string) => Promise<undefined | HearingTranscriptRepositoryError>
   findById: (id: string) => Promise<HearingTranscriptModel | HearingTranscriptRepositoryError>
-  findByHearingMemoId: (
-    hearingMemoId: string,
-  ) => Promise<HearingTranscriptModel[] | HearingTranscriptRepositoryError>
+  findByHearingMemoId: (hearingMemoId: string) => Promise<HearingTranscriptModel[] | HearingTranscriptRepositoryError>
   replaceForHearingMemo: (
     hearingMemoId: string,
     transcripts: HearingTranscriptModel[],

@@ -21,10 +21,7 @@ export async function updateHearingTranscripts(
     }),
   )
 
-  const replaceResult = await hearingTranscriptRepository.replaceForHearingMemo(
-    memoId,
-    transcriptModels,
-  )
+  const replaceResult = await hearingTranscriptRepository.replaceForHearingMemo(memoId, transcriptModels)
 
   if ('type' in replaceResult) {
     return {

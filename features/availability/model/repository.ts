@@ -9,10 +9,7 @@ export interface FacilityAvailabilityReportRepository {
 
 export interface SupporterAvailabilityNoteRepository {
   save(note: SupporterAvailabilityNote): Promise<void>
-  findActiveByFacility(
-    facilityId: string,
-    options?: { asOf?: Date },
-  ): Promise<SupporterAvailabilityNote[]>
+  findActiveByFacility(facilityId: string, options?: { asOf?: Date }): Promise<SupporterAvailabilityNote[]>
   findActiveByFacilityForClient(
     facilityId: string,
     clientId: string,

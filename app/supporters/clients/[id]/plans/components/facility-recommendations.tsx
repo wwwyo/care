@@ -1,8 +1,8 @@
 'use client'
 
-import { CheckCircle2, Info, MapPin, MessageSquare } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { CheckCircle2, Info, MapPin, MessageSquare } from '@/components/icon'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import type { FacilityRecommendation } from '@/features/facility/infra/query/facility-recommendations'
@@ -29,9 +29,7 @@ function AvailabilityBadge({
   if (!status) {
     return (
       <div className="flex items-center gap-2">
-        <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-          ? 空き情報不明
-        </span>
+        <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">? 空き情報不明</span>
       </div>
     )
   }
@@ -58,9 +56,7 @@ function AvailabilityBadge({
   if (!config) {
     return (
       <div className="flex items-center gap-2">
-        <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-          ? 空き情報不明
-        </span>
+        <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">? 空き情報不明</span>
       </div>
     )
   }
@@ -126,23 +122,17 @@ function FacilityCard({
         <AvailabilityBadge
           status={facility.availability.status}
           percent={facility.availability.percent}
-          facilityNote={
-            facility.facilityReport?.contextSummary ?? facility.facilityReport?.note ?? undefined
-          }
+          facilityNote={facility.facilityReport?.contextSummary ?? facility.facilityReport?.note ?? undefined}
         />
 
         {facility.supporterNotes[0] && (
           <p className="text-[13px] text-muted-foreground line-clamp-2">
             <span className="font-medium mr-1">相談員メモ:</span>
-            {facility.supporterNotes[0]?.contextSummary ??
-              facility.supporterNotes[0]?.note ??
-              '共有内容なし'}
+            {facility.supporterNotes[0]?.contextSummary ?? facility.supporterNotes[0]?.note ?? '共有内容なし'}
           </p>
         )}
 
-        {facility.accessInfo && (
-          <p className="text-xs text-muted-foreground line-clamp-2">{facility.accessInfo}</p>
-        )}
+        {facility.accessInfo && <p className="text-xs text-muted-foreground line-clamp-2">{facility.accessInfo}</p>}
 
         <div className="flex gap-2">
           <Button
@@ -265,9 +255,7 @@ export function FacilityRecommendations({
       </div>
 
       {facilities.length === 0 && !isLoading && (
-        <p className="text-sm text-muted-foreground text-center py-4">
-          該当する施設が見つかりませんでした
-        </p>
+        <p className="text-sm text-muted-foreground text-center py-4">該当する施設が見つかりませんでした</p>
       )}
     </div>
   )

@@ -1,10 +1,7 @@
 'use server'
 
-import { openai } from '@ai-sdk/openai'
 import { generateText } from 'ai'
 import type { TranscriptionItem } from './speech-recognition'
-
-const model = openai('gpt-5-mini') // コスト効率の良い高性能モデル
 
 type GenerateMemoResult = { success: true; memo: string } | { type: 'Error'; message: string }
 
@@ -79,7 +76,7 @@ ${existingMemo}
 - 簡潔に事実のみを記載`
 
     const result = await generateText({
-      model,
+      model: 'openai/gpt-5-mini',
       prompt,
       temperature: 0.3,
       maxOutputTokens: 100000,
@@ -146,7 +143,7 @@ JSON形式で以下のように出力してください：
 - 既に十分聞けている内容は除外する`
 
     const result = await generateText({
-      model,
+      model: 'openai/gpt-5-mini',
       prompt,
       temperature: 0.3,
       maxOutputTokens: 100000,
@@ -190,15 +187,10 @@ export async function generateStructuredSummary(
       .join('\n')
 
     const sectionDefinitions = sections
-      .map(
-        (section, index) =>
-          `${index + 1}. ${section.title}${section.slug ? ` (slug: ${section.slug})` : ''}`,
-      )
+      .map((section, index) => `${index + 1}. ${section.title}${section.slug ? ` (slug: ${section.slug})` : ''}`)
       .join('\n')
 
-    const existingSummary = sections
-      .map((section) => `${section.title}: ${section.content || '（未入力）'}`)
-      .join('\n')
+    const existingSummary = sections.map((section) => `${section.title}: ${section.content || '（未入力）'}`).join('\n')
 
     const prompt = `あなたは福祉相談のヒアリング内容を整理するアシスタントです。
 最新の文字起こしと現在の要約を基に、各セクションの内容を更新してください。
@@ -247,12 +239,10 @@ ${sectionDefinitions}
       const source = sections[index] ?? null
       const itemRecord = isRecord(item) ? item : {}
 
-      const resolvedSlug =
-        typeof itemRecord.slug === 'string' ? itemRecord.slug : (source?.slug ?? null)
+      const resolvedSlug = typeof itemRecord.slug === 'string' ? itemRecord.slug : (source?.slug ?? null)
 
       const inputTitle = typeof itemRecord.title === 'string' ? itemRecord.title.trim() : ''
-      const resolvedTitle =
-        inputTitle.length > 0 ? inputTitle : (source?.title ?? `セクション${index + 1}`)
+      const resolvedTitle = inputTitle.length > 0 ? inputTitle : (source?.title ?? `セクション${index + 1}`)
 
       const inputContent = typeof itemRecord.content === 'string' ? itemRecord.content.trim() : ''
       const resolvedContent = inputContent.length > 0 ? inputContent : (source?.content ?? '')

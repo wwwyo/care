@@ -1,10 +1,10 @@
 'use client'
 
-import { AlertCircle } from 'lucide-react'
 import Form from 'next/form'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useActionState, useCallback, useState } from 'react'
 import { toast } from 'sonner'
+import { AlertCircle } from '@/components/icon'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -127,9 +127,7 @@ export function PlanEditForm({ clientId, supporterId, hearingMemos }: Props) {
 
               <PlanServiceForm
                 initialServices={
-                  generatedData?.services && Array.isArray(generatedData.services)
-                    ? generatedData.services
-                    : []
+                  generatedData?.services && Array.isArray(generatedData.services) ? generatedData.services : []
                 }
                 disabled={false}
                 onShowFacilityDetail={handleShowFacilityDetail}
@@ -146,22 +144,13 @@ export function PlanEditForm({ clientId, supporterId, hearingMemos }: Props) {
                     placeholder="移動支援、設備要件、医療的ケア、食事要件など、配慮が必要な事項を記入してください"
                     className="min-h-[120px]"
                     defaultValue={generatedData?.considerations || state.formData?.considerations}
-                    key={
-                      generatedData?.considerations
-                        ? 'generated-considerations'
-                        : 'default-considerations'
-                    }
+                    key={generatedData?.considerations ? 'generated-considerations' : 'default-considerations'}
                   />
                 </CardContent>
               </Card>
 
               <div className="flex justify-end space-x-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => window.history.back()}
-                  disabled={isPending}
-                >
+                <Button type="button" variant="outline" onClick={() => window.history.back()} disabled={isPending}>
                   キャンセル
                 </Button>
                 <Button type="submit" disabled={isPending}>
@@ -191,11 +180,7 @@ export function PlanEditForm({ clientId, supporterId, hearingMemos }: Props) {
     <div className="space-y-6">
       {/* AI生成セクション */}
       {hearingMemos.length > 0 && (
-        <HearingMemoSelector
-          hearingMemos={hearingMemos}
-          onGenerate={handleAIGenerate}
-          isGenerating={isGenerating}
-        />
+        <HearingMemoSelector hearingMemos={hearingMemos} onGenerate={handleAIGenerate} isGenerating={isGenerating} />
       )}
 
       <Form action={formAction} className="space-y-6">
@@ -240,9 +225,7 @@ export function PlanEditForm({ clientId, supporterId, hearingMemos }: Props) {
 
         <PlanServiceForm
           initialServices={
-            generatedData?.services && Array.isArray(generatedData.services)
-              ? generatedData.services
-              : []
+            generatedData?.services && Array.isArray(generatedData.services) ? generatedData.services : []
           }
           disabled={false}
           onShowFacilityDetail={handleShowFacilityDetail}
@@ -259,22 +242,13 @@ export function PlanEditForm({ clientId, supporterId, hearingMemos }: Props) {
               placeholder="移動支援、設備要件、医療的ケア、食事要件など、配慮が必要な事項を記入してください"
               className="min-h-[120px]"
               defaultValue={generatedData?.considerations || state.formData?.considerations}
-              key={
-                generatedData?.considerations
-                  ? 'generated-considerations'
-                  : 'default-considerations'
-              }
+              key={generatedData?.considerations ? 'generated-considerations' : 'default-considerations'}
             />
           </CardContent>
         </Card>
 
         <div className="flex justify-end space-x-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => window.history.back()}
-            disabled={isPending}
-          >
+          <Button type="button" variant="outline" onClick={() => window.history.back()} disabled={isPending}>
             キャンセル
           </Button>
           <Button type="submit" disabled={isPending}>

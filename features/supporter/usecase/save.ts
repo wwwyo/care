@@ -13,9 +13,7 @@ export type SaveSupporterError = {
   message: string
 }
 
-export async function saveSupporterUseCase(
-  input: SaveSupporterInput,
-): Promise<undefined | SaveSupporterError> {
+export async function saveSupporterUseCase(input: SaveSupporterInput): Promise<undefined | SaveSupporterError> {
   try {
     // デフォルトテナントを取得または作成
     const tenant = await getOrCreateDefaultTenant()

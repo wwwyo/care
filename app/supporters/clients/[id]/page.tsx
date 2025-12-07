@@ -1,3 +1,5 @@
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
 import {
   AlertCircle,
   ArrowLeft,
@@ -9,9 +11,7 @@ import {
   Phone,
   Plus,
   User,
-} from 'lucide-react'
-import Link from 'next/link'
-import { notFound } from 'next/navigation'
+} from '@/components/icon'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { requireRealm } from '@/features/auth/helpers'
@@ -106,9 +106,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                           {new Date(memo.date).toLocaleDateString('ja-JP')}
                         </p>
                         {memo.content && (
-                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                            {memo.content}
-                          </p>
+                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{memo.content}</p>
                         )}
                       </div>
                     </div>
@@ -116,10 +114,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                 ))}
                 {hearingMemos.length > 3 && (
                   <div className="pt-2 border-t">
-                    <Link
-                      href={`/supporters/clients/${id}/hearing`}
-                      className="text-sm text-primary hover:underline"
-                    >
+                    <Link href={`/supporters/clients/${id}/hearing`} className="text-sm text-primary hover:underline">
                       すべてのメモを見る ({hearingMemos.length}件)
                     </Link>
                   </div>
@@ -164,9 +159,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                     </div>
                     <div className="flex gap-2">
                       <Button asChild variant="outline" size="sm">
-                        <Link href={`/supporters/clients/${id}/plans/${version.id}/edit`}>
-                          編集
-                        </Link>
+                        <Link href={`/supporters/clients/${id}/plans/${version.id}/edit`}>編集</Link>
                       </Button>
                       <Button asChild variant="outline" size="sm">
                         <Link href={`/supporters/clients/${id}/plans/${version.id}/record`}>
@@ -198,19 +191,13 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               <div>
                 <p className="text-sm text-muted-foreground">生年月日</p>
                 <p className="text-lg font-medium">
-                  {profile.birthDate
-                    ? `${profile.birthDate.toLocaleDateString('ja-JP')} (${age}歳)`
-                    : '未定義'}
+                  {profile.birthDate ? `${profile.birthDate.toLocaleDateString('ja-JP')} (${age}歳)` : '未定義'}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">性別</p>
                 <p className="text-lg font-medium">
-                  {profile.gender === 'male'
-                    ? '男性'
-                    : profile.gender === 'female'
-                      ? '女性'
-                      : 'その他'}
+                  {profile.gender === 'male' ? '男性' : profile.gender === 'female' ? '女性' : 'その他'}
                 </p>
               </div>
               <div>
@@ -235,9 +222,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           <CardContent>
             {address ? (
               <div className="space-y-2">
-                {address.postalCode && (
-                  <p className="text-sm text-muted-foreground">〒{address.postalCode}</p>
-                )}
+                {address.postalCode && <p className="text-sm text-muted-foreground">〒{address.postalCode}</p>}
                 <p className="text-lg">
                   {address.prefecture || ''}
                   {address.city || ''}
@@ -284,9 +269,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">続柄</p>
-                <p className="text-lg font-medium">
-                  {profile.emergencyContactRelation || '未登録'}
-                </p>
+                <p className="text-lg font-medium">{profile.emergencyContactRelation || '未登録'}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">電話番号</p>

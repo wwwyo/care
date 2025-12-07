@@ -90,9 +90,7 @@ export default async function EditPlanPage({ params }: Props) {
           )}
         </div>
         <Button asChild variant="secondary">
-          <a href={`/api/plans/${plan.id}/download?versionId=${latestVersion.id}`}>
-            Excelでダウンロード
-          </a>
+          <a href={`/api/plans/${plan.id}/download?versionId=${latestVersion.id}`}>Excelでダウンロード</a>
         </Button>
       </div>
 

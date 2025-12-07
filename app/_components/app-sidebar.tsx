@@ -1,9 +1,9 @@
 'use client'
 
-import { Building2, ClipboardList, FileText, Home, Users } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import type { LucideIcon } from '@/components/icon'
 import {
   Sidebar,
   SidebarContent,
@@ -16,51 +16,19 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 
-interface AppSidebarProps {
-  userRole: 'supporter' | 'facility_staff' | null
+export interface MenuItem {
+  title: string
+  href: string
+  icon: LucideIcon
 }
 
-export function AppSidebar({ userRole }: AppSidebarProps) {
+interface AppSidebarProps {
+  menuItems: MenuItem[]
+}
+
+export function AppSidebar({ menuItems }: AppSidebarProps) {
   const pathname = usePathname()
   const { state, toggleSidebar } = useSidebar()
-
-  const supporterMenuItems = [
-    {
-      title: '利用者一覧',
-      href: '/supporters/clients',
-      icon: Users,
-    },
-  ]
-
-  const facilityMenuItems = [
-    {
-      title: 'ダッシュボード',
-      href: '/facility',
-      icon: Home,
-    },
-    {
-      title: '空き状況管理',
-      href: '/facility/slots',
-      icon: Building2,
-    },
-    {
-      title: '施設情報編集',
-      href: '/facility/edit',
-      icon: FileText,
-    },
-    {
-      title: '照会管理',
-      href: '/facility/inquiries',
-      icon: ClipboardList,
-    },
-  ]
-
-  const menuItems =
-    userRole === 'supporter'
-      ? supporterMenuItems
-      : userRole === 'facility_staff'
-        ? facilityMenuItems
-        : []
 
   return (
     <Sidebar collapsible="icon" variant="inset">

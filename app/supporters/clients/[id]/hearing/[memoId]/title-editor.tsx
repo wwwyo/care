@@ -1,8 +1,8 @@
 'use client'
 
-import { Check, Edit2, X } from 'lucide-react'
 import Form from 'next/form'
 import { useActionState, useState } from 'react'
+import { Check, Edit2, X } from '@/components/icon'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { updateTitle } from './actions'
@@ -14,16 +14,13 @@ interface TitleEditorProps {
 
 export function TitleEditor({ initialTitle, memoId }: TitleEditorProps) {
   const [isEditing, setIsEditing] = useState(false)
-  const [state, formAction, isPending] = useActionState(
-    async (_prevState: unknown, formData: FormData) => {
-      const result = await updateTitle(memoId, formData)
-      if ('success' in result) {
-        setIsEditing(false)
-      }
-      return result
-    },
-    null,
-  )
+  const [state, formAction, isPending] = useActionState(async (_prevState: unknown, formData: FormData) => {
+    const result = await updateTitle(memoId, formData)
+    if ('success' in result) {
+      setIsEditing(false)
+    }
+    return result
+  }, null)
 
   if (!isEditing) {
     return (
@@ -58,18 +55,10 @@ export function TitleEditor({ initialTitle, memoId }: TitleEditorProps) {
       <Button type="submit" variant="ghost" size="icon" disabled={isPending}>
         <Check className="h-4 w-4" />
       </Button>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        onClick={() => setIsEditing(false)}
-        disabled={isPending}
-      >
+      <Button type="button" variant="ghost" size="icon" onClick={() => setIsEditing(false)} disabled={isPending}>
         <X className="h-4 w-4" />
       </Button>
-      {state && 'type' in state && (
-        <span className="text-sm text-destructive">{state.message}</span>
-      )}
+      {state && 'type' in state && <span className="text-sm text-destructive">{state.message}</span>}
     </Form>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
-import { Sparkles } from 'lucide-react'
 import { useState } from 'react'
+import { Sparkles } from '@/components/icon'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -29,9 +29,7 @@ export function HearingMemoSelector({ hearingMemos, onGenerate, isGenerating = f
   const [selectedMemoIds, setSelectedMemoIds] = useState<string[]>([])
 
   const handleToggleMemo = (memoId: string) => {
-    setSelectedMemoIds((prev) =>
-      prev.includes(memoId) ? prev.filter((id) => id !== memoId) : [...prev, memoId],
-    )
+    setSelectedMemoIds((prev) => (prev.includes(memoId) ? prev.filter((id) => id !== memoId) : [...prev, memoId]))
   }
 
   const handleGenerate = () => {
@@ -59,9 +57,7 @@ export function HearingMemoSelector({ hearingMemos, onGenerate, isGenerating = f
           <Sparkles className="h-5 w-5" />
           AIによる計画書生成
         </CardTitle>
-        <CardDescription>
-          ヒアリングメモを選択してAIで計画書を生成できます。複数選択可能です。
-        </CardDescription>
+        <CardDescription>ヒアリングメモを選択してAIで計画書を生成できます。複数選択可能です。</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-3">
@@ -96,11 +92,7 @@ export function HearingMemoSelector({ hearingMemos, onGenerate, isGenerating = f
           ))}
         </div>
         <div className="flex justify-end">
-          <Button
-            onClick={handleGenerate}
-            disabled={selectedMemoIds.length === 0 || isGenerating}
-            className="gap-2"
-          >
+          <Button onClick={handleGenerate} disabled={selectedMemoIds.length === 0 || isGenerating} className="gap-2">
             <Sparkles className="h-4 w-4" />
             {isGenerating ? 'AI生成中...' : 'AIで計画書を生成'}
           </Button>

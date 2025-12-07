@@ -13,10 +13,7 @@ export async function getClientById(id: string, tenantId: string) {
   })
 }
 
-export async function getAllClients(
-  tenantId: string,
-  options?: { limit?: number; offset?: number },
-) {
+export async function getAllClients(tenantId: string, options?: { limit?: number; offset?: number }) {
   return await prisma.client.findMany({
     where: { tenantId },
     include: {

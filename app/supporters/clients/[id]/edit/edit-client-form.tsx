@@ -1,22 +1,16 @@
 'use client'
 
-import { ArrowLeft } from 'lucide-react'
 import Form from 'next/form'
 import Link from 'next/link'
 import { useActionState, useEffect } from 'react'
 import { toast } from 'sonner'
+import { ArrowLeft } from '@/components/icon'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { updateClientAction } from './actions'
 
@@ -81,9 +75,7 @@ export default function EditClientForm({ clientData }: EditClientFormProps) {
                   placeholder="山田太郎"
                   defaultValue={state?.values?.name ?? clientData.name}
                 />
-                {state?.fieldErrors?.name && (
-                  <p className="text-sm text-red-500">{state.fieldErrors.name}</p>
-                )}
+                {state?.fieldErrors?.name && <p className="text-sm text-red-500">{state.fieldErrors.name}</p>}
               </div>
 
               <div className="space-y-2">
@@ -94,9 +86,7 @@ export default function EditClientForm({ clientData }: EditClientFormProps) {
                   type="date"
                   defaultValue={state?.values?.birthDate ?? clientData.birthDate ?? ''}
                 />
-                {state?.fieldErrors?.birthDate && (
-                  <p className="text-sm text-red-500">{state.fieldErrors.birthDate}</p>
-                )}
+                {state?.fieldErrors?.birthDate && <p className="text-sm text-red-500">{state.fieldErrors.birthDate}</p>}
               </div>
 
               <div className="space-y-2">
@@ -117,9 +107,7 @@ export default function EditClientForm({ clientData }: EditClientFormProps) {
                     </div>
                   </div>
                 </RadioGroup>
-                {state?.fieldErrors?.gender && (
-                  <p className="text-sm text-red-500">{state.fieldErrors.gender}</p>
-                )}
+                {state?.fieldErrors?.gender && <p className="text-sm text-red-500">{state.fieldErrors.gender}</p>}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -134,11 +122,7 @@ export default function EditClientForm({ clientData }: EditClientFormProps) {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="prefecture">都道府県 *</Label>
-                  <Select
-                    name="prefecture"
-                    required
-                    defaultValue={state?.values?.prefecture ?? clientData.prefecture}
-                  >
+                  <Select name="prefecture" required defaultValue={state?.values?.prefecture ?? clientData.prefecture}>
                     <SelectTrigger>
                       <SelectValue placeholder="選択してください" />
                     </SelectTrigger>
@@ -168,9 +152,7 @@ export default function EditClientForm({ clientData }: EditClientFormProps) {
                     placeholder="世田谷区"
                     defaultValue={state?.values?.city ?? clientData.city}
                   />
-                  {state?.fieldErrors?.city && (
-                    <p className="text-sm text-red-500">{state.fieldErrors.city}</p>
-                  )}
+                  {state?.fieldErrors?.city && <p className="text-sm text-red-500">{state.fieldErrors.city}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="street">番地 *</Label>
@@ -181,9 +163,7 @@ export default function EditClientForm({ clientData }: EditClientFormProps) {
                     placeholder="1-2-3"
                     defaultValue={state?.values?.street ?? clientData.street}
                   />
-                  {state?.fieldErrors?.street && (
-                    <p className="text-sm text-red-500">{state.fieldErrors.street}</p>
-                  )}
+                  {state?.fieldErrors?.street && <p className="text-sm text-red-500">{state.fieldErrors.street}</p>}
                 </div>
               </div>
 
@@ -214,10 +194,7 @@ export default function EditClientForm({ clientData }: EditClientFormProps) {
 
               <div className="space-y-2">
                 <Label htmlFor="disability">障害種別</Label>
-                <Select
-                  name="disability"
-                  defaultValue={state?.values?.disability ?? clientData.disability}
-                >
+                <Select name="disability" defaultValue={state?.values?.disability ?? clientData.disability}>
                   <SelectTrigger>
                     <SelectValue placeholder="選択してください" />
                   </SelectTrigger>
@@ -234,10 +211,7 @@ export default function EditClientForm({ clientData }: EditClientFormProps) {
 
               <div className="space-y-2">
                 <Label htmlFor="careLevel">障害支援区分</Label>
-                <Select
-                  name="careLevel"
-                  defaultValue={state?.values?.careLevel ?? clientData.careLevel}
-                >
+                <Select name="careLevel" defaultValue={state?.values?.careLevel ?? clientData.careLevel}>
                   <SelectTrigger>
                     <SelectValue placeholder="選択してください" />
                   </SelectTrigger>
@@ -262,9 +236,7 @@ export default function EditClientForm({ clientData }: EditClientFormProps) {
                     name="emergencyContactName"
                     required
                     placeholder="山田花子"
-                    defaultValue={
-                      state?.values?.emergencyContactName ?? clientData.emergencyContactName
-                    }
+                    defaultValue={state?.values?.emergencyContactName ?? clientData.emergencyContactName}
                   />
                   {state?.fieldErrors?.emergencyContactName && (
                     <p className="text-sm text-red-500">{state.fieldErrors.emergencyContactName}</p>
@@ -279,14 +251,11 @@ export default function EditClientForm({ clientData }: EditClientFormProps) {
                     required
                     placeholder="母"
                     defaultValue={
-                      state?.values?.emergencyContactRelationship ??
-                      clientData.emergencyContactRelationship
+                      state?.values?.emergencyContactRelationship ?? clientData.emergencyContactRelationship
                     }
                   />
                   {state?.fieldErrors?.emergencyContactRelationship && (
-                    <p className="text-sm text-red-500">
-                      {state.fieldErrors.emergencyContactRelationship}
-                    </p>
+                    <p className="text-sm text-red-500">{state.fieldErrors.emergencyContactRelationship}</p>
                   )}
                 </div>
 
@@ -298,14 +267,10 @@ export default function EditClientForm({ clientData }: EditClientFormProps) {
                     type="tel"
                     required
                     placeholder="090-8765-4321"
-                    defaultValue={
-                      state?.values?.emergencyContactPhone ?? clientData.emergencyContactPhone
-                    }
+                    defaultValue={state?.values?.emergencyContactPhone ?? clientData.emergencyContactPhone}
                   />
                   {state?.fieldErrors?.emergencyContactPhone && (
-                    <p className="text-sm text-red-500">
-                      {state.fieldErrors.emergencyContactPhone}
-                    </p>
+                    <p className="text-sm text-red-500">{state.fieldErrors.emergencyContactPhone}</p>
                   )}
                 </div>
               </div>

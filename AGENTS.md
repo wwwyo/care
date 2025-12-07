@@ -82,10 +82,16 @@ care/
 - NULLフィールドを最小化する設計を徹底
 - 単一責任の原則に基づいたテーブル構成
 
+**Command:**
+- `bun db:migrate` # migrationを実行
+- `bun db:generate` #prisma clientを生成
+
 ## Important Considerations
 
 - **セキュリティ**: 個人情報の最小限収集、テナント間のデータ分離
 - **UI/UX**: モバイルファースト、日本語のみ対応
+
+
 
 ### テスト駆動開発（TDD）
 

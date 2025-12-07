@@ -1,25 +1,22 @@
 'use client'
 
-import { AlertCircle } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { AlertCircle } from '@/components/icon'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { authClient } from '@/features/auth/client'
+import { USER_REALMS } from '@/features/auth/schemas'
 
-export default function SupporterLoginPage() {
+export default function SupporterSignupPage() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -28,19 +25,22 @@ export default function SupporterLoginPage() {
     setIsLoading(true)
     setError(null)
 
-    // ログイン
-    await authClient.signIn.email(
+    // サインアップ時にrealmを指定
+    await authClient.signUp.email(
       {
         email,
         password,
+        name,
+        realm: USER_REALMS.SUPPORTER,
         callbackURL: '/supporters/clients',
       },
       {
         onSuccess: () => {
           setIsLoading(false)
+          router.push('/supporters/clients')
         },
         onError: (ctx) => {
-          setError(ctx.error.message || 'ログインに失敗しました')
+          setError(ctx.error.message || 'サインアップに失敗しました')
           setIsLoading(false)
         },
       },
@@ -56,12 +56,25 @@ export default function SupporterLoginPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>相談員様ログイン</CardTitle>
-            <CardDescription>アカウント情報を入力してログインしてください</CardDescription>
+            <CardTitle>相談員様アカウント作成</CardTitle>
+            <CardDescription>新規アカウントを作成してください</CardDescription>
           </CardHeader>
 
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">お名前</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="山田 太郎"
+                />
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="email">メールアドレス</Label>
                 <Input
@@ -82,7 +95,7 @@ export default function SupporterLoginPage() {
                   id="password"
                   name="password"
                   type="password"
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -100,21 +113,21 @@ export default function SupporterLoginPage() {
 
             <CardFooter className="flex flex-col space-y-4 pt-6">
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? '処理中...' : 'ログイン'}
+                {isLoading ? '処理中...' : 'アカウント作成'}
               </Button>
 
-              <Link href="/supporter/signup" className="w-full">
+              <Link href="/auth/supporters/signin" className="w-full">
                 <Button type="button" variant="link" className="w-full">
-                  アカウントをお持ちでない方はこちら
+                  すでにアカウントをお持ちの方はこちら
                 </Button>
               </Link>
 
               <div className="text-center space-y-2 pt-4 border-t w-full">
                 <Link
-                  href="/facility/login"
+                  href="/auth/clients/signup"
                   className="block text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  施設スタッフの方はこちら
+                  サービス利用者の方はこちら
                 </Link>
               </div>
             </CardFooter>

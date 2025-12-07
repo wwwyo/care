@@ -284,9 +284,7 @@ async function main() {
   const args = process.argv.slice(2)
 
   if (args.length === 0) {
-    console.error(
-      'Usage: bun scripts/import-wam-facilities.ts <csv-path> [--prefecture=都道府県名]',
-    )
+    console.error('Usage: bun scripts/import-wam-facilities.ts <csv-path> [--prefecture=都道府県名]')
     console.error('')
     console.error('Examples:')
     console.error('  bun scripts/import-wam-facilities.ts ./opendata/hokkaido.csv')

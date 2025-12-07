@@ -1,15 +1,9 @@
 'use client'
 
-import { Sparkles } from 'lucide-react'
+import { Sparkles } from '@/components/icon'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 
 export type FactKey =
@@ -142,9 +136,7 @@ export function ClientFactPanel({
         <Sparkles className="h-4 w-4 text-primary" />
         <span>ヒアリングで確認した項目</span>
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">
-        文字起こしで補完された値は編集・上書きできます。
-      </p>
+      <p className="mt-1 text-xs text-muted-foreground">文字起こしで補完された値は編集・上書きできます。</p>
       <div className="mt-4 grid gap-4">
         {FACT_FIELD_CONFIGS.map(({ key, label, placeholder, isTextArea, options }) => {
           const value = facts[key] ?? ''
@@ -213,9 +205,7 @@ export function createFactValuesFromSource(source: ClientFactsSource): FactValue
   }
 }
 
-export function extractFactsFromTranscriptions(
-  transcriptions: Array<{ text: string }>,
-): Partial<FactValues> {
+export function extractFactsFromTranscriptions(transcriptions: Array<{ text: string }>): Partial<FactValues> {
   if (transcriptions.length === 0) {
     return {}
   }
@@ -312,12 +302,9 @@ export function buildAddressLine(
     | undefined,
 ): string | null {
   if (!address) return null
-  const parts = [
-    address.prefecture ?? '',
-    address.city ?? '',
-    address.street ?? '',
-    address.building ?? '',
-  ].filter(Boolean)
+  const parts = [address.prefecture ?? '', address.city ?? '', address.street ?? '', address.building ?? ''].filter(
+    Boolean,
+  )
   if (parts.length === 0) return null
   return parts.join('')
 }
